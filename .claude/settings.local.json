@@ -1,16 +1,27 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git config *)",
-      "Bash(git commit -m ' *)",
-      "Bash(git remote *)",
+      "Bash(git add *)",
       "Bash(git branch *)",
+      "Bash(git commit:*)",
+      "Bash(git config *)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
       "Bash(git push *)",
-      "Read(//c/Users/eternalteach/.claude/**)",
-      "Bash(xargs grep *)",
+      "Bash(git remote *)",
+      "Bash(git show:*)",
+      "Bash(git status:*)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(npm install*)",
+      "Bash(npm run *)",
+      "Bash(npm test*)",
       "Bash(npx tsc *)",
+      "Bash(npx vitest *)",
       "Bash(where.exe npx *)",
-      "Bash(git add *)"
+      "Bash(xargs grep *)",
+      "Read(//c/Users/eternalteach/.claude/**)"
     ]
   }
 }
