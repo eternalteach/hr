@@ -57,6 +57,8 @@ export const PATCH = withApiHandler(async (request: NextRequest, { params }: Par
   const memberId = Number(body.member_id) || 1;
 
   withTransaction(db, () => {
+    // SET 절은 allowedFields 화이트리스트에서만 조립되어 안전 — 값은 전부 ? 바인딩
+    // eslint-disable-next-line no-restricted-syntax
     db.run(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`, values);
 
     // 상태 변경 활동 로그
