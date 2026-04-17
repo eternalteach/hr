@@ -1,4 +1,5 @@
 import { getDb, saveDb } from "@/db";
+import { withTransaction } from "@/db/helpers";
 import { NextResponse } from "next/server";
 
 export async function POST() {
@@ -6,10 +7,11 @@ export async function POST() {
 
   // 기존 데이터가 있으면 스킵
   const existing = db.exec("SELECT COUNT(*) as cnt FROM members");
-  if (existing[0]?.values[0]?.[0] as number > 0) {
+  if ((existing[0]?.values[0]?.[0] as number) > 0) {
     return NextResponse.json({ message: "이미 시드 데이터가 존재합니다" });
   }
 
+  withTransaction(db, () => {
   // 팀원 5명
   db.run(`INSERT INTO members (name, email, role) VALUES ('김민수', 'minsu@team.com', 'admin')`);
   db.run(`INSERT INTO members (name, email, role) VALUES ('이지은', 'jieun@team.com', 'member')`);
@@ -99,6 +101,7 @@ export async function POST() {
   db.run(`INSERT INTO activity_logs (task_id, member_id, action, detail, created_at) VALUES (7, 2, 'assigned', '{"assignee":"최유나"}', datetime('now', '-1 hours'))`);
   db.run(`INSERT INTO activity_logs (task_id, member_id, action, detail, created_at) VALUES (5, 5, 'status_changed', '{"from":"todo","to":"in_progress"}', datetime('now', '-30 minutes'))`);
   db.run(`INSERT INTO activity_logs (task_id, member_id, action, detail, created_at) VALUES (1, 3, 'commented', '{"preview":"에러 코드 체계를 먼저..."}', datetime('now', '-10 minutes'))`);
+  });
 
   saveDb(db);
   return NextResponse.json({ message: "시드 데이터가 생성되었습니다", counts: { members: 5, tasks: 12, schedules: 5 } });

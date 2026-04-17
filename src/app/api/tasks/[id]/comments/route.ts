@@ -1,5 +1,5 @@
 import { getDb, saveDb } from "@/db";
-import { queryAll } from "@/db/helpers";
+import { queryAll, withTransaction } from "@/db/helpers";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -43,14 +43,16 @@ export async function POST(request: NextRequest, { params }: Params) {
   }
   const memberId = Number(body.member_id) || 1;
 
-  db.run(
-    "INSERT INTO comments (task_id, member_id, content) VALUES (?, ?, ?)",
-    [id, memberId, body.content]
-  );
-  db.run(
-    "INSERT INTO activity_logs (task_id, member_id, action, detail) VALUES (?, ?, 'commented', ?)",
-    [id, memberId, JSON.stringify({ preview: body.content.substring(0, 50) })]
-  );
+  withTransaction(db, () => {
+    db.run(
+      "INSERT INTO comments (task_id, member_id, content) VALUES (?, ?, ?)",
+      [id, memberId, body.content]
+    );
+    db.run(
+      "INSERT INTO activity_logs (task_id, member_id, action, detail) VALUES (?, ?, 'commented', ?)",
+      [id, memberId, JSON.stringify({ preview: body.content.substring(0, 50) })]
+    );
+  });
 
   saveDb();
   return NextResponse.json({ success: true }, { status: 201 });

@@ -1,5 +1,5 @@
 import { getDb, saveDb } from "@/db";
-import { queryAll, queryOne, insertAndGetId } from "@/db/helpers";
+import { queryAll, queryOne, insertAndGetId, withTransaction } from "@/db/helpers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -74,37 +74,42 @@ export async function POST(request: NextRequest) {
   const now = new Date().toISOString();
   const authorId = Number(created_by) || 1;
 
-  const taskId = insertAndGetId(
-    db,
-    `INSERT INTO tasks (title, description, priority, due_date, created_by, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [title, description || null, priority || "medium", due_date || null, authorId, now, now]
-  );
-
-  if (assignee_ids?.length) {
-    assignee_ids.forEach((mid: number) => {
-      db.run("INSERT INTO task_assignees (task_id, member_id) VALUES (?, ?)", [taskId, mid]);
-    });
-  }
-
-  if (tag_ids?.length) {
-    tag_ids.forEach((tid: number) => {
-      db.run("INSERT INTO task_tags (task_id, tag_id) VALUES (?, ?)", [taskId, tid]);
-    });
-  }
-
-  db.run(
-    "INSERT INTO activity_logs (task_id, member_id, action, detail) VALUES (?, ?, 'created', ?)",
-    [taskId, authorId, JSON.stringify({ title })]
-  );
-
-  // 마감일 → 캘린더 자동 연동
-  if (due_date) {
-    db.run(
-      "INSERT INTO schedules (title, type, start_at, task_id, created_by) VALUES (?, 'deadline', ?, ?, ?)",
-      [`마감: ${title}`, due_date, taskId, authorId]
+  // 트랜잭션 — tasks + 담당자 + 태그 + 로그 + 스케줄 전부 원자적으로
+  const taskId = withTransaction(db, () => {
+    const newId = insertAndGetId(
+      db,
+      `INSERT INTO tasks (title, description, priority, due_date, created_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [title, description || null, priority || "medium", due_date || null, authorId, now, now]
     );
-  }
+
+    if (assignee_ids?.length) {
+      assignee_ids.forEach((mid: number) => {
+        db.run("INSERT INTO task_assignees (task_id, member_id) VALUES (?, ?)", [newId, mid]);
+      });
+    }
+
+    if (tag_ids?.length) {
+      tag_ids.forEach((tid: number) => {
+        db.run("INSERT INTO task_tags (task_id, tag_id) VALUES (?, ?)", [newId, tid]);
+      });
+    }
+
+    db.run(
+      "INSERT INTO activity_logs (task_id, member_id, action, detail) VALUES (?, ?, 'created', ?)",
+      [newId, authorId, JSON.stringify({ title })]
+    );
+
+    // 마감일 → 캘린더 자동 연동
+    if (due_date) {
+      db.run(
+        "INSERT INTO schedules (title, type, start_at, task_id, created_by) VALUES (?, 'deadline', ?, ?, ?)",
+        [`마감: ${title}`, due_date, newId, authorId]
+      );
+    }
+
+    return newId;
+  });
 
   saveDb();
 

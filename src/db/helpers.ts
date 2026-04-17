@@ -30,3 +30,20 @@ export function insertAndGetId(db: SqlJsDatabase, sql: string, params: unknown[]
   const result = db.exec("SELECT last_insert_rowid() AS id");
   return result[0].values[0][0] as number;
 }
+
+/**
+ * 다단계 쓰기를 트랜잭션으로 감싼다.
+ * fn 내부에서 throw 시 ROLLBACK — 메모리 DB 상태가 원자적으로 복구됨.
+ * (파일 저장은 호출자가 성공 후 saveDb()로 수행)
+ */
+export function withTransaction<T>(db: SqlJsDatabase, fn: () => T): T {
+  db.run("BEGIN");
+  try {
+    const result = fn();
+    db.run("COMMIT");
+    return result;
+  } catch (err) {
+    db.run("ROLLBACK");
+    throw err;
+  }
+}

@@ -1,5 +1,5 @@
 import { getDb, saveDb } from "@/db";
-import { queryOne } from "@/db/helpers";
+import { queryOne, withTransaction } from "@/db/helpers";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -54,29 +54,31 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   values.push(now);
   values.push(id);
 
-  db.run(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`, values);
-
   const memberId = Number(body.member_id) || 1;
 
-  // 상태 변경 활동 로그
-  if (body.status && body.status !== oldTask.status) {
-    db.run(
-      "INSERT INTO activity_logs (task_id, member_id, action, detail) VALUES (?, ?, 'status_changed', ?)",
-      [id, memberId, JSON.stringify({ from: oldTask.status, to: body.status })]
-    );
-  }
+  withTransaction(db, () => {
+    db.run(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`, values);
 
-  // 마감일 변경 시 캘린더 연동 업데이트
-  if (body.due_date !== undefined) {
-    db.run("DELETE FROM schedules WHERE task_id = ? AND type = 'deadline'", [id]);
-    if (body.due_date) {
-      const title = body.title || oldTask.title;
+    // 상태 변경 활동 로그
+    if (body.status && body.status !== oldTask.status) {
       db.run(
-        "INSERT INTO schedules (title, type, start_at, task_id, created_by) VALUES (?, 'deadline', ?, ?, ?)",
-        [`마감: ${title}`, body.due_date, id, memberId]
+        "INSERT INTO activity_logs (task_id, member_id, action, detail) VALUES (?, ?, 'status_changed', ?)",
+        [id, memberId, JSON.stringify({ from: oldTask.status, to: body.status })]
       );
     }
-  }
+
+    // 마감일 변경 시 캘린더 연동 업데이트
+    if (body.due_date !== undefined) {
+      db.run("DELETE FROM schedules WHERE task_id = ? AND type = 'deadline'", [id]);
+      if (body.due_date) {
+        const title = body.title || oldTask.title;
+        db.run(
+          "INSERT INTO schedules (title, type, start_at, task_id, created_by) VALUES (?, 'deadline', ?, ?, ?)",
+          [`마감: ${title}`, body.due_date, id, memberId]
+        );
+      }
+    }
+  });
 
   saveDb();
 
