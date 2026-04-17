@@ -1,10 +1,10 @@
 import { getDb } from "@/db";
+import { queryAll } from "@/db/helpers";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   const db = await getDb();
-
-  const result = db.exec(`
+  const data = queryAll(db, `
     SELECT m.id, m.name,
       COALESCE(SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END), 0) as completed,
       COALESCE(SUM(CASE WHEN t.status IN ('in_progress','review') THEN 1 ELSE 0 END), 0) as in_progress,
@@ -15,13 +15,5 @@ export async function GET() {
     GROUP BY m.id
     ORDER BY m.id
   `);
-
-  if (!result.length) return NextResponse.json([]);
-  const cols = result[0].columns;
-  const data = result[0].values.map(row => {
-    const r: Record<string, unknown> = {};
-    cols.forEach((col, i) => { r[col] = row[i]; });
-    return r;
-  });
   return NextResponse.json(data);
 }

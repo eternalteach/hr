@@ -4,15 +4,12 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const db = await getDb();
 
-  const total = db.exec("SELECT COUNT(*) FROM tasks WHERE deleted_at IS NULL");
-  const inProgress = db.exec("SELECT COUNT(*) FROM tasks WHERE status IN ('in_progress','review') AND deleted_at IS NULL");
-  const completedWeek = db.exec("SELECT COUNT(*) FROM tasks WHERE status = 'done' AND completed_at >= datetime('now', '-7 days') AND deleted_at IS NULL");
-  const overdue = db.exec("SELECT COUNT(*) FROM tasks WHERE due_date < date('now') AND status != 'done' AND deleted_at IS NULL");
+  const read = (sql: string) => (db.exec(sql)[0]?.values[0]?.[0] as number) ?? 0;
 
   return NextResponse.json({
-    totalTasks: total[0]?.values[0]?.[0] ?? 0,
-    inProgress: inProgress[0]?.values[0]?.[0] ?? 0,
-    completedThisWeek: completedWeek[0]?.values[0]?.[0] ?? 0,
-    overdue: overdue[0]?.values[0]?.[0] ?? 0,
+    totalTasks: read("SELECT COUNT(*) FROM tasks WHERE deleted_at IS NULL"),
+    inProgress: read("SELECT COUNT(*) FROM tasks WHERE status IN ('in_progress','review') AND deleted_at IS NULL"),
+    completedThisWeek: read("SELECT COUNT(*) FROM tasks WHERE status = 'done' AND completed_at >= datetime('now', '-7 days') AND deleted_at IS NULL"),
+    overdue: read("SELECT COUNT(*) FROM tasks WHERE due_date < date('now') AND status != 'done' AND deleted_at IS NULL"),
   });
 }

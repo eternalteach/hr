@@ -1,4 +1,5 @@
 import { getDb, saveDb } from "@/db";
+import { queryAll } from "@/db/helpers";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -14,7 +15,8 @@ export async function GET(request: NextRequest, { params }: Params) {
   if (id === null) return NextResponse.json({ error: "잘못된 ID" }, { status: 400 });
 
   const db = await getDb();
-  const result = db.exec(
+  const rows = queryAll(
+    db,
     `SELECT c.*, m.name as member_name, m.avatar_url
      FROM comments c
      JOIN members m ON c.member_id = m.id
@@ -22,14 +24,10 @@ export async function GET(request: NextRequest, { params }: Params) {
      ORDER BY c.created_at ASC`,
     [id]
   );
-  if (!result.length) return NextResponse.json([]);
-  const cols = result[0].columns;
-  const comments = result[0].values.map(row => {
-    const c: Record<string, unknown> = {};
-    cols.forEach((col, i) => { c[col] = row[i]; });
-    c.member = { id: c.member_id, name: c.member_name, avatar_url: c.avatar_url };
-    return c;
-  });
+  const comments = rows.map(c => ({
+    ...c,
+    member: { id: c.member_id, name: c.member_name, avatar_url: c.avatar_url },
+  }));
   return NextResponse.json(comments);
 }
 
@@ -49,8 +47,6 @@ export async function POST(request: NextRequest, { params }: Params) {
     "INSERT INTO comments (task_id, member_id, content) VALUES (?, ?, ?)",
     [id, memberId, body.content]
   );
-
-  // 활동 로그
   db.run(
     "INSERT INTO activity_logs (task_id, member_id, action, detail) VALUES (?, ?, 'commented', ?)",
     [id, memberId, JSON.stringify({ preview: body.content.substring(0, 50) })]
