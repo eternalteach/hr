@@ -1,8 +1,9 @@
 import { getDb, saveDb } from "@/db";
 import { withTransaction } from "@/db/helpers";
+import { withApiHandler } from "@/lib/api-handler";
 import { NextResponse } from "next/server";
 
-export async function POST() {
+export const POST = withApiHandler(async () => {
   const db = await getDb();
 
   // 기존 데이터가 있으면 스킵
@@ -105,4 +106,4 @@ export async function POST() {
 
   saveDb(db);
   return NextResponse.json({ message: "시드 데이터가 생성되었습니다", counts: { members: 5, tasks: 12, schedules: 5 } });
-}
+});

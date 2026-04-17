@@ -1,8 +1,9 @@
 import { getDb } from "@/db";
 import { queryAll } from "@/db/helpers";
+import { withApiHandler } from "@/lib/api-handler";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withApiHandler(async () => {
   const db = await getDb();
   const data = queryAll(db, `
     SELECT priority, COUNT(*) as count
@@ -12,4 +13,4 @@ export async function GET() {
     ORDER BY CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 END
   `);
   return NextResponse.json(data);
-}
+});

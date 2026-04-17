@@ -1,8 +1,9 @@
 import { getDb } from "@/db";
 import { queryAll } from "@/db/helpers";
+import { withApiHandler } from "@/lib/api-handler";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withApiHandler(async () => {
   const db = await getDb();
   const data = queryAll(db, `
     SELECT al.*, m.name as member_name, t.title as task_title
@@ -13,4 +14,4 @@ export async function GET() {
     LIMIT 20
   `);
   return NextResponse.json(data);
-}
+});

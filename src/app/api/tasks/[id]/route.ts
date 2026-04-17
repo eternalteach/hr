@@ -1,36 +1,36 @@
 import { getDb, saveDb } from "@/db";
 import { queryOne, withTransaction } from "@/db/helpers";
+import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ id: string }> };
 
-function parseId(raw: string) {
+function parseId(raw: string): number {
   const id = Number(raw);
-  return Number.isInteger(id) && id > 0 ? id : null;
+  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID");
+  return id;
 }
 
-export async function GET(request: NextRequest, { params }: Params) {
+export const GET = withApiHandler(async (_request: NextRequest, { params }: Params) => {
   const { id: rawId } = await params;
   const id = parseId(rawId);
-  if (id === null) return NextResponse.json({ error: "잘못된 ID" }, { status: 400 });
 
   const db = await getDb();
   const task = queryOne(db, "SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL", [id]);
-  if (!task) return NextResponse.json({ error: "업무를 찾을 수 없습니다" }, { status: 404 });
+  if (!task) throw new ApiError(404, "업무를 찾을 수 없습니다");
   return NextResponse.json(task);
-}
+});
 
-export async function PATCH(request: NextRequest, { params }: Params) {
+export const PATCH = withApiHandler(async (request: NextRequest, { params }: Params) => {
   const { id: rawId } = await params;
   const id = parseId(rawId);
-  if (id === null) return NextResponse.json({ error: "잘못된 ID" }, { status: 400 });
 
   const db = await getDb();
   const body = await request.json();
   const now = new Date().toISOString();
 
   const oldTask = queryOne(db, "SELECT * FROM tasks WHERE id = ?", [id]);
-  if (!oldTask) return NextResponse.json({ error: "업무를 찾을 수 없습니다" }, { status: 404 });
+  if (!oldTask) throw new ApiError(404, "업무를 찾을 수 없습니다");
 
   // 상태 변경 시 완료일 자동 기록
   if (body.status === "done" && oldTask.status !== "done") {
@@ -84,15 +84,14 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const task = queryOne(db, "SELECT * FROM tasks WHERE id = ?", [id]);
   return NextResponse.json(task);
-}
+});
 
-export async function DELETE(request: NextRequest, { params }: Params) {
+export const DELETE = withApiHandler(async (_request: NextRequest, { params }: Params) => {
   const { id: rawId } = await params;
   const id = parseId(rawId);
-  if (id === null) return NextResponse.json({ error: "잘못된 ID" }, { status: 400 });
 
   const db = await getDb();
   db.run("UPDATE tasks SET deleted_at = ? WHERE id = ?", [new Date().toISOString(), id]);
   saveDb();
   return NextResponse.json({ success: true });
-}
+});

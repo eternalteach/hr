@@ -1,8 +1,9 @@
 import { getDb, saveDb } from "@/db";
 import { queryAll, queryOne, insertAndGetId, withTransaction } from "@/db/helpers";
+import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export const GET = withApiHandler(async (request: NextRequest) => {
   const db = await getDb();
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
@@ -62,14 +63,14 @@ export async function GET(request: NextRequest) {
   }));
 
   return NextResponse.json(enriched);
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withApiHandler(async (request: NextRequest) => {
   const db = await getDb();
   const body = await request.json();
   const { title, description, priority, due_date, assignee_ids, tag_ids, created_by } = body;
 
-  if (!title) return NextResponse.json({ error: "제목은 필수입니다" }, { status: 400 });
+  if (!title) throw new ApiError(400, "제목은 필수입니다");
 
   const now = new Date().toISOString();
   const authorId = Number(created_by) || 1;
@@ -115,4 +116,4 @@ export async function POST(request: NextRequest) {
 
   const task = queryOne(db, "SELECT * FROM tasks WHERE id = ?", [taskId]);
   return NextResponse.json(task, { status: 201 });
-}
+});
