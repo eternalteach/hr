@@ -8,11 +8,12 @@ export async function GET(request: NextRequest) {
   const to = searchParams.get("to");
 
   let query = "SELECT * FROM schedules WHERE 1=1";
-  if (from) query += ` AND start_at >= '${from}'`;
-  if (to) query += ` AND start_at <= '${to}'`;
+  const bindings: unknown[] = [];
+  if (from) { query += " AND start_at >= ?"; bindings.push(from); }
+  if (to) { query += " AND start_at <= ?"; bindings.push(to); }
   query += " ORDER BY start_at ASC";
 
-  const result = db.exec(query);
+  const result = db.exec(query, bindings);
   if (!result.length) return NextResponse.json([]);
   const cols = result[0].columns;
   const schedules = result[0].values.map(row => {

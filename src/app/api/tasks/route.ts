@@ -16,13 +16,20 @@ export async function GET(request: NextRequest) {
     WHERE t.deleted_at IS NULL
   `;
   const conditions: string[] = [];
-  if (status) conditions.push(`t.status = '${status}'`);
-  if (priority) conditions.push(`t.priority = '${priority}'`);
-  if (assignee) conditions.push(`t.id IN (SELECT task_id FROM task_assignees WHERE member_id = ${assignee})`);
+  const bindings: unknown[] = [];
+  if (status) { conditions.push("t.status = ?"); bindings.push(status); }
+  if (priority) { conditions.push("t.priority = ?"); bindings.push(priority); }
+  if (assignee) {
+    const assigneeId = Number(assignee);
+    if (Number.isFinite(assigneeId)) {
+      conditions.push("t.id IN (SELECT task_id FROM task_assignees WHERE member_id = ?)");
+      bindings.push(assigneeId);
+    }
+  }
   if (conditions.length) query += " AND " + conditions.join(" AND ");
   query += " ORDER BY t.updated_at DESC";
 
-  const result = db.exec(query);
+  const result = db.exec(query, bindings);
   if (!result.length) return NextResponse.json([]);
 
   const columns = result[0].columns;
@@ -128,7 +135,7 @@ export async function POST(request: NextRequest) {
   saveDb();
 
   // 생성된 업무 반환
-  const result = db.exec(`SELECT * FROM tasks WHERE id = ${taskId}`);
+  const result = db.exec("SELECT * FROM tasks WHERE id = ?", [taskId]);
   const cols = result[0].columns;
   const task: Record<string, unknown> = {};
   cols.forEach((col, i) => { task[col] = result[0].values[0][i]; });

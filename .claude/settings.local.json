@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git config *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Read(//c/Users/eternalteach/.claude/**)",
+      "Bash(xargs grep *)",
+      "Bash(npx tsc *)",
+      "Bash(where.exe npx *)",
+      "Bash(git add *)"
+    ]
+  }
+}

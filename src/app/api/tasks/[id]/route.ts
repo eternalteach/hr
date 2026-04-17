@@ -3,11 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ id: string }> };
 
+function parseId(raw: string) {
+  const id = Number(raw);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
 export async function GET(request: NextRequest, { params }: Params) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = parseId(rawId);
+  if (id === null) return NextResponse.json({ error: "잘못된 ID" }, { status: 400 });
   const db = await getDb();
 
-  const result = db.exec(`SELECT * FROM tasks WHERE id = ${id} AND deleted_at IS NULL`);
+  const result = db.exec("SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL", [id]);
   if (!result.length || !result[0].values.length) {
     return NextResponse.json({ error: "업무를 찾을 수 없습니다" }, { status: 404 });
   }
@@ -20,13 +27,15 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = parseId(rawId);
+  if (id === null) return NextResponse.json({ error: "잘못된 ID" }, { status: 400 });
   const db = await getDb();
   const body = await request.json();
   const now = new Date().toISOString();
 
   // 현재 업무 조회
-  const current = db.exec(`SELECT * FROM tasks WHERE id = ${id}`);
+  const current = db.exec("SELECT * FROM tasks WHERE id = ?", [id]);
   if (!current.length || !current[0].values.length) {
     return NextResponse.json({ error: "업무를 찾을 수 없습니다" }, { status: 404 });
   }
@@ -80,7 +89,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   saveDb();
 
-  const result = db.exec(`SELECT * FROM tasks WHERE id = ${id}`);
+  const result = db.exec("SELECT * FROM tasks WHERE id = ?", [id]);
   const task: Record<string, unknown> = {};
   result[0].columns.forEach((col, i) => { task[col] = result[0].values[0][i]; });
 
@@ -88,7 +97,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = parseId(rawId);
+  if (id === null) return NextResponse.json({ error: "잘못된 ID" }, { status: 400 });
   const db = await getDb();
   const now = new Date().toISOString();
 
