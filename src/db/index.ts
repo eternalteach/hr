@@ -15,6 +15,7 @@ export async function getDb(): Promise<SqlJsDatabase> {
   if (fs.existsSync(DB_PATH)) {
     const buffer = fs.readFileSync(DB_PATH);
     db = new SQL.Database(buffer);
+    migrateSchema(db);
   } else {
     db = new SQL.Database();
     initSchema(db);
@@ -34,6 +35,61 @@ export function saveDb(database?: SqlJsDatabase) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   const data = d.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
+}
+
+/** 기존 DB에 누락된 컬럼/테이블을 추가하는 마이그레이션 */
+function migrateSchema(database: SqlJsDatabase) {
+  let dirty = false;
+
+  // tasks.position
+  const hasPosition = (database.exec(
+    "SELECT COUNT(*) FROM pragma_table_info('tasks') WHERE name='position'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasPosition) {
+    database.run("ALTER TABLE tasks ADD COLUMN position INTEGER NOT NULL DEFAULT 0");
+    database.run("UPDATE tasks SET position = id * 1000 WHERE deleted_at IS NULL");
+    dirty = true;
+  }
+
+  // sow table
+  const hasSow = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='sow'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasSow) {
+    database.run(`
+      CREATE TABLE sow (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sow_id TEXT NOT NULL UNIQUE,
+        lob TEXT,
+        title_ko TEXT,
+        title_en TEXT,
+        content_ko TEXT NOT NULL,
+        content_en TEXT NOT NULL,
+        note_ko TEXT,
+        note_en TEXT,
+        is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    dirty = true;
+  } else {
+    // sow 테이블 컬럼 마이그레이션
+    const sowCols = (database.exec("PRAGMA table_info(sow)")[0]?.values ?? []).map(r => r[1] as string);
+    const sowAdditions: [string, string][] = [
+      ["title_ko", "TEXT"],
+      ["title_en", "TEXT"],
+      ["milestone", "TEXT"],
+    ];
+    sowAdditions.forEach(([col, type]) => {
+      if (!sowCols.includes(col)) {
+        database.run(`ALTER TABLE sow ADD COLUMN ${col} ${type}`);
+        dirty = true;
+      }
+    });
+  }
+
+  if (dirty) saveDb(database);
 }
 
 /** 스키마 초기화 */
@@ -56,6 +112,7 @@ function initSchema(database: SqlJsDatabase) {
       priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('urgent','high','medium','low')),
       due_date TEXT,
       completed_at TEXT,
+      position INTEGER NOT NULL DEFAULT 0,
       created_by INTEGER REFERENCES members(id),
       deleted_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -98,6 +155,22 @@ function initSchema(database: SqlJsDatabase) {
       location TEXT,
       task_id INTEGER REFERENCES tasks(id),
       created_by INTEGER REFERENCES members(id),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS sow (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sow_id TEXT NOT NULL UNIQUE,
+      lob TEXT,
+      title_ko TEXT,
+      title_en TEXT,
+      content_ko TEXT NOT NULL,
+      content_en TEXT NOT NULL,
+      note_ko TEXT,
+      note_en TEXT,
+      milestone TEXT,
+      is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

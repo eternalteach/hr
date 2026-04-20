@@ -10,20 +10,39 @@ interface KanbanBoardProps {
   tasks: Task[];
   onStatusChange: (taskId: number, newStatus: string) => void;
   onTaskClick: (task: Task) => void;
+  onReorder: (items: { id: number; position: number }[]) => void;
 }
 
-export function KanbanBoard({ tasks, onStatusChange, onTaskClick }: KanbanBoardProps) {
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    const taskId = parseInt(result.draggableId);
-    const newStatus = result.destination.droppableId;
-    onStatusChange(taskId, newStatus);
-  };
-
-  const grouped = TASK_STATUSES.reduce((acc, status) => {
-    acc[status.value] = tasks.filter(t => t.status === status.value);
+export function KanbanBoard({ tasks, onStatusChange, onTaskClick, onReorder }: KanbanBoardProps) {
+  // position 기준 오름차순 정렬
+  const sorted = TASK_STATUSES.reduce((acc, status) => {
+    acc[status.value] = tasks
+      .filter(t => t.status === status.value)
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
     return acc;
   }, {} as Record<string, Task[]>);
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    const taskId = parseInt(draggableId);
+
+    if (source.droppableId === destination.droppableId) {
+      // 같은 컬럼 내 순서 변경
+      const col = [...sorted[source.droppableId]];
+      const [moved] = col.splice(source.index, 1);
+      col.splice(destination.index, 0, moved);
+      onReorder(col.map((t, i) => ({ id: t.id, position: i * 1000 })));
+    } else {
+      // 다른 컬럼으로 이동: 상태 변경 + 목적지 컬럼 position 재계산
+      const destCol = sorted[destination.droppableId].slice();
+      destCol.splice(destination.index, 0, tasks.find(t => t.id === taskId)!);
+      onStatusChange(taskId, destination.droppableId);
+      onReorder(destCol.map((t, i) => ({ id: t.id, position: i * 1000 })));
+    }
+  };
 
   const columnColors: Record<string, string> = {
     todo: "border-t-gray-400",
@@ -52,14 +71,14 @@ export function KanbanBoard({ tasks, onStatusChange, onTaskClick }: KanbanBoardP
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-gray-700">{status.label}</h3>
                     <span className="text-xs font-medium text-gray-400 bg-gray-200/70 rounded-full px-2 py-0.5">
-                      {grouped[status.value].length}
+                      {sorted[status.value].length}
                     </span>
                   </div>
                 </div>
 
                 {/* 카드 목록 */}
                 <div className="flex-1 overflow-auto px-2 pb-2 space-y-2">
-                  {grouped[status.value].map((task, index) => (
+                  {sorted[status.value].map((task, index) => (
                     <Draggable key={task.id} draggableId={String(task.id)} index={index}>
                       {(provided, snapshot) => (
                         <div

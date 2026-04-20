@@ -96,7 +96,37 @@ insertAndGetId(db, sql, params) // INSERT → last rowid
 - 실행: `npm test` (감시), `npm run test:run` (1회)
 - 날짜 관련은 `vi.useFakeTimers()` + `vi.setSystemTime`로 고정
 
-## 9. 커밋 전 체크리스트
+## 9. 날짜 계산 — `differenceInCalendarDays` vs `differenceInDays`
+
+D-day처럼 **캘린더 날짜 단위** 비교는 반드시 `differenceInCalendarDays`를 사용한다.
+
+```ts
+// ✅ 타임존과 무관하게 날짜(일) 단위 비교
+differenceInCalendarDays(parseISO(dueDate), new Date())
+
+// ❌ 시간 성분까지 포함 — 타임존에 따라 D-3이 D-2로 계산되는 버그 발생
+differenceInDays(parseISO(dueDate), new Date())
+```
+
+Why: `differenceInDays`는 두 시각의 차이를 24시간 단위로 내림하므로,
+KST(UTC+9) 환경에서 자정(`parseISO("2026-04-20")`)과 낮 12시 UTC를 비교하면
+실제 3일 차이가 2일로 계산된다.
+
+`formatRelativeTime`처럼 "X시간 전", "X일 전" 표시는 시간 성분이 필요하므로
+`differenceInDays`를 계속 사용한다.
+
+## 10. npm 보안 취약점 현황 (2026-04-20 기준)
+
+`npm audit`에 **moderate 4건**이 남아 있다 — 모두 `drizzle-kit`이
+내부적으로 쓰는 `@esbuild-kit/esm-loader → esbuild ≤0.24.2` 체인이다.
+
+- `drizzle-kit` 최신 stable = `0.31.10` (이미 적용됨), 1.x 정식 출시 전까지 업스트림 fix 없음
+- `npm audit fix --force`는 `drizzle-kit@0.18.1`로 **다운그레이드**하므로 실행 금지
+- 해당 취약점은 esbuild 개발 서버 cross-origin 요청 노출이며,
+  `drizzle-kit`은 개발 서버 없이 CLI 단발 실행만 하므로 **실질 공격 면이 없음**
+- 향후 `drizzle-kit` 1.x 출시 시 업그레이드하고 이 항목을 삭제한다
+
+## 11. 커밋 전 체크리스트
 
 - [ ] `npm run lint` 통과
 - [ ] `npm run test:run` 통과

@@ -28,6 +28,7 @@ export interface Task {
   tags?: TaskTagJoin[];
   comment_count?: number;
   attachment_count?: number;
+  position?: number;
 }
 
 export interface TaskAssignee {
@@ -80,6 +81,22 @@ export interface ActivityLog {
   created_at: string;
   member?: Member;
   task?: Task;
+}
+
+export interface Sow {
+  id: number;
+  sow_id: string;
+  lob: string | null;
+  title_ko: string | null;
+  title_en: string | null;
+  content_ko: string;
+  content_en: string;
+  note_ko: string | null;
+  note_en: string | null;
+  milestone: string | null;
+  is_active: "Y" | "N";
+  updated_at: string;
+  created_at: string;
 }
 
 export interface DashboardSummary {

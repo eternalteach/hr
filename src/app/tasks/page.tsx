@@ -67,6 +67,18 @@ export default function TasksPage() {
     });
   };
 
+  const handleReorder = (items: { id: number; position: number }[]) => {
+    setTasks(prev => prev.map(t => {
+      const item = items.find(i => i.id === t.id);
+      return item ? { ...t, position: item.position } as Task : t;
+    }));
+    fetch("/api/tasks/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    }).catch(() => fetchTasks());
+  };
+
   const activeFilters = [filterPriority, filterAssignee].filter(Boolean).length;
 
   return (
@@ -161,7 +173,7 @@ export default function TasksPage() {
         {loading ? (
           <div className="flex items-center justify-center h-full text-gray-400">로딩 중...</div>
         ) : viewMode === "kanban" ? (
-          <KanbanBoard tasks={tasks} onStatusChange={handleStatusChange} onTaskClick={setSelectedTask} />
+          <KanbanBoard tasks={tasks} onStatusChange={handleStatusChange} onTaskClick={setSelectedTask} onReorder={handleReorder} />
         ) : (
           <TaskListView tasks={tasks} onTaskClick={setSelectedTask} />
         )}

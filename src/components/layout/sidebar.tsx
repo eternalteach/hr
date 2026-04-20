@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Calendar, Users } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Calendar, Users, FileText } from "lucide-react";
 
-const icons = { LayoutDashboard, CheckSquare, Calendar, Users };
+const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText };
 
 const NAV_ITEMS = [
   { href: "/", label: "대시보드", icon: "LayoutDashboard" as const },
   { href: "/tasks", label: "업무 관리", icon: "CheckSquare" as const },
   { href: "/calendar", label: "캘린더", icon: "Calendar" as const },
   { href: "/members", label: "팀원 관리", icon: "Users" as const },
+  { href: "/sow", label: "SOW 관리", icon: "FileText" as const },
 ];
 
 export function Sidebar() {

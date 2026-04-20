@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MemberAvatar } from "@/components/shared/badges";
+import { MemberEditModal } from "@/components/members/MemberEditModal";
 import { Plus, X, Mail, Shield, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
@@ -9,6 +10,7 @@ import type { Member } from "@/lib/types";
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [showCreate, setShowCreate] = useState(false);
+  const [editTarget, setEditTarget] = useState<Member | null>(null);
   const [form, setForm] = useState({ name: "", email: "", role: "member" });
 
   useEffect(() => {
@@ -46,7 +48,11 @@ export default function MembersPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {members.map(m => (
-          <div key={m.id} className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4">
+          <button
+            key={m.id}
+            onClick={() => setEditTarget(m)}
+            className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 text-left hover:border-blue-300 hover:shadow-sm transition-all"
+          >
             <MemberAvatar name={m.name} size="lg" />
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900">{m.name}</h3>
@@ -61,9 +67,19 @@ export default function MembersPage() {
                 {m.role === "admin" ? "관리자" : "팀원"}
               </span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
+
+      {/* 수정/삭제 모달 */}
+      {editTarget && (
+        <MemberEditModal
+          member={editTarget}
+          onClose={() => setEditTarget(null)}
+          onUpdated={updated => setMembers(ms => ms.map(m => m.id === updated.id ? updated as Member : m))}
+          onDeleted={id => setMembers(ms => ms.filter(m => m.id !== id))}
+        />
+      )}
 
       {/* 추가 모달 */}
       {showCreate && (

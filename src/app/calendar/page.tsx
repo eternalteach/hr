@@ -12,6 +12,7 @@ import type { Schedule } from "@/lib/types";
 import { MonthView } from "@/components/calendar/month-view";
 import { WeekView } from "@/components/calendar/week-view";
 import { ScheduleFormModal, type ScheduleFormState } from "@/components/calendar/schedule-form-modal";
+import { ScheduleEditModal } from "@/components/calendar/schedule-edit-modal";
 
 const WEEK_MS = 7 * 86400000;
 const EMPTY_FORM: ScheduleFormState = { title: "", type: "meeting", start_at: "", end_at: "", location: "" };
@@ -22,6 +23,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<ScheduleFormState>(EMPTY_FORM);
+  const [editTarget, setEditTarget] = useState<Schedule | null>(null);
 
   const loadSchedules = useCallback(async () => {
     // 월간 뷰 밖의 날짜도 간혹 보이므로 ±1개월 여유
@@ -116,8 +118,8 @@ export default function CalendarPage() {
       </div>
 
       {viewMode === "month"
-        ? <MonthView days={monthDays} currentDate={currentDate} getSchedulesForDay={getSchedulesForDay} onDayClick={openForDay} />
-        : <WeekView days={weekDays} getSchedulesForDay={getSchedulesForDay} />
+        ? <MonthView days={monthDays} currentDate={currentDate} getSchedulesForDay={getSchedulesForDay} onDayClick={openForDay} onScheduleClick={setEditTarget} />
+        : <WeekView days={weekDays} getSchedulesForDay={getSchedulesForDay} onScheduleClick={setEditTarget} />
       }
 
       <ScheduleFormModal
@@ -127,6 +129,21 @@ export default function CalendarPage() {
         onClose={() => setShowCreate(false)}
         onSubmit={handleCreate}
       />
+
+      {editTarget && (
+        <ScheduleEditModal
+          schedule={editTarget}
+          onClose={() => setEditTarget(null)}
+          onUpdated={updated => {
+            setSchedules(ss => ss.map(s => s.id === updated.id ? updated : s));
+            setEditTarget(null);
+          }}
+          onDeleted={id => {
+            setSchedules(ss => ss.filter(s => s.id !== id));
+            setEditTarget(null);
+          }}
+        />
+      )}
     </div>
   );
 }

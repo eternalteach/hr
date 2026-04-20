@@ -29,7 +29,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
     }
   }
   if (conditions.length) query += " AND " + conditions.join(" AND ");
-  query += " ORDER BY t.updated_at DESC";
+  query += " ORDER BY t.position ASC, t.id ASC";
 
   const tasks = queryAll(db, query, bindings);
   if (!tasks.length) return NextResponse.json([]);

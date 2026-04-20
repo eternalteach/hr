@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { differenceInDays, differenceInHours, differenceInMinutes, parseISO, format } from "date-fns";
+import { differenceInCalendarDays, differenceInDays, differenceInHours, differenceInMinutes, parseISO, format } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -23,7 +23,7 @@ export function formatRelativeTime(isoString: string): string {
 
 /** D-day 라벨 생성 */
 export function getDDayLabel(dueDate: string): string {
-  const diff = differenceInDays(parseISO(dueDate), new Date());
+  const diff = differenceInCalendarDays(parseISO(dueDate), new Date());
   if (diff === 0) return "D-Day";
   if (diff > 0) return `D-${diff}`;
   return `D+${Math.abs(diff)}`;
@@ -31,7 +31,7 @@ export function getDDayLabel(dueDate: string): string {
 
 /** D-day 색상 클래스 */
 export function getDDayColor(dueDate: string): string {
-  const diff = differenceInDays(parseISO(dueDate), new Date());
+  const diff = differenceInCalendarDays(parseISO(dueDate), new Date());
   if (diff < 0) return "bg-red-100 text-red-700 border-red-200";
   if (diff <= 1) return "bg-red-100 text-red-700 border-red-200";
   if (diff <= 3) return "bg-amber-100 text-amber-700 border-amber-200";

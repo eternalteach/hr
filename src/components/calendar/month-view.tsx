@@ -10,9 +10,10 @@ interface Props {
   currentDate: Date;
   getSchedulesForDay: (date: Date) => Schedule[];
   onDayClick: (date: Date) => void;
+  onScheduleClick: (schedule: Schedule) => void;
 }
 
-export function MonthView({ days, currentDate, getSchedulesForDay, onDayClick }: Props) {
+export function MonthView({ days, currentDate, getSchedulesForDay, onDayClick, onScheduleClick }: Props) {
   return (
     <div className="flex-1 overflow-auto p-6">
       {/* 요일 헤더 */}
@@ -44,7 +45,11 @@ export function MonthView({ days, currentDate, getSchedulesForDay, onDayClick }:
               </span>
               <div className="mt-1 space-y-0.5">
                 {daySchedules.slice(0, 3).map(s => (
-                  <div key={s.id} className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium border-l-2 truncate", SCHEDULE_TYPE_COLORS[s.type])}>
+                  <div
+                    key={s.id}
+                    onClick={e => { e.stopPropagation(); onScheduleClick(s); }}
+                    className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium border-l-2 truncate cursor-pointer hover:brightness-95", SCHEDULE_TYPE_COLORS[s.type])}
+                  >
                     {s.title}
                   </div>
                 ))}

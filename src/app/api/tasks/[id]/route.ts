@@ -43,7 +43,7 @@ export const PATCH = withApiHandler(async (request: NextRequest, { params }: Par
   // 화이트리스트 필드만 업데이트 — 임의 컬럼 주입 방지
   const updates: string[] = [];
   const values: unknown[] = [];
-  const allowedFields = ["title", "description", "status", "priority", "due_date", "completed_at"];
+  const allowedFields = ["title", "description", "status", "priority", "due_date", "completed_at", "position"];
   allowedFields.forEach(field => {
     if (body[field] !== undefined) {
       updates.push(`${field} = ?`);
@@ -60,6 +60,14 @@ export const PATCH = withApiHandler(async (request: NextRequest, { params }: Par
     // SET 절은 allowedFields 화이트리스트에서만 조립되어 안전 — 값은 전부 ? 바인딩
     // eslint-disable-next-line no-restricted-syntax
     db.run(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`, values);
+
+    // 담당자 교체 (assignee_ids가 전달된 경우만)
+    if (Array.isArray(body.assignee_ids)) {
+      db.run("DELETE FROM task_assignees WHERE task_id = ?", [id]);
+      (body.assignee_ids as number[]).forEach(mid => {
+        db.run("INSERT INTO task_assignees (task_id, member_id) VALUES (?, ?)", [id, mid]);
+      });
+    }
 
     // 상태 변경 활동 로그
     if (body.status && body.status !== oldTask.status) {
