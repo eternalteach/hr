@@ -9,16 +9,16 @@ import { useAuth } from "@/lib/auth-context";
 import type { Brd } from "@/lib/types";
 
 const EXCEL_COLUMNS: ColumnDef[] = [
-  { excelHeader: "BRD ID",          field: "brd_id",     required: true },
-  { excelHeader: "SOW ID",          field: "sow_id",     required: true },
-  { excelHeader: "LOB",             field: "lob" },
-  { excelHeader: "BRD 타이틀(Local)", field: "title_local" },
-  { excelHeader: "BRD 타이틀(영문)",  field: "title_en" },
-  { excelHeader: "BRD 내용(Local)",   field: "content_local", required: true },
-  { excelHeader: "BRD 내용(영어)",    field: "content_en", required: true },
-  { excelHeader: "비고(Local)",       field: "note_local" },
-  { excelHeader: "비고(영어)",        field: "note_en" },
-  { excelHeader: "BRD 유효여부",     field: "is_active" },
+  { excelHeader: "BRD ID",            field: "brd_id",       required: true,  sampleValue: "BRD-2025-001" },
+  { excelHeader: "SOW ID",            field: "sow_id",       required: true,  sampleValue: "SOW-2025-001" },
+  { excelHeader: "LOB",               field: "lob",                           sampleValue: "RETAIL" },
+  { excelHeader: "BRD 타이틀(Local)", field: "title_local",                   sampleValue: "상품 검색 고도화" },
+  { excelHeader: "BRD 타이틀(영문)",  field: "title_en",                      sampleValue: "Product Search Enhancement" },
+  { excelHeader: "BRD 내용(Local)",   field: "content_local", required: true,  sampleValue: "상품 검색 및 필터링 기능 요구사항" },
+  { excelHeader: "BRD 내용(영어)",    field: "content_en",    required: true,  sampleValue: "Requirements for product search and filtering" },
+  { excelHeader: "비고(Local)",       field: "note_local",                    sampleValue: "" },
+  { excelHeader: "비고(영어)",        field: "note_en",                       sampleValue: "" },
+  { excelHeader: "BRD 유효여부",      field: "is_active",                     sampleValue: "Y" },
 ];
 
 export default function BrdPage() {
@@ -140,6 +140,7 @@ export default function BrdPage() {
             <div className="p-5">
               <ExcelUploadZone
                 columns={EXCEL_COLUMNS}
+                templateName="BRD_업로드_템플릿"
                 onImport={async rows => { await handleImport(rows); setShowUpload(false); }}
               />
             </div>

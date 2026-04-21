@@ -9,16 +9,16 @@ import { useAuth } from "@/lib/auth-context";
 import type { Sow } from "@/lib/types";
 
 const EXCEL_COLUMNS: ColumnDef[] = [
-  { excelHeader: "SOW ID",         field: "sow_id",     required: true },
-  { excelHeader: "LOB",            field: "lob" },
-  { excelHeader: "SOW 타이틀(Local)", field: "title_local" },
-  { excelHeader: "SOW 타이틀(영문)",  field: "title_en" },
-  { excelHeader: "SOW 내용(Local)",   field: "content_local", required: true },
-  { excelHeader: "SOW 내용(영어)",    field: "content_en", required: true },
-  { excelHeader: "비고(Local)",       field: "note_local" },
-  { excelHeader: "비고(영어)",        field: "note_en" },
-  { excelHeader: "마일스톤 시기",   field: "milestone" },
-  { excelHeader: "SOW 유효여부",    field: "is_active" },
+  { excelHeader: "SOW ID",            field: "sow_id",       required: true,  sampleValue: "SOW-2025-001" },
+  { excelHeader: "LOB",               field: "lob",                           sampleValue: "RETAIL" },
+  { excelHeader: "SOW 타이틀(Local)", field: "title_local",                   sampleValue: "리테일 플랫폼 구축" },
+  { excelHeader: "SOW 타이틀(영문)",  field: "title_en",                      sampleValue: "Retail Platform Build" },
+  { excelHeader: "SOW 내용(Local)",   field: "content_local", required: true,  sampleValue: "리테일 채널 통합 플랫폼 구축 범위" },
+  { excelHeader: "SOW 내용(영어)",    field: "content_en",    required: true,  sampleValue: "Scope of retail channel integration platform" },
+  { excelHeader: "비고(Local)",       field: "note_local",                    sampleValue: "" },
+  { excelHeader: "비고(영어)",        field: "note_en",                       sampleValue: "" },
+  { excelHeader: "마일스톤 시기",     field: "milestone",                     sampleValue: "2025-Q2" },
+  { excelHeader: "SOW 유효여부",      field: "is_active",                     sampleValue: "Y" },
 ];
 
 export default function SowPage() {
@@ -140,6 +140,7 @@ export default function SowPage() {
             <div className="p-5">
               <ExcelUploadZone
                 columns={EXCEL_COLUMNS}
+                templateName="SOW_업로드_템플릿"
                 onImport={async rows => { await handleImport(rows); setShowUpload(false); }}
               />
             </div>

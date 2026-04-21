@@ -1,52 +1,45 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X, Download } from "lucide-react";
 import { parseExcel, type ColumnDef } from "@/lib/excel-parser";
+import * as XLSX from "xlsx";
 
 export type { ColumnDef };
 
 interface ExcelUploadZoneProps {
-  /**
-   * 엑셀 헤더 ↔ 필드명 매핑 정의.
-   * required: true 컬럼이 없으면 오류로 처리.
-   */
   columns: ColumnDef[];
-  /**
-   * 파싱·검증 통과 후 "가져오기" 버튼 클릭 시 호출.
-   * Promise를 반환하면 완료될 때까지 버튼이 비활성화된다.
-   */
   onImport: (rows: Record<string, unknown>[]) => Promise<void>;
+  /** 다운로드될 파일명 (확장자 제외). 기본값: "template" */
+  templateName?: string;
   disabled?: boolean;
 }
 
 type Stage = "idle" | "preview" | "importing" | "done";
 
-/**
- * 드래그-앤-드롭 또는 파일 선택으로 엑셀을 가져오는 재사용 컴포넌트.
- *
- * ## 사용 예시
- * ```tsx
- * import { ExcelUploadZone, type ColumnDef } from "@/components/excel/ExcelUploadZone";
- *
- * const COLUMNS: ColumnDef[] = [
- *   { excelHeader: "SOW ID",       field: "sow_id",     required: true },
- *   { excelHeader: "SOW 내용(Local)", field: "content_local", required: true },
- * ];
- *
- * <ExcelUploadZone
- *   columns={COLUMNS}
- *   onImport={async (rows) => {
- *     await fetch("/api/sow/bulk", {
- *       method: "POST",
- *       headers: { "Content-Type": "application/json" },
- *       body: JSON.stringify({ rows }),
- *     });
- *   }}
- * />
- * ```
- */
-export function ExcelUploadZone({ columns, onImport, disabled }: ExcelUploadZoneProps) {
+function downloadTemplate(columns: ColumnDef[], fileName: string) {
+  const headers = columns.map(c => c.excelHeader);
+  const sample = columns.map(c => c.sampleValue ?? "");
+  const ws = XLSX.utils.aoa_to_sheet([headers, sample]);
+
+  // 헤더 행 스타일 — 필수 컬럼 배경색 구분
+  columns.forEach((col, idx) => {
+    const cellRef = XLSX.utils.encode_cell({ r: 0, c: idx });
+    if (!ws[cellRef]) return;
+    ws[cellRef].s = col.required
+      ? { fill: { fgColor: { rgb: "FFF3CD" } }, font: { bold: true } }
+      : { font: { bold: true } };
+  });
+
+  // 컬럼 너비 자동 조정 (헤더 길이 기준)
+  ws["!cols"] = headers.map(h => ({ wch: Math.max(h.length * 1.5, 12) }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, `${fileName}.xlsx`);
+}
+
+export function ExcelUploadZone({ columns, onImport, templateName = "template", disabled }: ExcelUploadZoneProps) {
   const [stage, setStage] = useState<Stage>("idle");
   const [fileName, setFileName] = useState("");
   const [parsed, setParsed] = useState<{ rows: Record<string, unknown>[]; errors: string[] } | null>(null);
@@ -101,7 +94,6 @@ export function ExcelUploadZone({ columns, onImport, disabled }: ExcelUploadZone
     const hasErrors = (parsed?.errors.length ?? 0) > 0;
     return (
       <div className="space-y-4">
-        {/* 파일명 + 초기화 */}
         <div className="flex items-center gap-2 text-sm">
           <FileSpreadsheet className="w-4 h-4 text-green-600 shrink-0" />
           <span className="font-medium truncate">{fileName}</span>
@@ -111,7 +103,6 @@ export function ExcelUploadZone({ columns, onImport, disabled }: ExcelUploadZone
           </button>
         </div>
 
-        {/* 오류 목록 */}
         {hasErrors && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-1.5">
             {parsed!.errors.slice(0, 10).map((e, i) => (
@@ -123,7 +114,6 @@ export function ExcelUploadZone({ columns, onImport, disabled }: ExcelUploadZone
           </div>
         )}
 
-        {/* 미리보기 테이블 */}
         {!hasErrors && parsed && parsed.rows.length > 0 && (
           <div className="overflow-auto rounded-lg border border-gray-200 max-h-56">
             <table className="text-xs w-full">
@@ -157,7 +147,6 @@ export function ExcelUploadZone({ columns, onImport, disabled }: ExcelUploadZone
           </div>
         )}
 
-        {/* 액션 */}
         <div className="flex justify-end gap-2">
           <button onClick={reset} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
             취소
@@ -174,29 +163,40 @@ export function ExcelUploadZone({ columns, onImport, disabled }: ExcelUploadZone
     );
   }
 
-  // idle — 드롭존
+  // idle — 드롭존 + 템플릿 다운로드
   const requiredLabels = columns.filter(c => c.required).map(c => c.excelHeader).join(", ");
   return (
-    <div
-      onDrop={handleDrop}
-      onDragOver={e => e.preventDefault()}
-      onClick={() => !disabled && inputRef.current?.click()}
-      className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all"
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".xlsx,.xls,.csv"
-        className="hidden"
-        onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f); e.target.value = ""; }}
-        disabled={disabled}
-      />
-      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-      <p className="text-sm font-medium text-gray-700">파일을 드래그하거나 클릭해서 선택</p>
-      <p className="text-xs text-gray-400 mt-1">.xlsx / .xls / .csv</p>
-      {requiredLabels && (
-        <p className="text-xs text-gray-400 mt-2">필수 컬럼: {requiredLabels}</p>
-      )}
+    <div className="space-y-3">
+      <div
+        onDrop={handleDrop}
+        onDragOver={e => e.preventDefault()}
+        onClick={() => !disabled && inputRef.current?.click()}
+        className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all"
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f); e.target.value = ""; }}
+          disabled={disabled}
+        />
+        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+        <p className="text-sm font-medium text-gray-700">파일을 드래그하거나 클릭해서 선택</p>
+        <p className="text-xs text-gray-400 mt-1">.xlsx / .xls / .csv</p>
+        {requiredLabels && (
+          <p className="text-xs text-gray-400 mt-2">필수 컬럼: {requiredLabels}</p>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={e => { e.stopPropagation(); downloadTemplate(columns, templateName); }}
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+      >
+        <Download className="w-4 h-4" />
+        엑셀 템플릿 다운로드
+      </button>
     </div>
   );
 }

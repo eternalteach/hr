@@ -8,6 +8,8 @@ export interface ColumnDef {
   field: string;
   /** true이면 해당 헤더가 없을 때 오류 반환 */
   required?: boolean;
+  /** 템플릿 다운로드 시 샘플 행에 채울 예시 값 */
+  sampleValue?: string;
 }
 
 export interface ParseResult {
