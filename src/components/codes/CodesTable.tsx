@@ -12,10 +12,11 @@ interface Props {
 }
 
 const nil = <span className="text-gray-300">-</span>;
-const cell = (v: string | null) => (v ? v : nil);
+const cell = (v: string | null | undefined) => (v ? v : nil);
 
 export function CodesTable({ rows, onEdit, onDelete }: Props) {
-  const { showEnglish } = useLanguage();
+  const { language } = useLanguage();
+  const isEn = language === "en";
 
   if (rows.length === 0) {
     return (
@@ -26,12 +27,10 @@ export function CodesTable({ rows, onEdit, onDelete }: Props) {
   }
 
   const headers = [
-    "코드", "타이틀(Local)",
-    ...(showEnglish ? ["타이틀(영문)"] : []),
-    "내용(Local)",
-    ...(showEnglish ? ["내용(영어)"] : []),
-    "비고(Local)",
-    ...(showEnglish ? ["비고(영어)"] : []),
+    "코드",
+    isEn ? "타이틀(EN)" : "타이틀(Local)",
+    isEn ? "내용(EN)" : "내용(Local)",
+    isEn ? "비고(EN)" : "비고(Local)",
     "유효여부",
     ...((onEdit || onDelete) ? [""] : []),
   ];
@@ -50,18 +49,18 @@ export function CodesTable({ rows, onEdit, onDelete }: Props) {
           {rows.map(row => (
             <tr key={row.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
               <td className="px-4 py-3 font-medium text-gray-900">{row.code}</td>
-              <td className="px-4 py-3 max-w-[180px] truncate text-gray-700" title={row.title_local ?? ""}>{cell(row.title_local)}</td>
-              {showEnglish && (
-                <td className="px-4 py-3 max-w-[180px] truncate text-gray-700" title={row.title_en ?? ""}>{cell(row.title_en)}</td>
-              )}
-              <td className="px-4 py-3 max-w-[200px] truncate text-gray-600" title={row.content_local ?? ""}>{cell(row.content_local)}</td>
-              {showEnglish && (
-                <td className="px-4 py-3 max-w-[200px] truncate text-gray-600" title={row.content_en ?? ""}>{cell(row.content_en)}</td>
-              )}
-              <td className="px-4 py-3 max-w-[150px] truncate text-gray-500" title={row.note_local ?? ""}>{cell(row.note_local)}</td>
-              {showEnglish && (
-                <td className="px-4 py-3 max-w-[150px] truncate text-gray-500" title={row.note_en ?? ""}>{cell(row.note_en)}</td>
-              )}
+              <td className="px-4 py-3 max-w-[180px] truncate text-gray-700"
+                title={(isEn ? row.title_en : row.title_local) ?? ""}>
+                {cell(isEn ? row.title_en : row.title_local)}
+              </td>
+              <td className="px-4 py-3 max-w-[200px] truncate text-gray-600"
+                title={(isEn ? row.content_en : row.content_local) ?? ""}>
+                {cell(isEn ? row.content_en : row.content_local)}
+              </td>
+              <td className="px-4 py-3 max-w-[150px] truncate text-gray-500"
+                title={(isEn ? row.note_en : row.note_local) ?? ""}>
+                {cell(isEn ? row.note_en : row.note_local)}
+              </td>
               <td className="px-4 py-3">
                 <span className={cn(
                   "px-2 py-0.5 rounded-full text-xs font-medium",
