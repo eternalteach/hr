@@ -38,14 +38,9 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  // 비밀번호 변경 필요 → /change-password로
+  // 비밀번호 강제 변경 대상 → /change-password 외 접근 차단
   if (session.mustChange && pathname !== "/change-password") {
     return NextResponse.redirect(new URL("/change-password", request.url));
-  }
-
-  // 비밀번호 변경 완료 상태인데 /change-password 접근 → 홈으로
-  if (!session.mustChange && pathname === "/change-password") {
-    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // 이미 로그인 상태인데 /login 접근 → 홈으로
