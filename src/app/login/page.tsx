@@ -1,11 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CheckSquare, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  // 관리자 계정이 없으면 초기 설정 화면으로 이동
+  useEffect(() => {
+    fetch("/api/setup/status")
+      .then(r => r.json())
+      .then(data => { if (data.needsSetup) router.replace("/setup"); });
+  }, [router]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);

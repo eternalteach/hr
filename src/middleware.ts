@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySession, COOKIE_NAME } from "@/lib/session";
 
 /** 인증 없이 접근 가능한 경로 */
-const PUBLIC = new Set(["/login", "/api/auth/login"]);
+const PUBLIC = new Set(["/login", "/setup", "/api/auth/login", "/api/setup", "/api/setup/status"]);
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

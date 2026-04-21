@@ -11,14 +11,19 @@ function parseId(raw: string): number {
   return id;
 }
 
+function adminCount(db: ReturnType<typeof Object.create>): number {
+  return (db.exec(
+    "SELECT COUNT(*) FROM members WHERE role = 'admin'"
+  )[0]?.values[0][0] as number) ?? 0;
+}
+
 export const PUT = withApiHandler(async (request: NextRequest, { params }: Params) => {
   const { id: rawId } = await params;
   const id = parseId(rawId);
 
   const db = await getDb();
-  if (!queryOne(db, "SELECT id FROM members WHERE id = ?", [id])) {
-    throw new ApiError(404, "팀원을 찾을 수 없습니다");
-  }
+  const current = queryOne(db, "SELECT id, role FROM members WHERE id = ?", [id]);
+  if (!current) throw new ApiError(404, "팀원을 찾을 수 없습니다");
 
   const body = await request.json();
   if (!body.name?.trim() || !body.email?.trim()) {
@@ -26,6 +31,12 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   }
 
   const role = ["admin", "leader", "member"].includes(body.role) ? body.role : "member";
+
+  // 마지막 관리자의 역할을 내리려는 경우 차단
+  if (current.role === "admin" && role !== "admin" && adminCount(db) <= 1) {
+    throw new ApiError(400, "마지막 관리자 계정의 역할은 변경할 수 없습니다");
+  }
+
   db.run(
     "UPDATE members SET name = ?, email = ?, lob = ?, role = ? WHERE id = ?",
     [body.name.trim(), body.email.trim(), body.lob ?? null, role, id]
@@ -40,8 +51,12 @@ export const DELETE = withApiHandler(async (_request: NextRequest, { params }: P
   const id = parseId(rawId);
 
   const db = await getDb();
-  if (!queryOne(db, "SELECT id FROM members WHERE id = ?", [id])) {
-    throw new ApiError(404, "팀원을 찾을 수 없습니다");
+  const current = queryOne(db, "SELECT id, role FROM members WHERE id = ?", [id]);
+  if (!current) throw new ApiError(404, "팀원을 찾을 수 없습니다");
+
+  // 마지막 관리자 삭제 차단
+  if (current.role === "admin" && adminCount(db) <= 1) {
+    throw new ApiError(400, "마지막 관리자 계정은 삭제할 수 없습니다");
   }
 
   db.run("DELETE FROM members WHERE id = ?", [id]);

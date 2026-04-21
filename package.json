@@ -10,7 +10,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
-    "verify": "npm run lint && npx tsc --noEmit && npm run test:run"
+    "verify": "npm run lint && npx tsc --noEmit && npm run test:run",
+    "reset-password": "node scripts/reset-password.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

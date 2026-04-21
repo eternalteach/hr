@@ -248,9 +248,6 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
-  // 관리자 계정 부트스트랩 (환경변수 우선)
-  dirty = bootstrapAdmin(database) || dirty;
-
   if (dirty) saveDb(database);
 }
 
@@ -381,42 +378,4 @@ function initSchema(database: SqlJsDatabase) {
     );
   `);
 
-  bootstrapAdmin(database);
-}
-
-/**
- * 환경변수(ADMIN_EMAIL, ADMIN_PASSWORD)로 관리자 계정을 생성하거나 비밀번호를 설정한다.
- * 환경변수가 없으면 admin@taskflow.com / admin@taskflow.com(최초 변경 필요)을 기본값으로 쓴다.
- * 반환값: DB가 변경되었으면 true
- */
-function bootstrapAdmin(database: SqlJsDatabase): boolean {
-  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@taskflow.com";
-  const adminPassword = process.env.ADMIN_PASSWORD ?? adminEmail;
-  const mustChange = !process.env.ADMIN_PASSWORD ? 1 : 0;
-
-  const existing = (database.exec(
-    "SELECT id, password_hash FROM members WHERE email = ?",
-    [adminEmail]
-  )[0]?.values ?? []) as [number, string | null][];
-
-  if (existing.length === 0) {
-    // 관리자 계정 신규 생성
-    database.run(
-      "INSERT INTO members (name, email, lob, role, password_hash, must_change_password) VALUES (?, ?, NULL, 'admin', ?, ?)",
-      ["관리자", adminEmail, hashPassword(adminPassword), mustChange]
-    );
-    return true;
-  }
-
-  // 이미 존재하지만 비밀번호가 없는 경우에만 설정 (기존 비밀번호 덮어쓰지 않음)
-  const [id, existingHash] = existing[0];
-  if (!existingHash) {
-    database.run(
-      "UPDATE members SET password_hash = ?, must_change_password = ?, role = 'admin' WHERE id = ?",
-      [hashPassword(adminPassword), mustChange, id]
-    );
-    return true;
-  }
-
-  return false;
 }
