@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Sow } from "@/lib/types";
+import type { Sow, Lob, CommonCode } from "@/lib/types";
 
 interface Props {
   sow?: Sow | null;
@@ -30,6 +30,17 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
   } : EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lobs, setLobs] = useState<Lob[]>([]);
+  const [milestones, setMilestones] = useState<CommonCode[]>([]);
+
+  useEffect(() => {
+    fetch("/api/lob")
+      .then(r => r.json())
+      .then((data: Lob[]) => setLobs(data.filter(l => l.is_active === "Y")));
+    fetch("/api/codes?group=Milestone")
+      .then(r => r.json())
+      .then((data: CommonCode[]) => setMilestones(data.filter(m => m.is_active === "Y")));
+  }, []);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm(f => ({ ...f, [k]: v }));
@@ -90,7 +101,21 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
           {/* 기본 식별 정보 */}
           <div className="grid grid-cols-2 gap-4">
             {field("SOW ID", "sow_id", { required: true, placeholder: "예) SOW-2026-001" })}
-            {field("LOB", "lob", { placeholder: "예) Cloud, Security" })}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">LOB</label>
+              <select
+                value={form.lob ?? ""}
+                onChange={e => set("lob", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">— 선택 안 함 —</option>
+                {lobs.map(l => (
+                  <option key={l.code} value={l.code}>
+                    {l.title_local || l.code}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* 타이틀 */}
@@ -113,7 +138,21 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
 
           {/* 마일스톤 + 유효여부 */}
           <div className="grid grid-cols-2 gap-4">
-            {field("마일스톤 시기", "milestone", { placeholder: "예) 2026-Q2, 2026-06" })}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">마일스톤 시기</label>
+              <select
+                value={form.milestone ?? ""}
+                onChange={e => set("milestone", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">— 선택 안 함 —</option>
+                {milestones.map(m => (
+                  <option key={m.code} value={m.code}>
+                    {m.title_local || m.code}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">SOW 유효여부</label>
               <div className="flex gap-2 mt-1.5">

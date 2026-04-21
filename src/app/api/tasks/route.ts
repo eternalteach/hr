@@ -12,6 +12,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
   const lob = searchParams.get("lob");
   const sowId = searchParams.get("sow_id");
   const brdId = searchParams.get("brd_id");
+  const titleLike = searchParams.get("title");
 
   let query = `
     SELECT t.*,
@@ -40,6 +41,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
     const bid = Number(brdId);
     if (Number.isFinite(bid)) { conditions.push("t.brd_id = ?"); bindings.push(bid); }
   }
+  if (titleLike) { conditions.push("t.title LIKE ?"); bindings.push(`%${titleLike}%`); }
   if (conditions.length) query += " AND " + conditions.join(" AND ");
   query += " ORDER BY t.position ASC, t.id ASC";
 

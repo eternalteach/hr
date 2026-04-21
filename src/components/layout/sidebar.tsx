@@ -3,19 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, Tags, Languages } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree, Languages } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 
-const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, Tags };
+const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree };
 
 const NAV_ITEMS = [
   { href: "/", label: "대시보드", icon: "LayoutDashboard" as const },
-  { href: "/tasks", label: "업무 관리", icon: "CheckSquare" as const },
   { href: "/calendar", label: "캘린더", icon: "Calendar" as const },
-  { href: "/members", label: "팀원 관리", icon: "Users" as const },
   { href: "/sow", label: "SOW 관리", icon: "FileText" as const },
   { href: "/brd", label: "BRD 관리", icon: "ClipboardList" as const },
-  { href: "/lob", label: "LOB 관리", icon: "Tags" as const },
+  { href: "/tasks", label: "업무 관리", icon: "CheckSquare" as const },
+  { href: "/members", label: "팀원 관리", icon: "Users" as const },
+  { href: "/codes", label: "공통코드 관리", icon: "ListTree" as const },
 ];
 
 export function Sidebar() {

@@ -1,5 +1,5 @@
 import { getDb, saveDb } from "@/db";
-import { queryAll, insertAndGetId } from "@/db/helpers";
+import { queryAll, queryOne, insertAndGetId } from "@/db/helpers";
 import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -40,5 +40,5 @@ export const POST = withApiHandler(async (request: NextRequest) => {
     ]
   );
   saveDb();
-  return NextResponse.json({ id, ...b }, { status: 201 });
+  return NextResponse.json(queryOne(db, "SELECT * FROM brd WHERE id = ?", [id]), { status: 201 });
 });

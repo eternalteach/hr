@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { PRIORITIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import type { Member, Tag, Lob, Brd } from "@/lib/types";
+import type { Member, Tag, Brd } from "@/lib/types";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface TaskCreateModalProps {
   open: boolean;
@@ -15,9 +16,7 @@ interface TaskCreateModalProps {
 export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProps) {
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
-  const [lobs, setLobs] = useState<Lob[]>([]);
   const [brds, setBrds] = useState<Brd[]>([]);
-  const [lob, setLob] = useState<string>("");
   const [brdId, setBrdId] = useState<number | null>(null);
   const [form, setForm] = useState({
     title: "",
@@ -32,21 +31,25 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
     if (open) {
       fetch("/api/members").then(r => r.json()).then(setMembers);
       fetch("/api/tags").then(r => r.json()).then(setTags).catch(() => setTags([]));
-      fetch("/api/lob").then(r => r.json()).then((d: Lob[]) => setLobs(d.filter(l => l.is_active === "Y")));
       fetch("/api/brd").then(r => r.json()).then((d: Brd[]) => setBrds(d.filter(b => b.is_active === "Y")));
     }
   }, [open]);
 
   if (!open) return null;
 
-  const filteredBrds = lob ? brds.filter(b => b.lob === lob) : brds;
+  const selectedBrd = brds.find(b => b.id === brdId);
+  const lobDisplay = selectedBrd?.lob ?? "";
+
+  const handleBrdChange = (val: string) => {
+    setBrdId(val ? Number(val) : null);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
     onSubmit({ ...form, brd_id: brdId, created_by: 1 });
     setForm({ title: "", description: "", priority: "medium", due_date: "", assignee_ids: [], tag_ids: [] });
-    setLob(""); setBrdId(null);
+    setBrdId(null);
     onClose();
   };
 
@@ -58,6 +61,12 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
         : [...f.assignee_ids, id],
     }));
   };
+
+  const brdOptions = brds.map(b => ({
+    value: String(b.id),
+    label: b.brd_id + (b.title_local ? ` — ${b.title_local}` : ""),
+    sub: b.lob ? `LOB: ${b.lob}` : undefined,
+  }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
@@ -125,31 +134,29 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
             </div>
           </div>
 
-          {/* LOB + BRD 연결 */}
+          {/* BRD 연결 + LOB 자동표시 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">LOB</label>
-              <select
-                value={lob}
-                onChange={e => { setLob(e.target.value); setBrdId(null); }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              >
-                <option value="">전체</option>
-                {lobs.map(l => <option key={l.id} value={l.code}>{l.code}</option>)}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">BRD 연결</label>
+              <SearchableSelect
+                value={brdId ? String(brdId) : ""}
+                onChange={handleBrdChange}
+                options={brdOptions}
+                placeholder="BRD 선택 (선택 안 함)"
+                searchPlaceholder="BRD ID 또는 타이틀 검색"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">BRD</label>
-              <select
-                value={brdId ?? ""}
-                onChange={e => setBrdId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              >
-                <option value="">선택 안 함</option>
-                {filteredBrds.map(b => (
-                  <option key={b.id} value={b.id}>{b.brd_id} · {b.title_local ?? "-"}</option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                LOB
+                <span className="ml-1 text-xs font-normal text-gray-400">(BRD에서 자동)</span>
+              </label>
+              <input
+                value={lobDisplay}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+                placeholder="BRD 선택 시 자동 설정"
+              />
             </div>
           </div>
 

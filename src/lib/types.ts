@@ -120,6 +120,21 @@ export interface Lob {
   created_at: string;
 }
 
+export interface CommonCode {
+  id: number;
+  code_group: string;
+  code: string;
+  title_local: string | null;
+  title_en: string | null;
+  content_local: string | null;
+  content_en: string | null;
+  note_local: string | null;
+  note_en: string | null;
+  is_active: "Y" | "N";
+  updated_at: string;
+  created_at: string;
+}
+
 export interface Brd {
   id: number;
   brd_id: string;

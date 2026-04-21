@@ -16,11 +16,14 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   const db = await getDb();
 
   if (!queryOne(db, "SELECT id FROM common_codes WHERE id = ?", [id])) {
-    throw new ApiError(404, "LOB를 찾을 수 없습니다");
+    throw new ApiError(404, "공통코드를 찾을 수 없습니다");
   }
 
   const b = await request.json();
   if (!b.code?.trim()) throw new ApiError(400, "코드는 필수입니다");
+
+  const dup = queryOne(db, "SELECT id FROM common_codes WHERE code = ? AND id != ?", [b.code.trim(), id]);
+  if (dup) throw new ApiError(409, "이미 존재하는 코드입니다");
 
   db.run(
     `UPDATE common_codes SET
@@ -49,7 +52,7 @@ export const DELETE = withApiHandler(async (_req: NextRequest, { params }: Param
   const db = await getDb();
 
   if (!queryOne(db, "SELECT id FROM common_codes WHERE id = ?", [id])) {
-    throw new ApiError(404, "LOB를 찾을 수 없습니다");
+    throw new ApiError(404, "공통코드를 찾을 수 없습니다");
   }
 
   db.run("DELETE FROM common_codes WHERE id = ?", [id]);

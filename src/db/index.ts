@@ -146,14 +146,27 @@ function migrateSchema(database: SqlJsDatabase) {
     });
   }
 
-  // lob 공통코드 테이블
-  const hasLob = (database.exec(
+  // common_codes 공통코드 테이블 (구 lob 테이블 → rename 마이그레이션)
+  const hasOldLob = (database.exec(
     "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='lob'"
   )[0]?.values[0][0] as number) > 0;
-  if (!hasLob) {
+  const hasCommonCodes = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='common_codes'"
+  )[0]?.values[0][0] as number) > 0;
+
+  if (hasOldLob && !hasCommonCodes) {
+    // lob → common_codes 리네임
+    const lobCols = (database.exec("PRAGMA table_info(lob)")[0]?.values ?? []).map(r => r[1] as string);
+    if (!lobCols.includes("code_group")) {
+      database.run("ALTER TABLE lob ADD COLUMN code_group TEXT NOT NULL DEFAULT 'LOB'");
+    }
+    database.run("ALTER TABLE lob RENAME TO common_codes");
+    dirty = true;
+  } else if (!hasCommonCodes) {
     database.run(`
-      CREATE TABLE lob (
+      CREATE TABLE common_codes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code_group TEXT NOT NULL DEFAULT 'LOB',
         code TEXT NOT NULL UNIQUE,
         title_local TEXT,
         title_en TEXT,
@@ -177,7 +190,7 @@ function migrateSchema(database: SqlJsDatabase) {
     seeds.forEach(row => {
       const code = row[0] as string;
       database.run(
-        "INSERT INTO lob (code, title_local, title_en) VALUES (?, ?, ?)",
+        "INSERT INTO common_codes (code_group, code, title_local, title_en) VALUES ('LOB', ?, ?, ?)",
         [code, code, code]
       );
     });
@@ -293,8 +306,9 @@ function initSchema(database: SqlJsDatabase) {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE IF NOT EXISTS lob (
+    CREATE TABLE IF NOT EXISTS common_codes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code_group TEXT NOT NULL DEFAULT 'LOB',
       code TEXT NOT NULL UNIQUE,
       title_local TEXT,
       title_en TEXT,

@@ -1,5 +1,5 @@
 import { getDb, saveDb } from "@/db";
-import { queryAll, insertAndGetId } from "@/db/helpers";
+import { queryAll, queryOne, insertAndGetId } from "@/db/helpers";
 import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -39,5 +39,6 @@ export const POST = withApiHandler(async (request: NextRequest) => {
     ]
   );
   saveDb();
-  return NextResponse.json({ id, ...b }, { status: 201 });
+  const created = queryOne(db, "SELECT * FROM sow WHERE id = ?", [id]);
+  return NextResponse.json(created, { status: 201 });
 });
