@@ -44,7 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.refresh();
   };
 
-  const isReadOnly = currentUser?.role === "member";
+  // 로딩 중(currentUser null)에는 쓰기 버튼을 노출하지 않는다.
+  // admin/leader → false, member → true, 미확인 → true
+  const isReadOnly = !currentUser || currentUser.role === "member";
 
   return (
     <AuthContext.Provider value={{ currentUser, isLoading, isReadOnly, logout, refresh }}>
