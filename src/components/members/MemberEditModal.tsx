@@ -1,20 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { X, Mail, Shield, User, Trash2, AlertTriangle } from "lucide-react";
+import { X, Mail, Shield, Star, User, Trash2, AlertTriangle } from "lucide-react";
 import { MemberAvatar } from "@/components/shared/badges";
 import { cn } from "@/lib/utils";
-import type { Member } from "@/lib/types";
+import type { Member, CommonCode, MemberRole } from "@/lib/types";
+
+const ROLE_OPTIONS: { v: MemberRole; l: string; icon: React.ReactNode }[] = [
+  { v: "admin", l: "관리자", icon: <Shield className="w-3 h-3" /> },
+  { v: "leader", l: "리더",  icon: <Star className="w-3 h-3" /> },
+  { v: "member", l: "팀원",  icon: <User className="w-3 h-3" /> },
+];
 
 interface Props {
   member: Member;
+  lobs: CommonCode[];
   onClose: () => void;
   onUpdated: (member: Member) => void;
   onDeleted: (id: number) => void;
 }
 
-export function MemberEditModal({ member, onClose, onUpdated, onDeleted }: Props) {
-  const [form, setForm] = useState({ name: member.name, email: member.email, role: member.role });
+export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }: Props) {
+  const [form, setForm] = useState({
+    name: member.name,
+    email: member.email,
+    lob: member.lob ?? "",
+    role: member.role,
+  });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -27,7 +39,7 @@ export function MemberEditModal({ member, onClose, onUpdated, onDeleted }: Props
     const res = await fetch(`/api/members/${member.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, lob: form.lob || null }),
     });
     setSaving(false);
     if (!res.ok) {
@@ -53,14 +65,8 @@ export function MemberEditModal({ member, onClose, onUpdated, onDeleted }: Props
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4"
-        onClick={e => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
         {/* 헤더 */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
@@ -89,17 +95,8 @@ export function MemberEditModal({ member, onClose, onUpdated, onDeleted }: Props
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
-              >
+              <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">취소</button>
+              <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50">
                 {deleting ? "삭제 중…" : "삭제 확인"}
               </button>
             </div>
@@ -126,9 +123,22 @@ export function MemberEditModal({ member, onClose, onUpdated, onDeleted }: Props
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">LOB</label>
+              <select
+                value={form.lob}
+                onChange={e => setForm(f => ({ ...f, lob: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">선택 안함</option>
+                {lobs.map(l => (
+                  <option key={l.code} value={l.code}>{l.title_local || l.code}</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">역할</label>
               <div className="flex gap-2">
-                {([{ v: "member", l: "팀원" }, { v: "admin", l: "관리자" }] as const).map(r => (
+                {ROLE_OPTIONS.map(r => (
                   <button
                     key={r.v}
                     type="button"
@@ -140,8 +150,7 @@ export function MemberEditModal({ member, onClose, onUpdated, onDeleted }: Props
                         : "border-gray-200 text-gray-500 hover:bg-gray-50"
                     )}
                   >
-                    {r.v === "admin" ? <Shield className="w-3 h-3" /> : <User className="w-3 h-3" />}
-                    {r.l}
+                    {r.icon}{r.l}
                   </button>
                 ))}
               </div>
@@ -158,13 +167,7 @@ export function MemberEditModal({ member, onClose, onUpdated, onDeleted }: Props
                 <Trash2 className="w-4 h-4" />삭제
               </button>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
-                >
-                  취소
-                </button>
+                <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">취소</button>
                 <button
                   type="submit"
                   disabled={saving || !form.name.trim() || !form.email.trim()}

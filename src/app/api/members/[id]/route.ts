@@ -25,9 +25,10 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
     throw new ApiError(400, "이름과 이메일은 필수입니다");
   }
 
+  const role = ["admin", "leader", "member"].includes(body.role) ? body.role : "member";
   db.run(
-    "UPDATE members SET name = ?, email = ?, role = ? WHERE id = ?",
-    [body.name.trim(), body.email.trim(), body.role === "admin" ? "admin" : "member", id]
+    "UPDATE members SET name = ?, email = ?, lob = ?, role = ? WHERE id = ?",
+    [body.name.trim(), body.email.trim(), body.lob ?? null, role, id]
   );
   saveDb();
 

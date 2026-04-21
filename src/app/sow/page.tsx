@@ -5,6 +5,7 @@ import { Plus, Upload, X, AlertTriangle } from "lucide-react";
 import { SowTable } from "@/components/sow/SowTable";
 import { SowFormModal } from "@/components/sow/SowFormModal";
 import { ExcelUploadZone, type ColumnDef } from "@/components/excel/ExcelUploadZone";
+import { useAuth } from "@/lib/auth-context";
 import type { Sow } from "@/lib/types";
 
 const EXCEL_COLUMNS: ColumnDef[] = [
@@ -21,6 +22,7 @@ const EXCEL_COLUMNS: ColumnDef[] = [
 ];
 
 export default function SowPage() {
+  const { isReadOnly } = useAuth();
   const [rows, setRows] = useState<Sow[]>([]);
   const [loading, setLoading] = useState(true);
   const [editTarget, setEditTarget] = useState<Sow | null | undefined>(undefined); // undefined=closed, null=create
@@ -65,31 +67,37 @@ export default function SowPage() {
           <h1 className="text-xl font-semibold text-gray-900">SOW 관리</h1>
           <p className="text-sm text-gray-500 mt-0.5">{rows.length}건</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowUpload(true)}
-            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50"
-          >
-            <Upload className="w-4 h-4" />엑셀 업로드
-          </button>
-          <button
-            onClick={() => setEditTarget(null)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4" />SOW 추가
-          </button>
-        </div>
+        {!isReadOnly && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowUpload(true)}
+              className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50"
+            >
+              <Upload className="w-4 h-4" />엑셀 업로드
+            </button>
+            <button
+              onClick={() => setEditTarget(null)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4" />SOW 추가
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 테이블 */}
       {loading ? (
         <div className="text-center text-gray-400 py-20">로딩 중…</div>
       ) : (
-        <SowTable rows={rows} onEdit={sow => setEditTarget(sow)} onDelete={setDeleteTarget} />
+        <SowTable
+          rows={rows}
+          onEdit={isReadOnly ? undefined : sow => setEditTarget(sow)}
+          onDelete={isReadOnly ? undefined : setDeleteTarget}
+        />
       )}
 
       {/* 추가/수정 모달 */}
-      {editTarget !== undefined && (
+      {!isReadOnly && editTarget !== undefined && (
         <SowFormModal sow={editTarget} onClose={() => setEditTarget(undefined)} onSaved={handleSaved} />
       )}
 

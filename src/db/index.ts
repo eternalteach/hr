@@ -204,6 +204,28 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
+  // members.lob 컬럼 추가 + role CHECK에 'leader' 추가 (테이블 재생성)
+  const membersCols = (database.exec("PRAGMA table_info(members)")[0]?.values ?? []).map(r => r[1] as string);
+  if (!membersCols.includes("lob")) {
+    database.run(`
+      CREATE TABLE members_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        avatar_url TEXT,
+        lob TEXT,
+        role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('admin','leader','member')),
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    database.run(
+      "INSERT INTO members_new (id, name, email, avatar_url, lob, role, created_at) SELECT id, name, email, avatar_url, NULL, role, created_at FROM members"
+    );
+    database.run("DROP TABLE members");
+    database.run("ALTER TABLE members_new RENAME TO members");
+    dirty = true;
+  }
+
   if (dirty) saveDb(database);
 }
 
@@ -215,7 +237,8 @@ function initSchema(database: SqlJsDatabase) {
       name TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
       avatar_url TEXT,
-      role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('admin','member')),
+      lob TEXT,
+      role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('admin','leader','member')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

@@ -7,8 +7,8 @@ import type { Brd } from "@/lib/types";
 
 interface Props {
   rows: Brd[];
-  onEdit: (brd: Brd) => void;
-  onDelete: (brd: Brd) => void;
+  onEdit?: (brd: Brd) => void;
+  onDelete?: (brd: Brd) => void;
 }
 
 const nil = <span className="text-gray-300">-</span>;
@@ -35,7 +35,8 @@ export function BrdTable({ rows, onEdit, onDelete }: Props) {
     ...(showEnglish ? ["내용(영어)"] : []),
     "비고(Local)",
     ...(showEnglish ? ["비고(영어)"] : []),
-    "유효여부", "최종수정일", "",
+    "유효여부", "최종수정일",
+    ...((onEdit || onDelete) ? [""] : []),
   ];
 
   return (
@@ -75,22 +76,28 @@ export function BrdTable({ rows, onEdit, onDelete }: Props) {
                 </span>
               </td>
               <td className="px-4 py-3 text-gray-400 text-xs">{row.updated_at.slice(0, 10)}</td>
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onEdit(row)}
-                    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => onDelete(row)}
-                    className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </td>
+              {(onEdit || onDelete) && (
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-1">
+                    {onEdit && (
+                      <button
+                        onClick={() => onEdit(row)}
+                        className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(row)}
+                        className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

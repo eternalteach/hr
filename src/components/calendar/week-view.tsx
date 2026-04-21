@@ -10,7 +10,7 @@ import { SCHEDULE_TYPE_COLORS } from "./constants";
 interface Props {
   days: Date[];
   getSchedulesForDay: (date: Date) => Schedule[];
-  onScheduleClick: (schedule: Schedule) => void;
+  onScheduleClick?: (schedule: Schedule) => void;
 }
 
 export function WeekView({ days, getSchedulesForDay, onScheduleClick }: Props) {
@@ -32,8 +32,8 @@ export function WeekView({ days, getSchedulesForDay, onScheduleClick }: Props) {
                 {daySchedules.map(s => (
                   <div
                     key={s.id}
-                    onClick={() => onScheduleClick(s)}
-                    className={cn("p-2 rounded-lg border-l-2 text-xs cursor-pointer hover:brightness-95", SCHEDULE_TYPE_COLORS[s.type])}
+                    onClick={onScheduleClick ? () => onScheduleClick(s) : undefined}
+                    className={cn("p-2 rounded-lg border-l-2 text-xs", SCHEDULE_TYPE_COLORS[s.type], onScheduleClick && "cursor-pointer hover:brightness-95")}
                   >
                     <p className="font-medium truncate">{s.title}</p>
                     {s.end_at && (

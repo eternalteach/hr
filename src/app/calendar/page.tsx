@@ -8,6 +8,7 @@ import {
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 import type { Schedule } from "@/lib/types";
 import { MonthView } from "@/components/calendar/month-view";
 import { WeekView } from "@/components/calendar/week-view";
@@ -18,6 +19,7 @@ const WEEK_MS = 7 * 86400000;
 const EMPTY_FORM: ScheduleFormState = { title: "", type: "meeting", start_at: "", end_at: "", location: "" };
 
 export default function CalendarPage() {
+  const { isReadOnly } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
@@ -111,15 +113,17 @@ export default function CalendarPage() {
               주간
             </button>
           </div>
-          <button onClick={openForToday} className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
-            <Plus className="w-4 h-4" />일정 추가
-          </button>
+          {!isReadOnly && (
+            <button onClick={openForToday} className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
+              <Plus className="w-4 h-4" />일정 추가
+            </button>
+          )}
         </div>
       </div>
 
       {viewMode === "month"
-        ? <MonthView days={monthDays} currentDate={currentDate} getSchedulesForDay={getSchedulesForDay} onDayClick={openForDay} onScheduleClick={setEditTarget} />
-        : <WeekView days={weekDays} getSchedulesForDay={getSchedulesForDay} onScheduleClick={setEditTarget} />
+        ? <MonthView days={monthDays} currentDate={currentDate} getSchedulesForDay={getSchedulesForDay} onDayClick={isReadOnly ? undefined : openForDay} onScheduleClick={isReadOnly ? undefined : setEditTarget} />
+        : <WeekView days={weekDays} getSchedulesForDay={getSchedulesForDay} onScheduleClick={isReadOnly ? undefined : setEditTarget} />
       }
 
       <ScheduleFormModal

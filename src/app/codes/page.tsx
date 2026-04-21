@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, X, AlertTriangle } from "lucide-react";
 import { CodesTable } from "@/components/codes/CodesTable";
 import { CodesFormModal } from "@/components/codes/CodesFormModal";
+import { useAuth } from "@/lib/auth-context";
 import type { CommonCode } from "@/lib/types";
 
 const GROUPS: { key: string; label: string }[] = [
@@ -12,6 +13,7 @@ const GROUPS: { key: string; label: string }[] = [
 ];
 
 export default function CodesPage() {
+  const { isReadOnly } = useAuth();
   const [activeGroup, setActiveGroup] = useState("LOB");
   const [allRows, setAllRows] = useState<CommonCode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,12 +52,14 @@ export default function CodesPage() {
           <h1 className="text-xl font-semibold text-gray-900">공통코드 관리</h1>
           <p className="text-sm text-gray-500 mt-0.5">{rows.length}건</p>
         </div>
-        <button
-          onClick={() => setEditTarget(null)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4" />코드 추가
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={() => setEditTarget(null)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+          >
+            <Plus className="w-4 h-4" />코드 추가
+          </button>
+        )}
       </div>
 
       {/* 그룹 탭 */}
@@ -81,10 +85,14 @@ export default function CodesPage() {
       {loading ? (
         <div className="text-center text-gray-400 py-20">로딩 중…</div>
       ) : (
-        <CodesTable rows={rows} onEdit={setEditTarget} onDelete={setDeleteTarget} />
+        <CodesTable
+          rows={rows}
+          onEdit={isReadOnly ? undefined : setEditTarget}
+          onDelete={isReadOnly ? undefined : setDeleteTarget}
+        />
       )}
 
-      {editTarget !== undefined && (
+      {!isReadOnly && editTarget !== undefined && (
         <CodesFormModal
           code={editTarget}
           group={activeGroup}

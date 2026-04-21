@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree, Languages } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree, Languages, ChevronDown, Shield, Star, User } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
+import { useAuth } from "@/lib/auth-context";
+import type { MemberRole } from "@/lib/types";
 
 const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree };
 
@@ -18,9 +21,23 @@ const NAV_ITEMS = [
   { href: "/codes", label: "공통코드 관리", icon: "ListTree" as const },
 ];
 
+const ROLE_LABELS: Record<MemberRole, string> = {
+  admin: "관리자",
+  leader: "리더",
+  member: "팀원",
+};
+
+const ROLE_ICONS: Record<MemberRole, React.ReactNode> = {
+  admin: <Shield className="w-3 h-3" />,
+  leader: <Star className="w-3 h-3" />,
+  member: <User className="w-3 h-3" />,
+};
+
 export function Sidebar() {
   const pathname = usePathname();
   const { showEnglish, toggle } = useLanguage();
+  const { currentUser, members, setCurrentUserId } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
     <aside className="w-56 border-r border-gray-200 bg-gray-50/50 flex flex-col shrink-0">
@@ -69,14 +86,48 @@ export function Sidebar() {
           <Languages className="w-3.5 h-3.5" />
           영문 표시 {showEnglish ? "ON" : "OFF"}
         </button>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
-            김
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">김민수</p>
-            <p className="text-xs text-gray-500">관리자</p>
-          </div>
+
+        {/* 현재 사용자 — 클릭하면 사용자 전환 메뉴 */}
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(v => !v)}
+            className="w-full flex items-center gap-3 hover:bg-gray-100 rounded-lg p-1 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium shrink-0">
+              {currentUser?.name[0] ?? "?"}
+            </div>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="text-sm font-medium text-gray-900 truncate">{currentUser?.name ?? "…"}</p>
+              <p className="text-xs text-gray-500 flex items-center gap-0.5">
+                {currentUser?.role && ROLE_ICONS[currentUser.role]}
+                {currentUser?.role ? ROLE_LABELS[currentUser.role] : ""}
+              </p>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-48 overflow-y-auto">
+              {members.map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => { setCurrentUserId(m.id); setShowUserMenu(false); }}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors",
+                    m.id === currentUser?.id && "bg-blue-50"
+                  )}
+                >
+                  <div className="w-6 h-6 rounded-full bg-blue-400 flex items-center justify-center text-white text-xs shrink-0">
+                    {m.name[0]}
+                  </div>
+                  <span className={cn("font-medium truncate", m.id === currentUser?.id ? "text-blue-700" : "text-gray-800")}>
+                    {m.name}
+                  </span>
+                  <span className="text-xs text-gray-400 shrink-0">{ROLE_LABELS[m.role]}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </aside>

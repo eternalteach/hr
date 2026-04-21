@@ -14,10 +14,11 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   if (!body.name || !body.email) {
     throw new ApiError(400, "이름과 이메일은 필수입니다");
   }
+  const role = ["admin", "leader", "member"].includes(body.role) ? body.role : "member";
   const id = insertAndGetId(
     db,
-    "INSERT INTO members (name, email, role) VALUES (?, ?, ?)",
-    [body.name, body.email, body.role || "member"]
+    "INSERT INTO members (name, email, lob, role) VALUES (?, ?, ?, ?)",
+    [body.name, body.email, body.lob ?? null, role]
   );
   saveDb();
   return NextResponse.json({ id, ...body }, { status: 201 });

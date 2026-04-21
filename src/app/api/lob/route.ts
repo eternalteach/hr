@@ -1,5 +1,5 @@
 import { getDb, saveDb } from "@/db";
-import { queryAll, insertAndGetId } from "@/db/helpers";
+import { queryAll, queryOne, insertAndGetId } from "@/db/helpers";
 import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 

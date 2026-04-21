@@ -9,8 +9,8 @@ interface Props {
   days: Date[];
   currentDate: Date;
   getSchedulesForDay: (date: Date) => Schedule[];
-  onDayClick: (date: Date) => void;
-  onScheduleClick: (schedule: Schedule) => void;
+  onDayClick?: (date: Date) => void;
+  onScheduleClick?: (schedule: Schedule) => void;
 }
 
 export function MonthView({ days, currentDate, getSchedulesForDay, onDayClick, onScheduleClick }: Props) {
@@ -29,9 +29,10 @@ export function MonthView({ days, currentDate, getSchedulesForDay, onDayClick, o
           return (
             <div
               key={day.toISOString()}
-              onClick={() => onDayClick(day)}
+              onClick={() => onDayClick?.(day)}
               className={cn(
-                "border-r border-b border-gray-200 min-h-[100px] p-1.5 cursor-pointer hover:bg-gray-50 transition-colors",
+                "border-r border-b border-gray-200 min-h-[100px] p-1.5 transition-colors",
+                onDayClick ? "cursor-pointer hover:bg-gray-50" : "cursor-default",
                 !isSameMonth(day, currentDate) && "bg-gray-50/50"
               )}
             >
@@ -47,8 +48,8 @@ export function MonthView({ days, currentDate, getSchedulesForDay, onDayClick, o
                 {daySchedules.slice(0, 3).map(s => (
                   <div
                     key={s.id}
-                    onClick={e => { e.stopPropagation(); onScheduleClick(s); }}
-                    className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium border-l-2 truncate cursor-pointer hover:brightness-95", SCHEDULE_TYPE_COLORS[s.type])}
+                    onClick={onScheduleClick ? e => { e.stopPropagation(); onScheduleClick(s); } : undefined}
+                    className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium border-l-2 truncate", SCHEDULE_TYPE_COLORS[s.type], onScheduleClick && "cursor-pointer hover:brightness-95")}
                   >
                     {s.title}
                   </div>

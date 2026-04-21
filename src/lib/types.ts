@@ -1,6 +1,6 @@
 export type TaskStatus = "todo" | "in_progress" | "review" | "done";
 export type Priority = "urgent" | "high" | "medium" | "low";
-export type MemberRole = "admin" | "member";
+export type MemberRole = "admin" | "leader" | "member";
 export type ScheduleType = "meeting" | "deadline" | "milestone";
 
 export interface Member {
@@ -8,6 +8,7 @@ export interface Member {
   name: string;
   email: string;
   avatar_url: string | null;
+  lob: string | null;
   role: MemberRole;
   created_at: string;
 }
