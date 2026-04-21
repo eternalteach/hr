@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import type { Member } from "@/lib/types";
 
 interface AuthContextValue {
@@ -16,7 +15,6 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<Member | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,9 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
-    setCurrentUser(null);
-    router.push("/login");
-    router.refresh();
+    window.location.href = "/login";
   };
 
   // 로딩 중(currentUser null)에는 쓰기 버튼을 노출하지 않는다.

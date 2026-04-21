@@ -5,6 +5,8 @@ import { withApiHandler } from "@/lib/api-handler";
 import { ApiError } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export const GET = withApiHandler(async (request: NextRequest) => {
   const token = request.cookies.get(COOKIE_NAME)?.value;
   if (!token) throw new ApiError(401, "로그인이 필요합니다");

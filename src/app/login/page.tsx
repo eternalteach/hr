@@ -40,8 +40,9 @@ export default function LoginPage() {
     }
 
     const data = await res.json();
-    router.push(data.mustChange ? "/change-password" : "/");
-    router.refresh();
+    // router.push()는 AuthProvider를 재마운트하지 않아 이전 계정 상태가 남는다.
+    // 전체 페이지 리로드로 Provider 상태를 초기화한다.
+    window.location.href = data.mustChange ? "/change-password" : "/";
   };
 
   return (
