@@ -61,11 +61,67 @@ function migrateSchema(database: SqlJsDatabase) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         sow_id TEXT NOT NULL UNIQUE,
         lob TEXT,
-        title_ko TEXT,
+        title_local TEXT,
         title_en TEXT,
-        content_ko TEXT NOT NULL,
+        content_local TEXT NOT NULL,
         content_en TEXT NOT NULL,
-        note_ko TEXT,
+        note_local TEXT,
+        note_en TEXT,
+        milestone TEXT,
+        is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    dirty = true;
+  } else {
+    const sowCols = (database.exec("PRAGMA table_info(sow)")[0]?.values ?? []).map(r => r[1] as string);
+
+    // 누락 컬럼 추가 (과거 마이그레이션 호환) — _ko 또는 _local 둘 다 없으면 추가
+    const sowAdditions: [string, string][] = [
+      ["title_en", "TEXT"],
+      ["milestone", "TEXT"],
+    ];
+    sowAdditions.forEach(([col, type]) => {
+      if (!sowCols.includes(col)) {
+        const sql = `ALTER TABLE sow ADD COLUMN ${col} ${type}`;
+        database.run(sql);
+        dirty = true;
+      }
+    });
+
+    // _ko → _local 리네임 (DDL 식별자는 ?로 바인딩 불가 — 값은 하드코딩된 상수)
+    const sowRenames: [string, string][] = [
+      ["title_ko", "title_local"],
+      ["content_ko", "content_local"],
+      ["note_ko", "note_local"],
+    ];
+    sowRenames.forEach(([from, to]) => {
+      const current = (database.exec("PRAGMA table_info(sow)")[0]?.values ?? []).map(r => r[1] as string);
+      if (current.includes(from) && !current.includes(to)) {
+        const sql = `ALTER TABLE sow RENAME COLUMN ${from} TO ${to}`;
+        database.run(sql);
+        dirty = true;
+      }
+    });
+  }
+
+  // brd table
+  const hasBrd = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='brd'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasBrd) {
+    database.run(`
+      CREATE TABLE brd (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        brd_id TEXT NOT NULL UNIQUE,
+        sow_id TEXT NOT NULL,
+        lob TEXT,
+        title_local TEXT,
+        title_en TEXT,
+        content_local TEXT NOT NULL,
+        content_en TEXT NOT NULL,
+        note_local TEXT,
         note_en TEXT,
         is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -74,19 +130,65 @@ function migrateSchema(database: SqlJsDatabase) {
     `);
     dirty = true;
   } else {
-    // sow 테이블 컬럼 마이그레이션
-    const sowCols = (database.exec("PRAGMA table_info(sow)")[0]?.values ?? []).map(r => r[1] as string);
-    const sowAdditions: [string, string][] = [
-      ["title_ko", "TEXT"],
-      ["title_en", "TEXT"],
-      ["milestone", "TEXT"],
+    // _ko → _local 리네임 (DDL 식별자는 ?로 바인딩 불가 — 값은 하드코딩된 상수)
+    const brdRenames: [string, string][] = [
+      ["title_ko", "title_local"],
+      ["content_ko", "content_local"],
+      ["note_ko", "note_local"],
     ];
-    sowAdditions.forEach(([col, type]) => {
-      if (!sowCols.includes(col)) {
-        database.run(`ALTER TABLE sow ADD COLUMN ${col} ${type}`);
+    brdRenames.forEach(([from, to]) => {
+      const current = (database.exec("PRAGMA table_info(brd)")[0]?.values ?? []).map(r => r[1] as string);
+      if (current.includes(from) && !current.includes(to)) {
+        const sql = `ALTER TABLE brd RENAME COLUMN ${from} TO ${to}`;
+        database.run(sql);
         dirty = true;
       }
     });
+  }
+
+  // lob 공통코드 테이블
+  const hasLob = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='lob'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasLob) {
+    database.run(`
+      CREATE TABLE lob (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT NOT NULL UNIQUE,
+        title_local TEXT,
+        title_en TEXT,
+        content_local TEXT,
+        content_en TEXT,
+        note_local TEXT,
+        note_en TEXT,
+        is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    // 기존 sow/brd의 distinct lob 값으로 시드
+    const seeds = database.exec(`
+      SELECT DISTINCT lob FROM (
+        SELECT lob FROM sow WHERE lob IS NOT NULL AND lob != ''
+        UNION
+        SELECT lob FROM brd WHERE lob IS NOT NULL AND lob != ''
+      )
+    `)[0]?.values ?? [];
+    seeds.forEach(row => {
+      const code = row[0] as string;
+      database.run(
+        "INSERT INTO lob (code, title_local, title_en) VALUES (?, ?, ?)",
+        [code, code, code]
+      );
+    });
+    dirty = true;
+  }
+
+  // tasks.brd_id 컬럼 추가
+  const tasksCols = (database.exec("PRAGMA table_info(tasks)")[0]?.values ?? []).map(r => r[1] as string);
+  if (!tasksCols.includes("brd_id")) {
+    database.run("ALTER TABLE tasks ADD COLUMN brd_id INTEGER REFERENCES brd(id)");
+    dirty = true;
   }
 
   if (dirty) saveDb(database);
@@ -113,6 +215,7 @@ function initSchema(database: SqlJsDatabase) {
       due_date TEXT,
       completed_at TEXT,
       position INTEGER NOT NULL DEFAULT 0,
+      brd_id INTEGER REFERENCES brd(id),
       created_by INTEGER REFERENCES members(id),
       deleted_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -162,13 +265,43 @@ function initSchema(database: SqlJsDatabase) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sow_id TEXT NOT NULL UNIQUE,
       lob TEXT,
-      title_ko TEXT,
+      title_local TEXT,
       title_en TEXT,
-      content_ko TEXT NOT NULL,
+      content_local TEXT NOT NULL,
       content_en TEXT NOT NULL,
-      note_ko TEXT,
+      note_local TEXT,
       note_en TEXT,
       milestone TEXT,
+      is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS brd (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      brd_id TEXT NOT NULL UNIQUE,
+      sow_id TEXT NOT NULL,
+      lob TEXT,
+      title_local TEXT,
+      title_en TEXT,
+      content_local TEXT NOT NULL,
+      content_en TEXT NOT NULL,
+      note_local TEXT,
+      note_en TEXT,
+      is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS lob (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      title_local TEXT,
+      title_en TEXT,
+      content_local TEXT,
+      content_en TEXT,
+      note_local TEXT,
+      note_en TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))

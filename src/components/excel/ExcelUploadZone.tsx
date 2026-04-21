@@ -31,7 +31,7 @@ type Stage = "idle" | "preview" | "importing" | "done";
  *
  * const COLUMNS: ColumnDef[] = [
  *   { excelHeader: "SOW ID",       field: "sow_id",     required: true },
- *   { excelHeader: "SOW 내용(한글)", field: "content_ko", required: true },
+ *   { excelHeader: "SOW 내용(Local)", field: "content_local", required: true },
  * ];
  *
  * <ExcelUploadZone

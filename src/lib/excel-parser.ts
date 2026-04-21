@@ -29,7 +29,7 @@ export interface ParseResult {
  * @example
  * const result = parseExcel(buffer, [
  *   { excelHeader: "SOW ID", field: "sow_id", required: true },
- *   { excelHeader: "SOW 내용(한글)", field: "content_ko", required: true },
+ *   { excelHeader: "SOW 내용(Local)", field: "content_local", required: true },
  * ]);
  * if (result.errors.length) console.error(result.errors);
  * else console.log(result.rows);

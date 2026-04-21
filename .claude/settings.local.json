@@ -21,7 +21,9 @@
       "Bash(npx vitest *)",
       "Bash(where.exe npx *)",
       "Bash(xargs grep *)",
-      "Read(//c/Users/eternalteach/.claude/**)"
+      "Read(//c/Users/eternalteach/.claude/**)",
+      "Bash(grep -E \"C:\\\\\\\\\\\\\\\\.*\\\\\\\\.\\(ts|tsx\\)\")",
+      "Bash(git stash *)"
     ]
   }
 }

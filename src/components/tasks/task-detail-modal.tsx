@@ -5,7 +5,7 @@ import { X, Send, Clock, Pencil } from "lucide-react";
 import { MemberAvatar, DDayBadge } from "@/components/shared/badges";
 import { TASK_STATUSES, PRIORITIES } from "@/lib/constants";
 import { formatRelativeTime, cn } from "@/lib/utils";
-import type { Task, Comment, Member } from "@/lib/types";
+import type { Task, Comment, Member, Lob, Brd } from "@/lib/types";
 
 interface TaskDetailModalProps {
   task: Task | null;
@@ -18,14 +18,18 @@ interface EditForm {
   description: string;
   due_date: string;
   assignee_ids: number[];
+  lob: string;
+  brd_id: number | null;
 }
 
 export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<EditForm>({ title: "", description: "", due_date: "", assignee_ids: [] });
+  const [editForm, setEditForm] = useState<EditForm>({ title: "", description: "", due_date: "", assignee_ids: [], lob: "", brd_id: null });
   const [allMembers, setAllMembers] = useState<Member[]>([]);
+  const [lobs, setLobs] = useState<Lob[]>([]);
+  const [brds, setBrds] = useState<Brd[]>([]);
 
   useEffect(() => {
     if (task) {
@@ -40,11 +44,19 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
     if (!allMembers.length) {
       fetch("/api/members").then(r => r.json()).then(setAllMembers).catch(() => {});
     }
+    if (!lobs.length) {
+      fetch("/api/lob").then(r => r.json()).then((d: Lob[]) => setLobs(d.filter(l => l.is_active === "Y"))).catch(() => {});
+    }
+    if (!brds.length) {
+      fetch("/api/brd").then(r => r.json()).then((d: Brd[]) => setBrds(d.filter(b => b.is_active === "Y"))).catch(() => {});
+    }
     setEditForm({
       title: task.title,
       description: task.description ?? "",
       due_date: task.due_date ?? "",
       assignee_ids: task.assignees?.map(a => a.member_id) ?? [],
+      lob: task.brd_lob ?? "",
+      brd_id: task.brd_id ?? null,
     });
     setIsEditing(true);
   };
@@ -57,9 +69,12 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
       description: editForm.description.trim() || null,
       due_date: editForm.due_date || null,
       assignee_ids: editForm.assignee_ids,
+      brd_id: editForm.brd_id,
     });
     setIsEditing(false);
   };
+
+  const filteredEditBrds = editForm.lob ? brds.filter(b => b.lob === editForm.lob) : brds;
 
   const toggleAssignee = (id: number) =>
     setEditForm(f => ({
@@ -158,6 +173,34 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                   onChange={e => setEditForm(f => ({ ...f, due_date: e.target.value }))}
                   className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+
+              {/* LOB + BRD */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">LOB</label>
+                  <select
+                    value={editForm.lob}
+                    onChange={e => setEditForm(f => ({ ...f, lob: e.target.value, brd_id: null }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="">전체</option>
+                    {lobs.map(l => <option key={l.id} value={l.code}>{l.code}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">BRD</label>
+                  <select
+                    value={editForm.brd_id ?? ""}
+                    onChange={e => setEditForm(f => ({ ...f, brd_id: e.target.value ? Number(e.target.value) : null }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="">선택 안 함</option>
+                    {filteredEditBrds.map(b => (
+                      <option key={b.id} value={b.id}>{b.brd_id} · {b.title_local ?? "-"}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* 담당자 */}
@@ -272,6 +315,18 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                       <Clock className="w-3.5 h-3.5 text-gray-400" />
                       <span className="text-sm text-gray-700">{task.due_date}</span>
                       <DDayBadge dueDate={task.due_date} />
+                    </div>
+                  </div>
+                )}
+
+                {/* BRD 연결 */}
+                {task.brd_id && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-500 w-16">BRD</span>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      {task.brd_lob && <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">{task.brd_lob}</span>}
+                      <span className="font-medium">{task.brd_code}</span>
+                      {task.brd_title_local && <span className="text-gray-500">· {task.brd_title_local}</span>}
                     </div>
                   </div>
                 )}

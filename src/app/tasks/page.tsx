@@ -8,7 +8,7 @@ import { TaskDetailModal } from "@/components/tasks/task-detail-modal";
 import { PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Plus, LayoutGrid, List, Filter } from "lucide-react";
-import type { Task, Member } from "@/lib/types";
+import type { Task, Member, Lob, Sow, Brd } from "@/lib/types";
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -18,21 +18,35 @@ export default function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [filterPriority, setFilterPriority] = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
+  const [filterLob, setFilterLob] = useState("");
+  const [filterSow, setFilterSow] = useState("");
+  const [filterBrd, setFilterBrd] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
+  const [lobs, setLobs] = useState<Lob[]>([]);
+  const [sows, setSows] = useState<Sow[]>([]);
+  const [brds, setBrds] = useState<Brd[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     const params = new URLSearchParams();
     if (filterPriority) params.set("priority", filterPriority);
     if (filterAssignee) params.set("assignee", filterAssignee);
+    if (filterLob) params.set("lob", filterLob);
+    if (filterSow) params.set("sow_id", filterSow);
+    if (filterBrd) params.set("brd_id", filterBrd);
     const res = await fetch(`/api/tasks?${params}`);
     const data = await res.json();
     setTasks(data);
     setLoading(false);
-  }, [filterPriority, filterAssignee]);
+  }, [filterPriority, filterAssignee, filterLob, filterSow, filterBrd]);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
-  useEffect(() => { fetch("/api/members").then(r => r.json()).then(setMembers); }, []);
+  useEffect(() => {
+    fetch("/api/members").then(r => r.json()).then(setMembers);
+    fetch("/api/lob").then(r => r.json()).then((d: Lob[]) => setLobs(d.filter(l => l.is_active === "Y")));
+    fetch("/api/sow").then(r => r.json()).then((d: Sow[]) => setSows(d.filter(s => s.is_active === "Y")));
+    fetch("/api/brd").then(r => r.json()).then((d: Brd[]) => setBrds(d.filter(b => b.is_active === "Y")));
+  }, []);
 
   const handleCreate = async (data: Record<string, unknown>) => {
     await fetch("/api/tasks", {
@@ -79,7 +93,12 @@ export default function TasksPage() {
     }).catch(() => fetchTasks());
   };
 
-  const activeFilters = [filterPriority, filterAssignee].filter(Boolean).length;
+  const activeFilters = [filterPriority, filterAssignee, filterLob, filterSow, filterBrd].filter(Boolean).length;
+  const filteredSows = filterLob ? sows.filter(s => s.lob === filterLob) : sows;
+  const filteredBrds = brds.filter(b =>
+    (!filterLob || b.lob === filterLob) &&
+    (!filterSow || b.sow_id === filterSow)
+  );
 
   return (
     <div className="h-full flex flex-col">
@@ -157,9 +176,45 @@ export default function TasksPage() {
               {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">LOB:</span>
+            <select
+              value={filterLob}
+              onChange={e => { setFilterLob(e.target.value); setFilterSow(""); setFilterBrd(""); }}
+              className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">전체</option>
+              {lobs.map(l => <option key={l.id} value={l.code}>{l.code}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">SOW:</span>
+            <select
+              value={filterSow}
+              onChange={e => { setFilterSow(e.target.value); setFilterBrd(""); }}
+              className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">전체</option>
+              {filteredSows.map(s => <option key={s.id} value={s.sow_id}>{s.sow_id}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">BRD:</span>
+            <select
+              value={filterBrd}
+              onChange={e => setFilterBrd(e.target.value)}
+              className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">전체</option>
+              {filteredBrds.map(b => <option key={b.id} value={b.id}>{b.brd_id}</option>)}
+            </select>
+          </div>
           {activeFilters > 0 && (
             <button
-              onClick={() => { setFilterPriority(""); setFilterAssignee(""); }}
+              onClick={() => {
+                setFilterPriority(""); setFilterAssignee("");
+                setFilterLob(""); setFilterSow(""); setFilterBrd("");
+              }}
               className="text-sm text-blue-600 hover:text-blue-700"
             >
               필터 초기화

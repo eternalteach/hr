@@ -20,6 +20,7 @@ export interface Task {
   priority: Priority;
   due_date: string | null;
   completed_at: string | null;
+  brd_id: number | null;
   created_by: number | null;
   deleted_at: string | null;
   created_at: string;
@@ -29,6 +30,12 @@ export interface Task {
   comment_count?: number;
   attachment_count?: number;
   position?: number;
+  // BRD 조인 필드 (API 응답에서 함께 제공)
+  brd_code?: string | null;
+  brd_lob?: string | null;
+  brd_sow_id?: string | null;
+  brd_title_local?: string | null;
+  brd_title_en?: string | null;
 }
 
 export interface TaskAssignee {
@@ -87,13 +94,43 @@ export interface Sow {
   id: number;
   sow_id: string;
   lob: string | null;
-  title_ko: string | null;
+  title_local: string | null;
   title_en: string | null;
-  content_ko: string;
+  content_local: string;
   content_en: string;
-  note_ko: string | null;
+  note_local: string | null;
   note_en: string | null;
   milestone: string | null;
+  is_active: "Y" | "N";
+  updated_at: string;
+  created_at: string;
+}
+
+export interface Lob {
+  id: number;
+  code: string;
+  title_local: string | null;
+  title_en: string | null;
+  content_local: string | null;
+  content_en: string | null;
+  note_local: string | null;
+  note_en: string | null;
+  is_active: "Y" | "N";
+  updated_at: string;
+  created_at: string;
+}
+
+export interface Brd {
+  id: number;
+  brd_id: string;
+  sow_id: string;
+  lob: string | null;
+  title_local: string | null;
+  title_en: string | null;
+  content_local: string;
+  content_en: string;
+  note_local: string | null;
+  note_en: string | null;
   is_active: "Y" | "N";
   updated_at: string;
   created_at: string;

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { PRIORITIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import type { Member, Tag } from "@/lib/types";
+import type { Member, Tag, Lob, Brd } from "@/lib/types";
 
 interface TaskCreateModalProps {
   open: boolean;
@@ -15,6 +15,10 @@ interface TaskCreateModalProps {
 export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProps) {
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [lobs, setLobs] = useState<Lob[]>([]);
+  const [brds, setBrds] = useState<Brd[]>([]);
+  const [lob, setLob] = useState<string>("");
+  const [brdId, setBrdId] = useState<number | null>(null);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -28,16 +32,21 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
     if (open) {
       fetch("/api/members").then(r => r.json()).then(setMembers);
       fetch("/api/tags").then(r => r.json()).then(setTags).catch(() => setTags([]));
+      fetch("/api/lob").then(r => r.json()).then((d: Lob[]) => setLobs(d.filter(l => l.is_active === "Y")));
+      fetch("/api/brd").then(r => r.json()).then((d: Brd[]) => setBrds(d.filter(b => b.is_active === "Y")));
     }
   }, [open]);
 
   if (!open) return null;
 
+  const filteredBrds = lob ? brds.filter(b => b.lob === lob) : brds;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
-    onSubmit({ ...form, created_by: 1 });
+    onSubmit({ ...form, brd_id: brdId, created_by: 1 });
     setForm({ title: "", description: "", priority: "medium", due_date: "", assignee_ids: [], tag_ids: [] });
+    setLob(""); setBrdId(null);
     onClose();
   };
 
@@ -113,6 +122,34 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
                 onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+          </div>
+
+          {/* LOB + BRD 연결 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">LOB</label>
+              <select
+                value={lob}
+                onChange={e => { setLob(e.target.value); setBrdId(null); }}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">전체</option>
+                {lobs.map(l => <option key={l.id} value={l.code}>{l.code}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">BRD</label>
+              <select
+                value={brdId ?? ""}
+                onChange={e => setBrdId(e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">선택 안 함</option>
+                {filteredBrds.map(b => (
+                  <option key={b.id} value={b.id}>{b.brd_id} · {b.title_local ?? "-"}</option>
+                ))}
+              </select>
             </div>
           </div>
 

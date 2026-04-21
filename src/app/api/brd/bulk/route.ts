@@ -3,7 +3,8 @@ import { withTransaction } from "@/db/helpers";
 import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 
-interface SowRow {
+interface BrdRow {
+  brd_id: string;
   sow_id: string;
   lob?: string;
   title_local?: string;
@@ -12,7 +13,6 @@ interface SowRow {
   content_en: string;
   note_local?: string;
   note_en?: string;
-  milestone?: string;
   is_active?: string;
 }
 
@@ -28,12 +28,13 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   let upserted = 0;
 
   withTransaction(db, () => {
-    (body.rows as SowRow[]).forEach(row => {
+    (body.rows as BrdRow[]).forEach(row => {
       db.run(
-        `INSERT INTO sow
-           (sow_id, lob, title_local, title_en, content_local, content_en, note_local, note_en, milestone, is_active, updated_at, created_at)
+        `INSERT INTO brd
+           (brd_id, sow_id, lob, title_local, title_en, content_local, content_en, note_local, note_en, is_active, updated_at, created_at)
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-         ON CONFLICT(sow_id) DO UPDATE SET
+         ON CONFLICT(brd_id) DO UPDATE SET
+           sow_id     = excluded.sow_id,
            lob        = excluded.lob,
            title_local   = excluded.title_local,
            title_en   = excluded.title_en,
@@ -41,10 +42,10 @@ export const POST = withApiHandler(async (request: NextRequest) => {
            content_en = excluded.content_en,
            note_local    = excluded.note_local,
            note_en    = excluded.note_en,
-           milestone  = excluded.milestone,
            is_active  = excluded.is_active,
            updated_at = excluded.updated_at`,
         [
+          String(row.brd_id).trim(),
           String(row.sow_id).trim(),
           row.lob?.trim() || null,
           row.title_local?.trim() || null,
@@ -53,7 +54,6 @@ export const POST = withApiHandler(async (request: NextRequest) => {
           String(row.content_en).trim(),
           row.note_local?.trim() || null,
           row.note_en?.trim() || null,
-          row.milestone?.trim() || null,
           row.is_active === "N" ? "N" : "Y",
           now, now,
         ]

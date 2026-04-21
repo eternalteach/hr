@@ -126,7 +126,63 @@ KST(UTC+9) 환경에서 자정(`parseISO("2026-04-20")`)과 낮 12시 UTC를 비
   `drizzle-kit`은 개발 서버 없이 CLI 단발 실행만 하므로 **실질 공격 면이 없음**
 - 향후 `drizzle-kit` 1.x 출시 시 업그레이드하고 이 항목을 삭제한다
 
-## 11. 커밋 전 체크리스트
+## 11. 다국어 컬럼 네이밍 — `_local` / `_en`
+
+사용자 표시용 텍스트 컬럼은 **`_local`(로컬 언어)** 과 **`_en`(영문)** 두 벌로 저장한다.
+`_ko` 같은 특정 언어 이름은 쓰지 않는다 — 로컬 언어가 바뀌어도 스키마가 안정적이다.
+
+```sql
+title_local, title_en
+content_local, content_en
+note_local, note_en
+```
+
+Why: 프로젝트가 다른 로케일에 배포될 때 `_ko`는 잘못된 이름이 된다.
+`_local`은 "현재 배포의 로컬 언어" 라는 의미를 유지한다.
+
+## 12. 공통코드 — 양방향 다국어 필수
+
+공통코드(예: LOB)의 타이틀·내용·비고는 **local + en 양쪽 모두** 저장한다.
+이후 BRD·SOW·Task 등 파생 데이터는 공통코드의 `code`만 참조하고,
+표시 시점에 사용자 언어 설정에 따라 `title_local` 또는 `title_en`을 렌더링한다.
+
+Why: 공통코드가 한쪽 언어만 가지면, 영문 리포트나 해외 유저 화면에서 누락된 값이 노출된다.
+스키마 시점에 강제해 두어야 누적 입력 데이터가 일관된다.
+
+## 13. 화면 기본 = local, 영문은 옵션
+
+모든 리스트/상세 화면은 **기본적으로 `_local` 컬럼만** 노출한다.
+`LanguageProvider` (`src/lib/language-context.tsx`) 의 `showEnglish` 토글이 켜진 경우에만
+`_en` 컬럼을 추가로 렌더링한다.
+
+```tsx
+const { showEnglish } = useLanguage();
+
+const headers = [
+  "타이틀(Local)",
+  ...(showEnglish ? ["타이틀(영문)"] : []),
+  // ...
+];
+```
+
+- 토글은 사이드바의 "영문 표시 ON/OFF" 버튼으로 조작
+- 선택값은 `localStorage` (`taskflow.showEnglish`) 에 영속화
+- 기본값: `false` (로컬만 표시)
+
+Why: 해외 공유용이 아닌 일상 작업에서는 한 언어 컬럼만 보이는 게 훨씬 읽기 쉽다.
+필요한 사람만 영문을 켜면 된다.
+
+## 14. LOB → SOW → BRD → Task 계층
+
+- `LOB`: 공통코드 (code 기반) — `src/app/lob`
+- `SOW`: LOB에 속함 — `lob` 컬럼이 `lob.code`를 참조 (FK 아님, 문자열 참조)
+- `BRD`: SOW에 속함 — `sow_id`, `lob` 컬럼 모두 가짐
+- `Task`: 선택적으로 BRD에 연결 — `tasks.brd_id` (INTEGER, `brd.id` 참조)
+
+Task 생성/수정 화면에서는 **LOB 선택 → 해당 LOB의 BRD만 필터링** 되는
+캐스케이드 셀렉트를 제공한다. Task 목록 화면은 LOB/SOW/BRD 필터를 모두 제공한다.
+
+## 15. 커밋 전 체크리스트
 
 - [ ] `npm run lint` 통과
 - [ ] `npm run test:run` 통과

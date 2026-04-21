@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Calendar, Users, FileText } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, Tags, Languages } from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
 
-const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText };
+const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, Tags };
 
 const NAV_ITEMS = [
   { href: "/", label: "대시보드", icon: "LayoutDashboard" as const },
@@ -13,10 +14,13 @@ const NAV_ITEMS = [
   { href: "/calendar", label: "캘린더", icon: "Calendar" as const },
   { href: "/members", label: "팀원 관리", icon: "Users" as const },
   { href: "/sow", label: "SOW 관리", icon: "FileText" as const },
+  { href: "/brd", label: "BRD 관리", icon: "ClipboardList" as const },
+  { href: "/lob", label: "LOB 관리", icon: "Tags" as const },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { showEnglish, toggle } = useLanguage();
 
   return (
     <aside className="w-56 border-r border-gray-200 bg-gray-50/50 flex flex-col shrink-0">
@@ -51,7 +55,20 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 space-y-3">
+        <button
+          onClick={toggle}
+          className={cn(
+            "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-colors",
+            showEnglish
+              ? "bg-blue-50 border-blue-200 text-blue-700"
+              : "border-gray-200 text-gray-500 hover:bg-gray-100"
+          )}
+          title="영문 컬럼 표시 토글"
+        >
+          <Languages className="w-3.5 h-3.5" />
+          영문 표시 {showEnglish ? "ON" : "OFF"}
+        </button>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
             김

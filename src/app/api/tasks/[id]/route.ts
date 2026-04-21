@@ -43,7 +43,7 @@ export const PATCH = withApiHandler(async (request: NextRequest, { params }: Par
   // 화이트리스트 필드만 업데이트 — 임의 컬럼 주입 방지
   const updates: string[] = [];
   const values: unknown[] = [];
-  const allowedFields = ["title", "description", "status", "priority", "due_date", "completed_at", "position"];
+  const allowedFields = ["title", "description", "status", "priority", "due_date", "completed_at", "position", "brd_id"];
   allowedFields.forEach(field => {
     if (body[field] !== undefined) {
       updates.push(`${field} = ?`);

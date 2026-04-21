@@ -9,12 +9,18 @@ export const GET = withApiHandler(async (request: NextRequest) => {
   const status = searchParams.get("status");
   const priority = searchParams.get("priority");
   const assignee = searchParams.get("assignee");
+  const lob = searchParams.get("lob");
+  const sowId = searchParams.get("sow_id");
+  const brdId = searchParams.get("brd_id");
 
   let query = `
     SELECT t.*,
+      b.brd_id as brd_code, b.sow_id as brd_sow_id, b.lob as brd_lob,
+      b.title_local as brd_title_local, b.title_en as brd_title_en,
       (SELECT COUNT(*) FROM comments c WHERE c.task_id = t.id) as comment_count,
       (SELECT GROUP_CONCAT(ta.member_id) FROM task_assignees ta WHERE ta.task_id = t.id) as assignee_ids
     FROM tasks t
+    LEFT JOIN brd b ON t.brd_id = b.id
     WHERE t.deleted_at IS NULL
   `;
   const conditions: string[] = [];
@@ -27,6 +33,12 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       conditions.push("t.id IN (SELECT task_id FROM task_assignees WHERE member_id = ?)");
       bindings.push(assigneeId);
     }
+  }
+  if (lob) { conditions.push("b.lob = ?"); bindings.push(lob); }
+  if (sowId) { conditions.push("b.sow_id = ?"); bindings.push(sowId); }
+  if (brdId) {
+    const bid = Number(brdId);
+    if (Number.isFinite(bid)) { conditions.push("t.brd_id = ?"); bindings.push(bid); }
   }
   if (conditions.length) query += " AND " + conditions.join(" AND ");
   query += " ORDER BY t.position ASC, t.id ASC";
@@ -68,20 +80,21 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 export const POST = withApiHandler(async (request: NextRequest) => {
   const db = await getDb();
   const body = await request.json();
-  const { title, description, priority, due_date, assignee_ids, tag_ids, created_by } = body;
+  const { title, description, priority, due_date, assignee_ids, tag_ids, created_by, brd_id } = body;
 
   if (!title) throw new ApiError(400, "제목은 필수입니다");
 
   const now = new Date().toISOString();
   const authorId = Number(created_by) || 1;
+  const brdIdNum = brd_id ? Number(brd_id) : null;
 
   // 트랜잭션 — tasks + 담당자 + 태그 + 로그 + 스케줄 전부 원자적으로
   const taskId = withTransaction(db, () => {
     const newId = insertAndGetId(
       db,
-      `INSERT INTO tasks (title, description, priority, due_date, created_by, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, description || null, priority || "medium", due_date || null, authorId, now, now]
+      `INSERT INTO tasks (title, description, priority, due_date, brd_id, created_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, description || null, priority || "medium", due_date || null, brdIdNum, authorId, now, now]
     );
 
     if (assignee_ids?.length) {
