@@ -1,6 +1,8 @@
 import { getDb, saveDb } from "@/db";
 import { queryAll, withTransaction } from "@/db/helpers";
 import { ApiError, withApiHandler } from "@/lib/api-handler";
+import { verifySession, COOKIE_NAME } from "@/lib/session";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -36,12 +38,16 @@ export const POST = withApiHandler(async (request: NextRequest, { params }: Para
   const { id: rawId } = await params;
   const id = parseId(rawId);
 
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  const session = token ? await verifySession(token) : null;
+  if (!session) throw new ApiError(401, "로그인이 필요합니다");
+  const memberId = session.sub;
+
   const db = await getDb();
   const body = await request.json();
   if (!body.content || typeof body.content !== "string") {
     throw new ApiError(400, "내용은 필수입니다");
   }
-  const memberId = Number(body.member_id) || 1;
 
   withTransaction(db, () => {
     db.run(

@@ -91,7 +91,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
     await fetch(`/api/tasks/${task.id}/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: newComment, member_id: 1 }),
+      body: JSON.stringify({ content: newComment }),
     });
     const res = await fetch(`/api/tasks/${task.id}/comments`);
     setComments(await res.json());
