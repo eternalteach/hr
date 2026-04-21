@@ -7,9 +7,9 @@ import type { Task, ActivityLog } from "@/lib/types";
 
 export function DeadlineList({ tasks }: { tasks: Task[] }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">이번 주 마감 예정</h3>
-      <div className="space-y-2.5">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col">
+      <h3 className="text-sm font-semibold text-gray-700 mb-3 shrink-0">이번 주 마감 예정</h3>
+      <div className="overflow-y-auto max-h-64 space-y-2.5 pr-1">
         {tasks.map(t => (
           <div key={t.id} className="flex items-center gap-3 py-1.5">
             {t.due_date && <DDayBadge dueDate={t.due_date} />}
@@ -41,9 +41,9 @@ const ACTION_COLORS: Record<string, string> = {
 export function ActivityFeed({ logs }: { logs: ActivityLog[] }) {
   const { timezone } = useSettings();
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">최근 활동</h3>
-      <div className="space-y-3">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col">
+      <h3 className="text-sm font-semibold text-gray-700 mb-3 shrink-0">최근 활동</h3>
+      <div className="overflow-y-auto max-h-64 space-y-3 pr-1">
         {logs.map(log => {
           let detail = "";
           if (log.detail) {
