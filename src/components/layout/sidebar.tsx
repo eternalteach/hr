@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree, Languages, ChevronDown, Shield, Star, User } from "lucide-react";
+import {
+  LayoutDashboard, CheckSquare, Calendar, Users, FileText,
+  ClipboardList, ListTree, Languages, LogOut, KeyRound,
+  Shield, Star, User,
+} from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/lib/auth-context";
 import type { MemberRole } from "@/lib/types";
@@ -36,8 +39,7 @@ const ROLE_ICONS: Record<MemberRole, React.ReactNode> = {
 export function Sidebar() {
   const pathname = usePathname();
   const { showEnglish, toggle } = useLanguage();
-  const { currentUser, members, setCurrentUserId } = useAuth();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { currentUser, logout } = useAuth();
 
   return (
     <aside className="w-56 border-r border-gray-200 bg-gray-50/50 flex flex-col shrink-0">
@@ -72,7 +74,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-gray-200 space-y-3">
+      <div className="p-4 border-t border-gray-200 space-y-2">
+        {/* 영문 표시 토글 */}
         <button
           onClick={toggle}
           className={cn(
@@ -87,48 +90,39 @@ export function Sidebar() {
           영문 표시 {showEnglish ? "ON" : "OFF"}
         </button>
 
-        {/* 현재 사용자 — 클릭하면 사용자 전환 메뉴 */}
-        <div className="relative">
-          <button
-            onClick={() => setShowUserMenu(v => !v)}
-            className="w-full flex items-center gap-3 hover:bg-gray-100 rounded-lg p-1 transition-colors"
-          >
+        {/* 현재 사용자 */}
+        {currentUser && (
+          <div className="flex items-center gap-3 px-1 py-1">
             <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium shrink-0">
-              {currentUser?.name[0] ?? "?"}
+              {currentUser.name[0]}
             </div>
-            <div className="min-w-0 flex-1 text-left">
-              <p className="text-sm font-medium text-gray-900 truncate">{currentUser?.name ?? "…"}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-gray-900 truncate">{currentUser.name}</p>
               <p className="text-xs text-gray-500 flex items-center gap-0.5">
-                {currentUser?.role && ROLE_ICONS[currentUser.role]}
-                {currentUser?.role ? ROLE_LABELS[currentUser.role] : ""}
+                {ROLE_ICONS[currentUser.role]}
+                {ROLE_LABELS[currentUser.role]}
               </p>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-          </button>
+          </div>
+        )}
 
-          {showUserMenu && (
-            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-48 overflow-y-auto">
-              {members.map(m => (
-                <button
-                  key={m.id}
-                  onClick={() => { setCurrentUserId(m.id); setShowUserMenu(false); }}
-                  className={cn(
-                    "w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors",
-                    m.id === currentUser?.id && "bg-blue-50"
-                  )}
-                >
-                  <div className="w-6 h-6 rounded-full bg-blue-400 flex items-center justify-center text-white text-xs shrink-0">
-                    {m.name[0]}
-                  </div>
-                  <span className={cn("font-medium truncate", m.id === currentUser?.id ? "text-blue-700" : "text-gray-800")}>
-                    {m.name}
-                  </span>
-                  <span className="text-xs text-gray-400 shrink-0">{ROLE_LABELS[m.role]}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* 비밀번호 변경 */}
+        <Link
+          href="/change-password"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+        >
+          <KeyRound className="w-3.5 h-3.5" />
+          비밀번호 변경
+        </Link>
+
+        {/* 로그아웃 */}
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          로그아웃
+        </button>
       </div>
     </aside>
   );

@@ -1,52 +1,53 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type { Member } from "@/lib/types";
 
 interface AuthContextValue {
   currentUser: Member | null;
-  members: Member[];
+  isLoading: boolean;
   /** role이 "member"(팀원)이면 true — 쓰기 작업 비활성화 */
   isReadOnly: boolean;
-  setCurrentUserId: (id: number) => void;
+  logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-const STORAGE_KEY = "taskflow.currentUserId";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [members, setMembers] = useState<Member[]>([]);
-  const [currentUserId, setCurrentUserIdState] = useState<number | null>(null);
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<Member | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/members")
-      .then(r => r.json())
-      .then((data: Member[]) => {
-        setMembers(data);
-        const stored = localStorage.getItem(STORAGE_KEY);
-        const storedId = stored ? Number(stored) : null;
-        if (storedId && data.some(m => m.id === storedId)) {
-          setCurrentUserIdState(storedId);
-        } else {
-          const defaultUser = data.find(m => m.role === "admin") ?? data[0] ?? null;
-          if (defaultUser) {
-            setCurrentUserIdState(defaultUser.id);
-            localStorage.setItem(STORAGE_KEY, String(defaultUser.id));
-          }
-        }
-      });
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        setCurrentUser(await res.json() as Member);
+      } else {
+        setCurrentUser(null);
+      }
+    } catch {
+      setCurrentUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const setCurrentUserId = (id: number) => {
-    setCurrentUserIdState(id);
-    localStorage.setItem(STORAGE_KEY, String(id));
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setCurrentUser(null);
+    router.push("/login");
+    router.refresh();
   };
 
-  const currentUser = members.find(m => m.id === currentUserId) ?? null;
   const isReadOnly = currentUser?.role === "member";
 
   return (
-    <AuthContext.Provider value={{ currentUser, members, isReadOnly, setCurrentUserId }}>
+    <AuthContext.Provider value={{ currentUser, isLoading, isReadOnly, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );
