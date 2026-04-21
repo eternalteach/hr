@@ -5,6 +5,7 @@ import { X, Send, Clock, Pencil } from "lucide-react";
 import { MemberAvatar, DDayBadge } from "@/components/shared/badges";
 import { TASK_STATUSES, PRIORITIES } from "@/lib/constants";
 import { formatRelativeTime, cn } from "@/lib/utils";
+import { useSettings } from "@/lib/settings-context";
 import type { Task, Comment, Member, Brd } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
@@ -23,6 +24,7 @@ interface EditForm {
 }
 
 export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProps) {
+  const { timezone } = useSettings();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -342,7 +344,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-900">{c.member?.name || (c as unknown as Record<string, unknown>).member_name as string}</span>
-                          <span className="text-xs text-gray-400">{formatRelativeTime(c.created_at)}</span>
+                          <span className="text-xs text-gray-400">{formatRelativeTime(c.created_at, timezone)}</span>
                         </div>
                         <p className="text-sm text-gray-600 mt-0.5">{c.content}</p>
                       </div>

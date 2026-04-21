@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, CheckSquare, Calendar, Users, FileText,
-  ClipboardList, ListTree, Languages, LogOut, KeyRound,
+  ClipboardList, ListTree, Settings, LogOut, KeyRound,
   Shield, Star, User,
 } from "lucide-react";
-import { useLanguage } from "@/lib/language-context";
 import { useAuth } from "@/lib/auth-context";
 import type { MemberRole } from "@/lib/types";
 
@@ -38,7 +37,6 @@ const ROLE_ICONS: Record<MemberRole, React.ReactNode> = {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { showEnglish, toggle } = useLanguage();
   const { currentUser, logout } = useAuth();
 
   return (
@@ -75,21 +73,6 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-gray-200 space-y-2">
-        {/* 영문 표시 토글 */}
-        <button
-          onClick={toggle}
-          className={cn(
-            "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-colors",
-            showEnglish
-              ? "bg-blue-50 border-blue-200 text-blue-700"
-              : "border-gray-200 text-gray-500 hover:bg-gray-100"
-          )}
-          title="영문 컬럼 표시 토글"
-        >
-          <Languages className="w-3.5 h-3.5" />
-          영문 표시 {showEnglish ? "ON" : "OFF"}
-        </button>
-
         {/* 현재 사용자 */}
         {currentUser && (
           <div className="flex items-center gap-3 px-1 py-1">
@@ -105,6 +88,15 @@ export function Sidebar() {
             </div>
           </div>
         )}
+
+        {/* 시스템 환경설정 */}
+        <Link
+          href="/settings"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+        >
+          <Settings className="w-3.5 h-3.5" />
+          시스템 환경설정
+        </Link>
 
         {/* 비밀번호 변경 */}
         <Link

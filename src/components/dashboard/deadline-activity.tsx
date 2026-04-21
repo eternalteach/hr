@@ -2,6 +2,7 @@
 
 import { DDayBadge, StatusBadge, MemberAvatar } from "@/components/shared/badges";
 import { formatRelativeTime } from "@/lib/utils";
+import { useSettings } from "@/lib/settings-context";
 import type { Task, ActivityLog } from "@/lib/types";
 
 export function DeadlineList({ tasks }: { tasks: Task[] }) {
@@ -38,6 +39,7 @@ const ACTION_COLORS: Record<string, string> = {
 };
 
 export function ActivityFeed({ logs }: { logs: ActivityLog[] }) {
+  const { timezone } = useSettings();
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
       <h3 className="text-sm font-semibold text-gray-700 mb-3">최근 활동</h3>
@@ -71,7 +73,7 @@ export function ActivityFeed({ logs }: { logs: ActivityLog[] }) {
                     {detail && ` · ${detail}`}
                   </p>
                 )}
-                <p className="text-xs text-gray-300 mt-0.5">{formatRelativeTime(log.created_at)}</p>
+                <p className="text-xs text-gray-300 mt-0.5">{formatRelativeTime(log.created_at, timezone)}</p>
               </div>
             </div>
           );

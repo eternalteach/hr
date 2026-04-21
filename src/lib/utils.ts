@@ -6,9 +6,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** 상대 시간 포맷 — 활동 로그, 댓글 등에서 사용 */
-export function formatRelativeTime(isoString: string): string {
-  const date = parseISO(isoString);
+/**
+ * 상대 시간 포맷 — 활동 로그, 댓글 등에서 사용.
+ * SQLite CURRENT_TIMESTAMP는 UTC를 'Z' 없이 저장하므로 강제로 UTC 파싱.
+ */
+export function formatRelativeTime(isoString: string, timezone = "UTC"): string {
+  // 타임존 정보 없으면 UTC로 간주 ('Z' 추가)
+  const utcStr = /Z$|[+-]\d{2}:?\d{2}$/.test(isoString) ? isoString : isoString + "Z";
+  const date = parseISO(utcStr);
   const now = new Date();
   const mins = differenceInMinutes(now, date);
   const hours = differenceInHours(now, date);
@@ -18,7 +23,8 @@ export function formatRelativeTime(isoString: string): string {
   if (mins < 60) return `${mins}분 전`;
   if (hours < 24) return `${hours}시간 전`;
   if (days < 7) return `${days}일 전`;
-  return format(date, "M월 d일");
+
+  return new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric", timeZone: timezone }).format(date);
 }
 
 /** D-day 라벨 생성 */

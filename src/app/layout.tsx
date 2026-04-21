@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { cookies } from "next/headers";
 import { Sidebar } from "@/components/layout/sidebar";
-import { LanguageProvider } from "@/lib/language-context";
+import { SettingsProvider } from "@/lib/settings-context";
 import { AuthProvider } from "@/lib/auth-context";
 import { verifySession } from "@/lib/session";
 
@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="font-sans antialiased">
-        <LanguageProvider>
+        <SettingsProvider>
           <AuthProvider>
             {showShell ? (
               <div className="flex h-screen overflow-hidden">
@@ -39,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               children
             )}
           </AuthProvider>
-        </LanguageProvider>
+        </SettingsProvider>
       </body>
     </html>
   );
