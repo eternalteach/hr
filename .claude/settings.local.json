@@ -23,7 +23,12 @@
       "Bash(xargs grep *)",
       "Read(//c/Users/eternalteach/.claude/**)",
       "Bash(grep -E \"C:\\\\\\\\\\\\\\\\.*\\\\\\\\.\\(ts|tsx\\)\")",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(grep -E \"glossary|sidebar|types.ts|db\\\\\\\\\\\\\\\\index\")",
+      "Bash(rm \"C:/dev/project/hr/src/app/api/glossary/[id]/route.ts\" \"C:/dev/project/hr/src/app/api/glossary/route.ts\")",
+      "Bash(rmdir \"C:/dev/project/hr/src/app/api/glossary/[id]\" C:/dev/project/hr/src/app/api/glossary)",
+      "Bash(grep -B1 -A5 \"components\\\\\\\\\\\\\\\\board\\\\\\\\|lib\\\\\\\\\\\\\\\\boards\\\\\\\\|meeting-notes\\\\\\\\\\\\\\\\page\\\\\\\\|api\\\\\\\\\\\\\\\\board\")",
+      "Bash(git check-ignore *)"
     ]
   }
 }

@@ -136,6 +136,26 @@ export interface CommonCode {
   created_at: string;
 }
 
+export type BoardType = "glossary" | "meeting-notes";
+
+/** 통합 게시판 레코드 — board_type으로 용어정의/회의록 등을 구분 */
+export interface Post {
+  id: number;
+  board_type: BoardType;
+  lob: string | null;
+  title_local: string;
+  title_en: string | null;
+  content_local: string | null;
+  content_en: string | null;
+  note_local: string | null;
+  note_en: string | null;
+  /** ISO date (YYYY-MM-DD) — 회의록처럼 날짜가 필요한 게시판용. 없는 보드는 null */
+  reference_date: string | null;
+  is_active: "Y" | "N";
+  updated_at: string;
+  created_at: string;
+}
+
 export interface Brd {
   id: number;
   brd_id: string;

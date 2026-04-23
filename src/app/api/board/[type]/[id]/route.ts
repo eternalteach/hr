@@ -1,0 +1,78 @@
+import { getDb, saveDb } from "@/db";
+import { queryOne } from "@/db/helpers";
+import { ApiError, withApiHandler } from "@/lib/api-handler";
+import { BOARD_CONFIGS, isBoardType } from "@/lib/boards/config";
+import { NextRequest, NextResponse } from "next/server";
+
+type Params = { params: Promise<{ type: string; id: string }> };
+
+function parseType(raw: string) {
+  if (!isBoardType(raw)) throw new ApiError(400, "잘못된 게시판 유형");
+  return raw;
+}
+
+function parseId(raw: string): number {
+  const id = Number(raw);
+  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID");
+  return id;
+}
+
+export const PUT = withApiHandler(async (request: NextRequest, { params }: Params) => {
+  const { type: rawType, id: rawId } = await params;
+  const type = parseType(rawType);
+  const id = parseId(rawId);
+  const db = await getDb();
+  const cfg = BOARD_CONFIGS[type];
+
+  const existing = queryOne(
+    db,
+    "SELECT id FROM board_posts WHERE id = ? AND board_type = ?",
+    [id, type]
+  );
+  if (!existing) throw new ApiError(404, "게시글을 찾을 수 없습니다");
+
+  const b = await request.json();
+  if (!b.title_local?.trim()) {
+    throw new ApiError(400, `${cfg.titleLabel}(Local)는 필수입니다`);
+  }
+
+  db.run(
+    `UPDATE board_posts SET
+       lob=?, title_local=?, title_en=?, content_local=?, content_en=?,
+       note_local=?, note_en=?, reference_date=?, is_active=?, updated_at=?
+     WHERE id=? AND board_type=?`,
+    [
+      b.lob?.trim() || null,
+      b.title_local.trim(),
+      b.title_en?.trim() || null,
+      b.content_local?.trim() || null,
+      b.content_en?.trim() || null,
+      b.note_local?.trim() || null,
+      b.note_en?.trim() || null,
+      cfg.hasReferenceDate ? (b.reference_date?.trim() || null) : null,
+      b.is_active === "N" ? "N" : "Y",
+      new Date().toISOString(),
+      id, type,
+    ]
+  );
+  saveDb();
+  return NextResponse.json(queryOne(db, "SELECT * FROM board_posts WHERE id = ?", [id]));
+});
+
+export const DELETE = withApiHandler(async (_req: NextRequest, { params }: Params) => {
+  const { type: rawType, id: rawId } = await params;
+  const type = parseType(rawType);
+  const id = parseId(rawId);
+  const db = await getDb();
+
+  const existing = queryOne(
+    db,
+    "SELECT id FROM board_posts WHERE id = ? AND board_type = ?",
+    [id, type]
+  );
+  if (!existing) throw new ApiError(404, "게시글을 찾을 수 없습니다");
+
+  db.run("DELETE FROM board_posts WHERE id = ? AND board_type = ?", [id, type]);
+  saveDb();
+  return NextResponse.json({ ok: true });
+});

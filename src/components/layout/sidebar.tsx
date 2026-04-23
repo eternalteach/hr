@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, CheckSquare, Calendar, Users, FileText,
-  ClipboardList, ListTree, Settings, LogOut, KeyRound,
+  ClipboardList, ListTree, BookOpen, NotebookPen, Settings, LogOut, KeyRound,
   Shield, Star, User,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import type { MemberRole } from "@/lib/types";
 
-const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree };
+const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree, BookOpen, NotebookPen };
 
 const NAV_ITEMS = [
   { href: "/", label: "대시보드", icon: "LayoutDashboard" as const },
@@ -21,6 +21,8 @@ const NAV_ITEMS = [
   { href: "/tasks", label: "업무 관리", icon: "CheckSquare" as const },
   { href: "/members", label: "팀원 관리", icon: "Users" as const },
   { href: "/codes", label: "공통코드 관리", icon: "ListTree" as const },
+  { href: "/glossary", label: "용어 정의", icon: "BookOpen" as const },
+  { href: "/meeting-notes", label: "회의록", icon: "NotebookPen" as const },
 ];
 
 const ROLE_LABELS: Record<MemberRole, string> = {

@@ -205,6 +205,47 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
+  // board_posts 통합 게시판 테이블 (+ legacy glossary 마이그레이션)
+  const hasBoardPosts = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='board_posts'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasBoardPosts) {
+    database.run(`
+      CREATE TABLE board_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        board_type TEXT NOT NULL,
+        lob TEXT,
+        title_local TEXT NOT NULL,
+        title_en TEXT,
+        content_local TEXT,
+        content_en TEXT,
+        note_local TEXT,
+        note_en TEXT,
+        reference_date TEXT,
+        is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    database.run("CREATE INDEX idx_board_posts_type_lob ON board_posts(board_type, lob)");
+    dirty = true;
+  }
+
+  // legacy glossary → board_posts 이관 후 drop
+  const hasLegacyGlossary = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='glossary'"
+  )[0]?.values[0][0] as number) > 0;
+  if (hasLegacyGlossary) {
+    database.run(`
+      INSERT INTO board_posts
+        (board_type, lob, title_local, title_en, content_local, content_en, note_local, note_en, is_active, updated_at, created_at)
+      SELECT 'glossary', lob, term_local, term_en, definition_local, definition_en, note_local, note_en, is_active, updated_at, created_at
+      FROM glossary
+    `);
+    database.run("DROP TABLE glossary");
+    dirty = true;
+  }
+
   // members.lob 컬럼 추가 + role CHECK에 'leader' 추가 (테이블 재생성)
   const membersCols = (database.exec("PRAGMA table_info(members)")[0]?.values ?? []).map(r => r[1] as string);
   if (!membersCols.includes("lob")) {
@@ -367,6 +408,24 @@ function initSchema(database: SqlJsDatabase) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS board_posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      board_type TEXT NOT NULL,
+      lob TEXT,
+      title_local TEXT NOT NULL,
+      title_en TEXT,
+      content_local TEXT,
+      content_en TEXT,
+      note_local TEXT,
+      note_en TEXT,
+      reference_date TEXT,
+      is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_board_posts_type_lob ON board_posts(board_type, lob);
 
     CREATE TABLE IF NOT EXISTS activity_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
