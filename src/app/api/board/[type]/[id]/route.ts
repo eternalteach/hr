@@ -2,6 +2,7 @@ import { getDb, saveDb } from "@/db";
 import { queryOne } from "@/db/helpers";
 import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { BOARD_CONFIGS, isBoardType } from "@/lib/boards/config";
+import { deleteAllForOwner } from "@/lib/attachments/storage";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ type: string; id: string }> };
@@ -72,6 +73,8 @@ export const DELETE = withApiHandler(async (_req: NextRequest, { params }: Param
   );
   if (!existing) throw new ApiError(404, "게시글을 찾을 수 없습니다");
 
+  // 첨부파일까지 함께 삭제 (DB 행 + 디스크 파일) — saveDb는 deleteAllForOwner 내부 db.run 다음 1회면 충분
+  deleteAllForOwner(db, "board_post", id);
   db.run("DELETE FROM board_posts WHERE id = ? AND board_type = ?", [id, type]);
   saveDb();
   return NextResponse.json({ ok: true });

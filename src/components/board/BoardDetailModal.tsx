@@ -4,6 +4,7 @@ import { X, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
 import { MarkdownView } from "@/components/shared/MarkdownView";
+import { AttachmentList } from "@/components/attachments/AttachmentList";
 import type { Post, Lob } from "@/lib/types";
 import type { BoardConfig } from "@/lib/boards/config";
 
@@ -101,6 +102,10 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
               <MarkdownView content={note} />
             </section>
           )}
+
+          <div className="mt-6">
+            <AttachmentList ownerType="board_post" ownerId={post.id} canEdit={canEdit} />
+          </div>
         </div>
       </div>
     </div>

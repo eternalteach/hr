@@ -35,7 +35,14 @@
       "Bash(bash .claude/hooks/auto-commit-push.sh)",
       "Bash(echo \"exit=$?\")",
       "Bash(echo \"jq_exit=$?\")",
-      "Bash(node -e \"const c=require\\('./.claude/settings.local.json'\\); const cmds=c.hooks.Stop.flatMap\\(g=>g.hooks\\).filter\\(h=>h.type==='command'\\).map\\(h=>h.command\\); console.log\\(JSON.stringify\\(cmds\\)\\); process.exit\\(cmds.length?0:4\\);\")"
+      "Bash(node -e \"const c=require\\('./.claude/settings.local.json'\\); const cmds=c.hooks.Stop.flatMap\\(g=>g.hooks\\).filter\\(h=>h.type==='command'\\).map\\(h=>h.command\\); console.log\\(JSON.stringify\\(cmds\\)\\); process.exit\\(cmds.length?0:4\\);\")",
+      "Bash(curl -sf http://localhost:3000 -o /dev/null)",
+      "Bash(curl -s http://localhost:3000/api/board/glossary)",
+      "Bash(curl *)",
+      "Bash(echo \"hello attachment test $\\(date\\)\")",
+      "Bash(echo \"second file\")",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"next dev\")"
     ]
   },
   "hooks": {

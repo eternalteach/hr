@@ -172,6 +172,21 @@ export interface Brd {
   created_at: string;
 }
 
+/** 첨부파일 owner 종류 — 새 도메인 추가 시 여기에 추가 */
+export type AttachmentOwnerType = "board_post";
+
+export interface Attachment {
+  id: number;
+  owner_type: AttachmentOwnerType;
+  owner_id: number;
+  filename: string;
+  storage_path: string;
+  mime_type: string | null;
+  size_bytes: number;
+  uploaded_by: number | null;
+  uploaded_at: string;
+}
+
 export interface DashboardSummary {
   totalTasks: number;
   inProgress: number;

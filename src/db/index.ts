@@ -246,6 +246,28 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
+  // attachments 테이블 (범용 첨부파일 — owner_type/owner_id로 어떤 도메인에든 부착)
+  const hasAttachments = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='attachments'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasAttachments) {
+    database.run(`
+      CREATE TABLE attachments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_type TEXT NOT NULL,
+        owner_id INTEGER NOT NULL,
+        filename TEXT NOT NULL,
+        storage_path TEXT NOT NULL,
+        mime_type TEXT,
+        size_bytes INTEGER NOT NULL,
+        uploaded_by INTEGER REFERENCES members(id),
+        uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    database.run("CREATE INDEX idx_attachments_owner ON attachments(owner_type, owner_id)");
+    dirty = true;
+  }
+
   // members.lob 컬럼 추가 + role CHECK에 'leader' 추가 (테이블 재생성)
   const membersCols = (database.exec("PRAGMA table_info(members)")[0]?.values ?? []).map(r => r[1] as string);
   if (!membersCols.includes("lob")) {
@@ -426,6 +448,20 @@ function initSchema(database: SqlJsDatabase) {
     );
 
     CREATE INDEX IF NOT EXISTS idx_board_posts_type_lob ON board_posts(board_type, lob);
+
+    CREATE TABLE IF NOT EXISTS attachments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_type TEXT NOT NULL,
+      owner_id INTEGER NOT NULL,
+      filename TEXT NOT NULL,
+      storage_path TEXT NOT NULL,
+      mime_type TEXT,
+      size_bytes INTEGER NOT NULL,
+      uploaded_by INTEGER REFERENCES members(id),
+      uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_attachments_owner ON attachments(owner_type, owner_id);
 
     CREATE TABLE IF NOT EXISTS activity_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
