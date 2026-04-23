@@ -166,4 +166,4 @@ src/
 
 ## 라이선스
 
-MIT
+Apache 2.0 — 자세한 내용은 [LICENSE](./LICENSE) 파일 참고
