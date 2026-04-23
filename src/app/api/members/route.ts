@@ -12,7 +12,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   const db = await getDb();
   const body = await request.json();
   if (!body.name || !body.email) {
-    throw new ApiError(400, "이름과 이메일은 필수입니다");
+    throw new ApiError(400, "이름과 이메일은 필수입니다", "NAME_EMAIL_REQUIRED");
   }
   const role = ["admin", "leader", "member"].includes(body.role) ? body.role : "member";
   const id = insertAndGetId(

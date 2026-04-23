@@ -16,7 +16,10 @@ export function withApiHandler<Args extends unknown[], R>(
       return await fn(...args);
     } catch (err) {
       if (err instanceof ApiError) {
-        return NextResponse.json({ error: err.message }, { status: err.status });
+        return NextResponse.json(
+          { error: err.message, ...(err.code ? { code: err.code } : {}) },
+          { status: err.status },
+        );
       }
       const message = err instanceof Error ? err.message : String(err);
       console.error("[API]", message, err instanceof Error ? err.stack : "");
@@ -28,9 +31,17 @@ export function withApiHandler<Args extends unknown[], R>(
   };
 }
 
-/** 클라이언트에게 그대로 노출할 에러 — status/message 지정 */
+/**
+ * 클라이언트에게 그대로 노출할 에러 — status/message 지정.
+ * `code`를 넣으면 프론트엔드에서 `t(\`error.\${code}\`)`로 다국어 번역 가능.
+ * 에러 코드 목록은 src/lib/i18n.ts 참고.
+ */
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+    public code?: string,
+  ) {
     super(message);
     this.name = "ApiError";
   }

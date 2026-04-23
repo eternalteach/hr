@@ -7,17 +7,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const POST = withApiHandler(async (request: NextRequest) => {
   const { email, password } = await request.json();
-  if (!email || !password) throw new ApiError(400, "이메일과 비밀번호를 입력해주세요");
+  if (!email || !password) throw new ApiError(400, "이메일과 비밀번호를 입력해주세요", "LOGIN_REQUIRED");
 
   const db = await getDb();
   const row = queryOne(db, "SELECT id, role, password_hash, must_change_password FROM members WHERE email = ?", [email]);
 
   if (!row || !row.password_hash) {
-    throw new ApiError(401, "이메일 또는 비밀번호가 올바르지 않습니다");
+    throw new ApiError(401, "이메일 또는 비밀번호가 올바르지 않습니다", "INVALID_CREDENTIALS");
   }
 
   if (!verifyPassword(password, row.password_hash as string)) {
-    throw new ApiError(401, "이메일 또는 비밀번호가 올바르지 않습니다");
+    throw new ApiError(401, "이메일 또는 비밀번호가 올바르지 않습니다", "INVALID_CREDENTIALS");
   }
 
   const token = await signSession({

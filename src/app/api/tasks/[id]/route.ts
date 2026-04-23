@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string }> };
 
 function parseId(raw: string): number {
   const id = Number(raw);
-  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID");
+  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID", "INVALID_ID");
   return id;
 }
 
@@ -17,7 +17,7 @@ export const GET = withApiHandler(async (_request: NextRequest, { params }: Para
 
   const db = await getDb();
   const task = queryOne(db, "SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL", [id]);
-  if (!task) throw new ApiError(404, "업무를 찾을 수 없습니다");
+  if (!task) throw new ApiError(404, "업무를 찾을 수 없습니다", "TASK_NOT_FOUND");
   return NextResponse.json(task);
 });
 
@@ -30,7 +30,7 @@ export const PATCH = withApiHandler(async (request: NextRequest, { params }: Par
   const now = new Date().toISOString();
 
   const oldTask = queryOne(db, "SELECT * FROM tasks WHERE id = ?", [id]);
-  if (!oldTask) throw new ApiError(404, "업무를 찾을 수 없습니다");
+  if (!oldTask) throw new ApiError(404, "업무를 찾을 수 없습니다", "TASK_NOT_FOUND");
 
   // 상태 변경 시 완료일 자동 기록
   if (body.status === "done" && oldTask.status !== "done") {

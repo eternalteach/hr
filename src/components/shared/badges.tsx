@@ -2,23 +2,26 @@
 
 import { cn, getDDayLabel, getDDayColor } from "@/lib/utils";
 import { PRIORITIES, TASK_STATUSES } from "@/lib/constants";
+import { useSettings } from "@/lib/settings-context";
 
 export function PriorityBadge({ priority }: { priority: string }) {
+  const { language } = useSettings();
   const config = PRIORITIES.find(p => p.value === priority);
   if (!config) return null;
   return (
     <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border", config.color)}>
-      {config.label}
+      {language === "en" ? config.label_en : config.label}
     </span>
   );
 }
 
 export function StatusBadge({ status }: { status: string }) {
+  const { language } = useSettings();
   const config = TASK_STATUSES.find(s => s.value === status);
   if (!config) return null;
   return (
     <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium", config.color)}>
-      {config.label}
+      {language === "en" ? config.label_en : config.label}
     </span>
   );
 }
@@ -33,7 +36,6 @@ export function DDayBadge({ dueDate }: { dueDate: string }) {
 
 export function MemberAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
   const sizeClass = size === "sm" ? "h-6 w-6 text-[10px]" : size === "lg" ? "h-10 w-10 text-sm" : "h-8 w-8 text-xs";
-  // 이름 기반 색상 생성
   const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-amber-500", "bg-rose-500", "bg-teal-500"];
   const colorIndex = name.charCodeAt(0) % colors.length;
 

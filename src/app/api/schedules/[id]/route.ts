@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string }> };
 
 function parseId(raw: string): number {
   const id = Number(raw);
-  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID");
+  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID", "INVALID_ID");
   return id;
 }
 
@@ -17,7 +17,7 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
 
   const db = await getDb();
   if (!queryOne(db, "SELECT id FROM schedules WHERE id = ?", [id])) {
-    throw new ApiError(404, "일정을 찾을 수 없습니다");
+    throw new ApiError(404, "일정을 찾을 수 없습니다", "SCHEDULE_NOT_FOUND");
   }
 
   const body = await request.json();
@@ -40,7 +40,7 @@ export const DELETE = withApiHandler(async (_request: NextRequest, { params }: P
 
   const db = await getDb();
   if (!queryOne(db, "SELECT id FROM schedules WHERE id = ?", [id])) {
-    throw new ApiError(404, "일정을 찾을 수 없습니다");
+    throw new ApiError(404, "일정을 찾을 수 없습니다", "SCHEDULE_NOT_FOUND");
   }
 
   db.run("DELETE FROM schedules WHERE id = ?", [id]);

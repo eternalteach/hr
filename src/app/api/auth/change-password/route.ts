@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const POST = withApiHandler(async (request: NextRequest) => {
   const token = request.cookies.get(COOKIE_NAME)?.value;
-  if (!token) throw new ApiError(401, "로그인이 필요합니다");
+  if (!token) throw new ApiError(401, "로그인이 필요합니다", "UNAUTHORIZED");
 
   const session = await verifySession(token);
-  if (!session) throw new ApiError(401, "세션이 만료되었습니다");
+  if (!session) throw new ApiError(401, "세션이 만료되었습니다", "UNAUTHORIZED");
 
   const body = await request.json();
   const { currentPassword, newPassword } = body;
@@ -29,9 +29,9 @@ export const POST = withApiHandler(async (request: NextRequest) => {
 
   // 최초 변경이 아닌 경우 현재 비밀번호 확인
   if (!row.must_change_password) {
-    if (!currentPassword) throw new ApiError(400, "현재 비밀번호를 입력해주세요");
+    if (!currentPassword) throw new ApiError(400, "현재 비밀번호를 입력해주세요", "WRONG_PASSWORD");
     if (!verifyPassword(currentPassword, row.password_hash as string)) {
-      throw new ApiError(401, "현재 비밀번호가 올바르지 않습니다");
+      throw new ApiError(401, "현재 비밀번호가 올바르지 않습니다", "WRONG_PASSWORD");
     }
   }
 

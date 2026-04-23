@@ -10,6 +10,9 @@ if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --other
   exit 0
 fi
 
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+[ -z "$CURRENT_BRANCH" ] && exit 0
+
 TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 git add -A >/dev/null 2>&1
@@ -17,6 +20,6 @@ git add -A >/dev/null 2>&1
 git -c user.name="xyrho" -c user.email="eternalteach@wooriman.co.kr" \
   commit -m "chore: auto-commit ${TS}" >/dev/null 2>&1
 
-git push origin main >/dev/null 2>&1
+git push origin "${CURRENT_BRANCH}" >/dev/null 2>&1
 
 exit 0
