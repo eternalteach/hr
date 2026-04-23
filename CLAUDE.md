@@ -45,6 +45,23 @@ board_posts — board_type: 'glossary' | 'meeting-notes'
 마스터 데이터 텍스트 컬럼 = `_local` + `_en` 쌍으로 저장.  
 화면 기본은 `_local`만 표시, `showEnglish` 켜지면 `_en` 추가 렌더링.
 
+## i18n (UI 라벨·에러 메시지)
+
+| 상황 | 방법 |
+|---|---|
+| 컴포넌트 라벨·버튼·플레이스홀더 | `useT()` 훅 (`src/lib/i18n.ts`) |
+| 상태·우선순위 배지 | `TASK_STATUSES[x].label` / `.label_en` |
+| API 에러 번역 | `throw new ApiError(status, "한국어", "ERROR_CODE")` → 프론트엔드 `t(\`error.\${code}\`)` |
+| 신규 키 추가 | `i18n.ts`의 `local` + `en` 섹션 양쪽에 동시 등록 |
+
+```tsx
+// 컴포넌트 사용 예
+const t = useT();
+<button>{t("action.save")}</button>          // "저장" or "Save"
+<h1>{t("task.title")}</h1>                   // "업무 관리" or "Tasks"
+const msg = error.code ? t(`error.${error.code}`) : error.message;
+```
+
 ## 보안 취약점 현황
 
 `npm audit` moderate 4건 — drizzle-kit 내부 esbuild 체인.  

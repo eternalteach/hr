@@ -84,7 +84,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   const body = await request.json();
   const { title, description, priority, due_date, assignee_ids, tag_ids, created_by, brd_id } = body;
 
-  if (!title) throw new ApiError(400, "제목은 필수입니다");
+  if (!title) throw new ApiError(400, "제목은 필수입니다", "TITLE_REQUIRED");
 
   const now = new Date().toISOString();
   const authorId = Number(created_by) || 1;

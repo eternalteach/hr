@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string }> };
 
 function parseId(raw: string): number {
   const id = Number(raw);
-  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID");
+  if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, "잘못된 ID", "INVALID_ID");
   return id;
 }
 
@@ -16,7 +16,7 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   const db = await getDb();
 
   if (!queryOne(db, "SELECT id FROM common_codes WHERE id = ?", [id])) {
-    throw new ApiError(404, "LOB를 찾을 수 없습니다");
+    throw new ApiError(404, "LOB를 찾을 수 없습니다", "LOB_NOT_FOUND");
   }
 
   const b = await request.json();
@@ -49,7 +49,7 @@ export const DELETE = withApiHandler(async (_req: NextRequest, { params }: Param
   const db = await getDb();
 
   if (!queryOne(db, "SELECT id FROM common_codes WHERE id = ?", [id])) {
-    throw new ApiError(404, "LOB를 찾을 수 없습니다");
+    throw new ApiError(404, "LOB를 찾을 수 없습니다", "LOB_NOT_FOUND");
   }
 
   db.run("DELETE FROM common_codes WHERE id = ?", [id]);

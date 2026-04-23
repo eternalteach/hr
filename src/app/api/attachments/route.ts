@@ -30,7 +30,7 @@ async function assertOwnerExists(ownerType: AttachmentOwnerType, ownerId: number
   const db = await getDb();
   if (ownerType === "board_post") {
     const row = queryOne(db, "SELECT id FROM board_posts WHERE id = ?", [ownerId]);
-    if (!row) throw new ApiError(404, "대상 게시글을 찾을 수 없습니다");
+    if (!row) throw new ApiError(404, "대상 게시글을 찾을 수 없습니다", "POST_NOT_FOUND");
   }
 }
 
@@ -50,12 +50,12 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   await assertOwnerExists(ownerType, ownerId);
 
   const files = form.getAll("file").filter((f): f is File => f instanceof File);
-  if (files.length === 0) throw new ApiError(400, "업로드할 파일이 없습니다");
+  if (files.length === 0) throw new ApiError(400, "업로드할 파일이 없습니다", "NO_FILE");
 
   for (const f of files) {
     if (f.size === 0) throw new ApiError(400, `빈 파일: ${f.name}`);
     if (f.size > MAX_FILE_BYTES) {
-      throw new ApiError(400, `파일이 너무 큽니다 (${f.name}) — 최대 ${MAX_FILE_BYTES / (1024 * 1024)}MB`);
+      throw new ApiError(400, `파일이 너무 큽니다 (${f.name}) — 최대 ${MAX_FILE_BYTES / (1024 * 1024)}MB`, "FILE_TOO_LARGE");
     }
   }
 
