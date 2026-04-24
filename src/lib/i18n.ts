@@ -155,10 +155,17 @@ const dict: Record<Lang, Record<string, string>> = {
 
     // Settings
     "settings.title": "설정",
-    "settings.timezone": "타임존",
-    "settings.language": "언어 설정",
-    "settings.language_local": "한국어",
-    "settings.language_en": "English",
+    "settings.page_title": "시스템 환경설정",
+    "settings.timezone": "기준 시간대 (Timezone)",
+    "settings.timezone_desc": "활동 로그, 댓글 등의 시간 표시에 사용할 시간대를 선택합니다.",
+    "settings.current_time": "현재 시각:",
+    "settings.auto_save": "설정은 이 브라우저에 자동 저장됩니다.",
+    "settings.language": "기준 언어",
+    "settings.language_desc": "영문 컬럼(title_en 등) 표시 여부를 선택합니다.",
+    "settings.language_local": "Local (한국어)",
+    "settings.language_local_desc": "로컬 언어 컬럼만 표시합니다",
+    "settings.language_en": "English (영문)",
+    "settings.language_en_desc": "영문 컬럼을 기본으로 표시합니다",
     "settings.show_english": "영문 표시",
 
     // Auth
@@ -356,10 +363,17 @@ const dict: Record<Lang, Record<string, string>> = {
 
     // Settings
     "settings.title": "Settings",
+    "settings.page_title": "System Settings",
     "settings.timezone": "Timezone",
+    "settings.timezone_desc": "Select the timezone for displaying activity logs, comments, etc.",
+    "settings.current_time": "Current time:",
+    "settings.auto_save": "Settings are automatically saved in this browser.",
     "settings.language": "Language",
-    "settings.language_local": "한국어",
+    "settings.language_desc": "Choose whether to display English columns (title_en, etc.).",
+    "settings.language_local": "Local (Korean)",
+    "settings.language_local_desc": "Display local language columns only",
     "settings.language_en": "English",
+    "settings.language_en_desc": "Display English columns by default",
     "settings.show_english": "Show English",
 
     // Auth

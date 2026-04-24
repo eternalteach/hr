@@ -3,15 +3,17 @@
 import { useState, useEffect } from "react";
 import { Settings, Globe, Clock, Check } from "lucide-react";
 import { useSettings, COMMON_TIMEZONES } from "@/lib/settings-context";
+import { useT } from "@/lib/i18n";
 
 export default function SettingsPage() {
   const { timezone, language, setTimezone, setLanguage } = useSettings();
+  const t = useT();
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
         <Settings className="w-6 h-6 text-gray-700" />
-        <h1 className="text-xl font-semibold text-gray-900">시스템 환경설정</h1>
+        <h1 className="text-xl font-semibold text-gray-900">{t("settings.page_title")}</h1>
       </div>
 
       <div className="space-y-6">
@@ -19,23 +21,23 @@ export default function SettingsPage() {
         <section className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-1">
             <Globe className="w-4 h-4 text-gray-500" />
-            <h2 className="text-sm font-semibold text-gray-800">기준 언어</h2>
+            <h2 className="text-sm font-semibold text-gray-800">{t("settings.language")}</h2>
           </div>
           <p className="text-xs text-gray-500 mb-4">
-            영문 컬럼 (title_en 등) 표시 여부를 선택합니다.
+            {t("settings.language_desc")}
           </p>
           <div className="flex gap-3">
             <LanguageOption
               selected={language === "en"}
               onClick={() => setLanguage("en")}
-              label="English (영문)"
-              description="영문 컬럼을 기본으로 표시합니다"
+              label={t("settings.language_en")}
+              description={t("settings.language_en_desc")}
             />
             <LanguageOption
               selected={language === "local"}
               onClick={() => setLanguage("local")}
-              label="Local (한국어)"
-              description="로컬 언어 컬럼만 표시합니다"
+              label={t("settings.language_local")}
+              description={t("settings.language_local_desc")}
             />
           </div>
         </section>
@@ -44,10 +46,10 @@ export default function SettingsPage() {
         <section className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-1">
             <Clock className="w-4 h-4 text-gray-500" />
-            <h2 className="text-sm font-semibold text-gray-800">기준 시간대 (Timezone)</h2>
+            <h2 className="text-sm font-semibold text-gray-800">{t("settings.timezone")}</h2>
           </div>
           <p className="text-xs text-gray-500 mb-4">
-            활동 로그, 댓글 등의 시간 표시에 사용할 시간대를 선택합니다.
+            {t("settings.timezone_desc")}
           </p>
           <select
             value={timezone}
@@ -60,12 +62,12 @@ export default function SettingsPage() {
               </option>
             ))}
           </select>
-          <CurrentTime timezone={timezone} />
+          <CurrentTime timezone={timezone} currentTimeLabel={t("settings.current_time")} />
         </section>
       </div>
 
       <p className="text-xs text-gray-400 mt-6">
-        설정은 이 브라우저에 자동 저장됩니다.
+        {t("settings.auto_save")}
       </p>
     </div>
   );
@@ -101,7 +103,7 @@ function LanguageOption({
   );
 }
 
-function CurrentTime({ timezone }: { timezone: string }) {
+function CurrentTime({ timezone, currentTimeLabel }: { timezone: string; currentTimeLabel: string }) {
   const [time, setTime] = useState("");
 
   useEffect(() => {
@@ -126,7 +128,7 @@ function CurrentTime({ timezone }: { timezone: string }) {
 
   return (
     <p className="text-xs text-gray-500 mt-2">
-      현재 시각: <span className="font-mono text-gray-700">{time}</span>
+      {currentTimeLabel} <span className="font-mono text-gray-700">{time}</span>
     </p>
   );
 }
