@@ -11,6 +11,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "verify": "npm run lint && npx tsc --noEmit && npm run test:run",
     "reset-password": "node scripts/reset-password.js"
   },
@@ -35,6 +36,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.4",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
