@@ -5,23 +5,32 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 export interface AppSettings {
   /** IANA timezone string, e.g. "Asia/Seoul" */
   timezone: string;
-  /** "en" = English (default), "local" = local language */
-  language: "en" | "local";
+  /** Data language: which DB column to render (_local vs _en) */
+  dataLanguage: "en" | "local";
+  /** Label language: which language to use for UI labels via useT() */
+  labelLanguage: "en" | "local";
 }
 
 interface SettingsContextValue extends AppSettings {
-  /** true when language === "en" — kept for backward compat with useLanguage */
+  /** true when dataLanguage === "en" — backward compat for useLanguage consumers */
   showEnglish: boolean;
+  /** @deprecated alias for dataLanguage — use dataLanguage directly */
+  language: "en" | "local";
   setTimezone: (tz: string) => void;
+  setDataLanguage: (lang: "en" | "local") => void;
+  setLabelLanguage: (lang: "en" | "local") => void;
+  /** @deprecated use setDataLanguage instead */
   setLanguage: (lang: "en" | "local") => void;
-  /** @deprecated use setLanguage instead */
+  /** @deprecated use setDataLanguage instead */
   toggle: () => void;
+  /** @deprecated use setDataLanguage instead */
   setShowEnglish: (v: boolean) => void;
 }
 
 const DEFAULT: AppSettings = {
   timezone: "Asia/Seoul",
-  language: "en",
+  dataLanguage: "en",
+  labelLanguage: "local",
 };
 
 const STORAGE_KEY = "taskflow.settings";
@@ -30,11 +39,16 @@ function load(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      // Migrate legacy showEnglish key
       const legacy = localStorage.getItem("taskflow.showEnglish");
-      return { ...DEFAULT, language: legacy === "false" ? "local" : "en" };
+      const lang = legacy === "false" ? "local" : "en";
+      return { ...DEFAULT, dataLanguage: lang };
     }
-    return { ...DEFAULT, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw) as Partial<AppSettings> & { language?: "en" | "local" };
+    // Migrate old single `language` field
+    if (parsed.language && !parsed.dataLanguage) {
+      parsed.dataLanguage = parsed.language;
+    }
+    return { ...DEFAULT, ...parsed };
   } catch {
     return DEFAULT;
   }
@@ -54,17 +68,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, [settings]);
 
   const setTimezone = (timezone: string) => setSettings(s => ({ ...s, timezone }));
-  const setLanguage = (language: "en" | "local") => setSettings(s => ({ ...s, language }));
-  const showEnglish = settings.language === "en";
+  const setDataLanguage = (dataLanguage: "en" | "local") => setSettings(s => ({ ...s, dataLanguage }));
+  const setLabelLanguage = (labelLanguage: "en" | "local") => setSettings(s => ({ ...s, labelLanguage }));
+  const showEnglish = settings.dataLanguage === "en";
 
   return (
     <SettingsContext.Provider value={{
       ...settings,
       showEnglish,
+      language: settings.dataLanguage,
       setTimezone,
-      setLanguage,
-      toggle: () => setLanguage(showEnglish ? "local" : "en"),
-      setShowEnglish: (v: boolean) => setLanguage(v ? "en" : "local"),
+      setDataLanguage,
+      setLabelLanguage,
+      setLanguage: setDataLanguage,
+      toggle: () => setDataLanguage(showEnglish ? "local" : "en"),
+      setShowEnglish: (v: boolean) => setDataLanguage(v ? "en" : "local"),
     }}>
       {children}
     </SettingsContext.Provider>

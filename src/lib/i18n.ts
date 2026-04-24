@@ -160,6 +160,10 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.timezone_desc": "활동 로그, 댓글 등의 시간 표시에 사용할 시간대를 선택합니다.",
     "settings.current_time": "현재 시각:",
     "settings.auto_save": "설정은 이 브라우저에 자동 저장됩니다.",
+    "settings.data_language": "데이터 언어",
+    "settings.data_language_desc": "DB에서 어느 언어 컬럼(_local / _en)을 표시할지 선택합니다.",
+    "settings.label_language": "라벨 언어",
+    "settings.label_language_desc": "버튼·메뉴·오류 메시지 등 UI 라벨의 언어를 선택합니다.",
     "settings.language": "기준 언어",
     "settings.language_desc": "영문 컬럼(title_en 등) 표시 여부를 선택합니다.",
     "settings.language_local": "Local (한국어)",
@@ -368,6 +372,10 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.timezone_desc": "Select the timezone for displaying activity logs, comments, etc.",
     "settings.current_time": "Current time:",
     "settings.auto_save": "Settings are automatically saved in this browser.",
+    "settings.data_language": "Data Language",
+    "settings.data_language_desc": "Choose which language column (_local / _en) to display from the database.",
+    "settings.label_language": "Label Language",
+    "settings.label_language_desc": "Choose the language for UI labels such as buttons, menus, and error messages.",
     "settings.language": "Language",
     "settings.language_desc": "Choose whether to display English columns (title_en, etc.).",
     "settings.language_local": "Local (Korean)",
@@ -433,10 +441,10 @@ const dict: Record<Lang, Record<string, string>> = {
  *   t(`error.${code}`)                 // API 에러 코드 번역
  */
 export function useT() {
-  const { language } = useSettings();
+  const { labelLanguage } = useSettings();
   return useCallback(
     (key: string, vars?: Record<string, string | number>): string => {
-      const lang = language as Lang;
+      const lang = labelLanguage as Lang;
       const val = dict[lang]?.[key] ?? dict.local[key] ?? key;
       if (!vars) return val;
       return Object.entries(vars).reduce(
@@ -444,7 +452,7 @@ export function useT() {
         val,
       );
     },
-    [language],
+    [labelLanguage],
   );
 }
 

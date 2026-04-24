@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Globe, Clock, Check } from "lucide-react";
+import { Settings, Database, Tag, Clock, Check } from "lucide-react";
 import { useSettings, COMMON_TIMEZONES } from "@/lib/settings-context";
 import { useT } from "@/lib/i18n";
 
 export default function SettingsPage() {
-  const { timezone, language, setTimezone, setLanguage } = useSettings();
+  const { timezone, dataLanguage, labelLanguage, setTimezone, setDataLanguage, setLabelLanguage } = useSettings();
   const t = useT();
 
   return (
@@ -17,32 +17,57 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-6">
-        {/* 언어 설정 */}
+        {/* 데이터 언어 */}
         <section className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-1">
-            <Globe className="w-4 h-4 text-gray-500" />
-            <h2 className="text-sm font-semibold text-gray-800">{t("settings.language")}</h2>
+            <Database className="w-4 h-4 text-gray-500" />
+            <h2 className="text-sm font-semibold text-gray-800">{t("settings.data_language")}</h2>
           </div>
           <p className="text-xs text-gray-500 mb-4">
-            {t("settings.language_desc")}
+            {t("settings.data_language_desc")}
           </p>
           <div className="flex gap-3">
-            <LanguageOption
-              selected={language === "en"}
-              onClick={() => setLanguage("en")}
+            <LangOption
+              selected={dataLanguage === "en"}
+              onClick={() => setDataLanguage("en")}
               label={t("settings.language_en")}
               description={t("settings.language_en_desc")}
             />
-            <LanguageOption
-              selected={language === "local"}
-              onClick={() => setLanguage("local")}
+            <LangOption
+              selected={dataLanguage === "local"}
+              onClick={() => setDataLanguage("local")}
               label={t("settings.language_local")}
               description={t("settings.language_local_desc")}
             />
           </div>
         </section>
 
-        {/* 타임존 설정 */}
+        {/* 라벨 언어 */}
+        <section className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Tag className="w-4 h-4 text-gray-500" />
+            <h2 className="text-sm font-semibold text-gray-800">{t("settings.label_language")}</h2>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            {t("settings.label_language_desc")}
+          </p>
+          <div className="flex gap-3">
+            <LangOption
+              selected={labelLanguage === "en"}
+              onClick={() => setLabelLanguage("en")}
+              label={t("settings.language_en")}
+              description={t("settings.language_en_desc")}
+            />
+            <LangOption
+              selected={labelLanguage === "local"}
+              onClick={() => setLabelLanguage("local")}
+              label={t("settings.language_local")}
+              description={t("settings.language_local_desc")}
+            />
+          </div>
+        </section>
+
+        {/* 타임존 */}
         <section className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-1">
             <Clock className="w-4 h-4 text-gray-500" />
@@ -73,7 +98,7 @@ export default function SettingsPage() {
   );
 }
 
-function LanguageOption({
+function LangOption({
   selected, onClick, label, description,
 }: {
   selected: boolean;
