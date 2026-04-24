@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Trash2, AlertTriangle } from "lucide-react";
 import { SCHEDULE_TYPES } from "@/lib/constants";
+import { useLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Schedule } from "@/lib/types";
 
@@ -18,6 +19,7 @@ function toDatetimeLocal(iso: string | null): string {
 }
 
 export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: Props) {
+  const lbl = useLabel();
   const [form, setForm] = useState({
     title: schedule.title,
     type: schedule.type as string,
@@ -126,7 +128,7 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
                       form.type === t.value ? t.color + " ring-1" : "border-gray-200 text-gray-500"
                     )}
                   >
-                    {t.label}
+                    {lbl(t)}
                   </button>
                 ))}
               </div>

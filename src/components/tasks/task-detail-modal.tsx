@@ -6,6 +6,7 @@ import { MemberAvatar, DDayBadge } from "@/components/shared/badges";
 import { TASK_STATUSES, PRIORITIES } from "@/lib/constants";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import { useSettings } from "@/lib/settings-context";
+import { useLabel } from "@/lib/i18n";
 import type { Task, Comment, Member, Brd } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
@@ -25,6 +26,7 @@ interface EditForm {
 
 export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProps) {
   const { timezone } = useSettings();
+  const lbl = useLabel();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -162,7 +164,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                         task.priority === p.value ? p.color + " ring-1 ring-offset-1" : "border-gray-200 text-gray-400 hover:text-gray-600"
                       )}
                     >
-                      {p.label}
+                      {lbl(p)}
                     </button>
                   ))}
                 </div>
@@ -267,7 +269,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                           task.status === s.value ? s.color + " ring-1 ring-offset-1" : "text-gray-400 hover:text-gray-600 bg-gray-50"
                         )}
                       >
-                        {s.label}
+                        {lbl(s)}
                       </button>
                     ))}
                   </div>
@@ -286,7 +288,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                           task.priority === p.value ? p.color + " ring-1 ring-offset-1" : "border-gray-200 text-gray-400 hover:text-gray-600"
                         )}
                       >
-                        {p.label}
+                        {lbl(p)}
                       </button>
                     ))}
                   </div>

@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { SCHEDULE_TYPES } from "@/lib/constants";
+import { useLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export interface ScheduleFormState {
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function ScheduleFormModal({ open, form, onChange, onClose, onSubmit }: Props) {
+  const lbl = useLabel();
   if (!open) return null;
 
   const set = <K extends keyof ScheduleFormState>(key: K, value: ScheduleFormState[K]) =>
@@ -58,7 +60,7 @@ export function ScheduleFormModal({ open, form, onChange, onClose, onSubmit }: P
                     form.type === t.value ? t.color + " ring-1" : "border-gray-200 text-gray-500"
                   )}
                 >
-                  {t.label}
+                  {lbl(t)}
                 </button>
               ))}
             </div>

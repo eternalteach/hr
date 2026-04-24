@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { PRIORITIES } from "@/lib/constants";
+import { useLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Member, Tag, Brd } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -14,6 +15,7 @@ interface TaskCreateModalProps {
 }
 
 export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProps) {
+  const lbl = useLabel();
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [brds, setBrds] = useState<Brd[]>([]);
@@ -118,7 +120,7 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
                       form.priority === p.value ? p.color + " ring-2 ring-offset-1 ring-current" : "border-gray-200 text-gray-500 hover:border-gray-300"
                     )}
                   >
-                    {p.label}
+                    {lbl(p)}
                   </button>
                 ))}
               </div>

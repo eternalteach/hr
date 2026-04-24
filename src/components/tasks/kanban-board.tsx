@@ -3,6 +3,7 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { TaskCard } from "./task-card";
 import { TASK_STATUSES } from "@/lib/constants";
+import { useLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/lib/types";
 
@@ -14,6 +15,7 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ tasks, onStatusChange, onTaskClick, onReorder }: KanbanBoardProps) {
+  const lbl = useLabel();
   // position 기준 오름차순 정렬
   const sorted = TASK_STATUSES.reduce((acc, status) => {
     acc[status.value] = tasks
@@ -69,7 +71,7 @@ export function KanbanBoard({ tasks, onStatusChange, onTaskClick, onReorder }: K
                 {/* 컬럼 헤더 */}
                 <div className="flex items-center justify-between px-3 py-3">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-gray-700">{status.label}</h3>
+                    <h3 className="text-sm font-semibold text-gray-700">{lbl(status)}</h3>
                     <span className="text-xs font-medium text-gray-400 bg-gray-200/70 rounded-full px-2 py-0.5">
                       {sorted[status.value].length}
                     </span>

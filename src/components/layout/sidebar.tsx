@@ -9,26 +9,27 @@ import {
   Shield, Star, User,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useT } from "@/lib/i18n";
 import type { MemberRole } from "@/lib/types";
 
 const icons = { LayoutDashboard, CheckSquare, Calendar, Users, FileText, ClipboardList, ListTree, BookOpen, NotebookPen };
 
 const NAV_ITEMS = [
-  { href: "/", label: "대시보드", icon: "LayoutDashboard" as const },
-  { href: "/calendar", label: "캘린더", icon: "Calendar" as const },
-  { href: "/sow", label: "SOW 관리", icon: "FileText" as const },
-  { href: "/brd", label: "BRD 관리", icon: "ClipboardList" as const },
-  { href: "/tasks", label: "업무 관리", icon: "CheckSquare" as const },
-  { href: "/members", label: "팀원 관리", icon: "Users" as const },
-  { href: "/codes", label: "공통코드 관리", icon: "ListTree" as const },
-  { href: "/glossary", label: "용어 정의", icon: "BookOpen" as const },
-  { href: "/meeting-notes", label: "회의록", icon: "NotebookPen" as const },
+  { href: "/",              labelKey: "nav.dashboard",     icon: "LayoutDashboard" as const },
+  { href: "/calendar",      labelKey: "nav.calendar",      icon: "Calendar"        as const },
+  { href: "/sow",           labelKey: "nav.sow",           icon: "FileText"        as const },
+  { href: "/brd",           labelKey: "nav.brd",           icon: "ClipboardList"   as const },
+  { href: "/tasks",         labelKey: "nav.tasks",         icon: "CheckSquare"     as const },
+  { href: "/members",       labelKey: "nav.members",       icon: "Users"           as const },
+  { href: "/codes",         labelKey: "nav.codes",         icon: "ListTree"        as const },
+  { href: "/glossary",      labelKey: "nav.glossary",      icon: "BookOpen"        as const },
+  { href: "/meeting-notes", labelKey: "nav.meeting_notes", icon: "NotebookPen"     as const },
 ];
 
-const ROLE_LABELS: Record<MemberRole, string> = {
-  admin: "관리자",
-  leader: "리더",
-  member: "팀원",
+const ROLE_KEYS: Record<MemberRole, string> = {
+  admin: "role.admin",
+  leader: "role.leader",
+  member: "role.member",
 };
 
 const ROLE_ICONS: Record<MemberRole, React.ReactNode> = {
@@ -40,6 +41,7 @@ const ROLE_ICONS: Record<MemberRole, React.ReactNode> = {
 export function Sidebar() {
   const pathname = usePathname();
   const { currentUser, logout } = useAuth();
+  const t = useT();
 
   return (
     <aside className="w-56 border-r border-gray-200 bg-gray-50/50 flex flex-col shrink-0">
@@ -68,14 +70,13 @@ export function Sidebar() {
               )}
             >
               <Icon className="w-4.5 h-4.5" />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
       </nav>
 
       <div className="p-4 border-t border-gray-200 space-y-2">
-        {/* 현재 사용자 */}
         {currentUser && (
           <div className="flex items-center gap-3 px-1 py-1">
             <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium shrink-0">
@@ -85,37 +86,34 @@ export function Sidebar() {
               <p className="text-sm font-medium text-gray-900 truncate">{currentUser.name}</p>
               <p className="text-xs text-gray-500 flex items-center gap-0.5">
                 {ROLE_ICONS[currentUser.role]}
-                {ROLE_LABELS[currentUser.role]}
+                {t(ROLE_KEYS[currentUser.role])}
               </p>
             </div>
           </div>
         )}
 
-        {/* 시스템 환경설정 */}
         <Link
           href="/settings"
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
         >
           <Settings className="w-3.5 h-3.5" />
-          시스템 환경설정
+          {t("nav.settings")}
         </Link>
 
-        {/* 비밀번호 변경 */}
         <Link
           href="/change-password"
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
         >
           <KeyRound className="w-3.5 h-3.5" />
-          비밀번호 변경
+          {t("nav.change_password")}
         </Link>
 
-        {/* 로그아웃 */}
         <button
           onClick={logout}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
         >
           <LogOut className="w-3.5 h-3.5" />
-          로그아웃
+          {t("auth.logout")}
         </button>
       </div>
     </aside>

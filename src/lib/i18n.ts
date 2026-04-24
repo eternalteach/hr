@@ -13,12 +13,13 @@ const dict: Record<Lang, Record<string, string>> = {
     "nav.calendar": "캘린더",
     "nav.members": "팀원 관리",
     "nav.lob": "LOB 관리",
-    "nav.sow": "SOW",
-    "nav.brd": "BRD",
-    "nav.codes": "공통코드",
-    "nav.glossary": "용어정의",
+    "nav.sow": "SOW 관리",
+    "nav.brd": "BRD 관리",
+    "nav.codes": "공통코드 관리",
+    "nav.glossary": "용어 정의",
     "nav.meeting_notes": "회의록",
-    "nav.settings": "설정",
+    "nav.settings": "시스템 환경설정",
+    "nav.change_password": "비밀번호 변경",
 
     // Actions
     "action.save": "저장",
@@ -230,7 +231,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "nav.codes": "Common Codes",
     "nav.glossary": "Glossary",
     "nav.meeting_notes": "Meeting Notes",
-    "nav.settings": "Settings",
+    "nav.settings": "System Settings",
+    "nav.change_password": "Change Password",
 
     // Actions
     "action.save": "Save",
@@ -452,6 +454,19 @@ export function useT() {
         val,
       );
     },
+    [labelLanguage],
+  );
+}
+
+/**
+ * constants.ts의 label/label_en 쌍을 labelLanguage에 따라 반환하는 훅.
+ * 사용: const lbl = useLabel(); lbl(TASK_STATUSES[i]) → "To Do" or "할 일"
+ */
+export function useLabel() {
+  const { labelLanguage } = useSettings();
+  return useCallback(
+    <T extends { label: string; label_en: string }>(item: T): string =>
+      labelLanguage === "en" ? item.label_en : item.label,
     [labelLanguage],
   );
 }

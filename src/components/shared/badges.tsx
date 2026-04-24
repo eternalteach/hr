@@ -5,23 +5,23 @@ import { PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { useSettings } from "@/lib/settings-context";
 
 export function PriorityBadge({ priority }: { priority: string }) {
-  const { language } = useSettings();
+  const { labelLanguage } = useSettings();
   const config = PRIORITIES.find(p => p.value === priority);
   if (!config) return null;
   return (
     <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border", config.color)}>
-      {language === "en" ? config.label_en : config.label}
+      {labelLanguage === "en" ? config.label_en : config.label}
     </span>
   );
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  const { language } = useSettings();
+  const { labelLanguage } = useSettings();
   const config = TASK_STATUSES.find(s => s.value === status);
   if (!config) return null;
   return (
     <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium", config.color)}>
-      {language === "en" ? config.label_en : config.label}
+      {labelLanguage === "en" ? config.label_en : config.label}
     </span>
   );
 }
