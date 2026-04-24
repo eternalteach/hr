@@ -1,6 +1,7 @@
 "use client";
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useT } from "@/lib/i18n";
 import type { PriorityData } from "@/lib/types";
 
 const COLORS: Record<string, string> = {
@@ -10,19 +11,20 @@ const COLORS: Record<string, string> = {
   low: "#9ca3af",
 };
 
-const LABELS: Record<string, string> = {
-  urgent: "긴급",
-  high: "높음",
-  medium: "보통",
-  low: "낮음",
+const PRIORITY_KEYS: Record<string, string> = {
+  urgent: "priority.urgent",
+  high: "priority.high",
+  medium: "priority.medium",
+  low: "priority.low",
 };
 
 export function PriorityChart({ data }: { data: PriorityData[] }) {
+  const t = useT();
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">우선순위 분포</h3>
+      <h3 className="text-sm font-semibold text-gray-700 mb-4">{t("dashboard.priority_dist")}</h3>
       <div className="flex items-center gap-6">
         <div className="relative">
           <ResponsiveContainer width={160} height={160}>
@@ -33,7 +35,7 @@ export function PriorityChart({ data }: { data: PriorityData[] }) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: any, _: any, entry: any) => [value, LABELS[entry.payload.priority]]}
+                formatter={(value: any, _: any, entry: any) => [value, t(PRIORITY_KEYS[entry.payload.priority] ?? entry.payload.priority)]}
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}
               />
             </PieChart>
@@ -41,7 +43,7 @@ export function PriorityChart({ data }: { data: PriorityData[] }) {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               <span className="text-2xl font-semibold text-gray-900">{total}</span>
-              <p className="text-xs text-gray-400">전체</p>
+              <p className="text-xs text-gray-400">{t("common.all")}</p>
             </div>
           </div>
         </div>
@@ -50,7 +52,7 @@ export function PriorityChart({ data }: { data: PriorityData[] }) {
           {data.map(d => (
             <div key={d.priority} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: COLORS[d.priority] }} />
-              <span className="text-sm text-gray-600">{LABELS[d.priority]}</span>
+              <span className="text-sm text-gray-600">{t(PRIORITY_KEYS[d.priority] ?? d.priority)}</span>
               <span className="text-sm font-medium text-gray-900 ml-auto">{d.count}</span>
             </div>
           ))}

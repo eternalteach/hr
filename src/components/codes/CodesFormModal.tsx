@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import type { CommonCode } from "@/lib/types";
 
 interface Props {
@@ -23,6 +24,7 @@ const EMPTY: FormState = {
 };
 
 export function CodesFormModal({ code, group, onClose, onSaved }: Props) {
+  const t = useT();
   const isEdit = !!code;
   const [form, setForm] = useState<FormState>(code ? {
     code: code.code,
@@ -84,7 +86,7 @@ export function CodesFormModal({ code, group, onClose, onSaved }: Props) {
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 className="text-base font-semibold text-gray-900">
-            {isEdit ? "코드 수정" : "코드 추가"}
+            {isEdit ? t("codes.edit") : t("codes.add")}
             <span className="ml-2 text-xs font-normal text-gray-400">{group}</span>
           </h2>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
@@ -94,9 +96,9 @@ export function CodesFormModal({ code, group, onClose, onSaved }: Props) {
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            {field("코드", "code", { required: true, placeholder: "예) Cloud" })}
+            {field(t("common.code"), "code", { required: true, placeholder: t("form.code_placeholder") })}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">유효여부</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t("common.is_active")}</label>
               <div className="flex gap-2 mt-1.5">
                 {(["Y", "N"] as const).map(v => (
                   <button
@@ -118,32 +120,32 @@ export function CodesFormModal({ code, group, onClose, onSaved }: Props) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {field("타이틀 (Local)", "title_local")}
-            {field("타이틀 (영문)", "title_en")}
+            {field(t("form.title_local"), "title_local")}
+            {field(t("form.title_en"), "title_en")}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {field("내용 (Local)", "content_local", { textarea: true })}
-            {field("내용 (영어)", "content_en", { textarea: true })}
+            {field(t("form.content_local"), "content_local", { textarea: true })}
+            {field(t("form.content_en"), "content_en", { textarea: true })}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {field("비고 (Local)", "note_local", { textarea: true })}
-            {field("비고 (영어)", "note_en", { textarea: true })}
+            {field(t("form.note_local"), "note_local", { textarea: true })}
+            {field(t("form.note_en"), "note_en", { textarea: true })}
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               disabled={saving || !form.code.trim()}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
             >
-              {saving ? "저장 중…" : isEdit ? "수정" : "추가"}
+              {saving ? t("common.saving") : isEdit ? t("action.edit") : t("action.add")}
             </button>
           </div>
         </form>

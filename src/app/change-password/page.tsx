@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CheckSquare, Eye, EyeOff, KeyRound } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
+  const t = useT();
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
@@ -24,11 +26,11 @@ export default function ChangePasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPw !== confirmPw) {
-      setError("새 비밀번호가 일치하지 않습니다");
+      setError(t("error.PASSWORD_MISMATCH"));
       return;
     }
     if (newPw.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다");
+      setError(t("auth.password_too_short"));
       return;
     }
 
@@ -45,7 +47,7 @@ export default function ChangePasswordPage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error ?? "비밀번호 변경에 실패했습니다");
+      setError(data.error ?? t("auth.change_failed"));
       return;
     }
 
@@ -56,7 +58,6 @@ export default function ChangePasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm mx-4">
-        {/* 로고 */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mb-3">
             <CheckSquare className="w-6 h-6 text-white" />
@@ -67,18 +68,18 @@ export default function ChangePasswordPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 mb-1">
             <KeyRound className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">비밀번호 변경</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("auth.change_password")}</h2>
           </div>
           {isFirstLogin && (
             <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-5">
-              최초 로그인입니다. 새 비밀번호를 설정해주세요.
+              {t("auth.first_login")}
             </p>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             {!isFirstLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">현재 비밀번호</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.current_password")}</label>
                 <input
                   type="password"
                   value={currentPw}
@@ -89,13 +90,13 @@ export default function ChangePasswordPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">새 비밀번호</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.new_password")}</label>
               <div className="relative">
                 <input
                   type={showNew ? "text" : "password"}
                   value={newPw}
                   onChange={e => setNewPw(e.target.value)}
-                  placeholder="8자 이상"
+                  placeholder={t("auth.new_password_placeholder")}
                   autoFocus
                   className="w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -107,13 +108,13 @@ export default function ChangePasswordPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">새 비밀번호 확인</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.confirm_password")}</label>
               <div className="relative">
                 <input
                   type={showConfirm ? "text" : "password"}
                   value={confirmPw}
                   onChange={e => setConfirmPw(e.target.value)}
-                  placeholder="비밀번호 재입력"
+                  placeholder={t("auth.confirm_password_placeholder")}
                   className="w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button type="button" onClick={() => setShowConfirm(v => !v)}
@@ -122,7 +123,7 @@ export default function ChangePasswordPage() {
                 </button>
               </div>
               {confirmPw && newPw !== confirmPw && (
-                <p className="text-xs text-red-500 mt-1">비밀번호가 일치하지 않습니다</p>
+                <p className="text-xs text-red-500 mt-1">{t("auth.password_mismatch_inline")}</p>
               )}
             </div>
 
@@ -137,7 +138,7 @@ export default function ChangePasswordPage() {
               disabled={loading || !newPw || !confirmPw}
               className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
-              {loading ? "변경 중…" : "비밀번호 변경"}
+              {loading ? t("auth.changing") : t("auth.change_password")}
             </button>
           </form>
         </div>

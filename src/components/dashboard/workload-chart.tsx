@@ -1,12 +1,15 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useT } from "@/lib/i18n";
 import type { WorkloadData } from "@/lib/types";
 
 export function WorkloadChart({ data }: { data: WorkloadData[] }) {
+  const t = useT();
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">팀원별 업무 현황</h3>
+      <h3 className="text-sm font-semibold text-gray-700 mb-4">{t("dashboard.workload")}</h3>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20 }}>
           <XAxis type="number" tick={{ fontSize: 12, fill: "#9ca3af" }} />
@@ -14,13 +17,21 @@ export function WorkloadChart({ data }: { data: WorkloadData[] }) {
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}
             formatter={(value: number, name: string) => {
-              const labels: Record<string, string> = { completed: "완료", in_progress: "진행", overdue: "지연" };
+              const labels: Record<string, string> = {
+                completed: t("dashboard.workload_done"),
+                in_progress: t("dashboard.workload_progress"),
+                overdue: t("dashboard.overdue"),
+              };
               return [value, labels[name] || name];
             }}
           />
           <Legend
             formatter={(value: string) => {
-              const labels: Record<string, string> = { completed: "완료", in_progress: "진행", overdue: "지연" };
+              const labels: Record<string, string> = {
+                completed: t("dashboard.workload_done"),
+                in_progress: t("dashboard.workload_progress"),
+                overdue: t("dashboard.overdue"),
+              };
               return <span style={{ fontSize: 12, color: "#6b7280" }}>{labels[value] || value}</span>;
             }}
           />

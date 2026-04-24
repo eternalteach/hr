@@ -9,6 +9,7 @@ import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { useT } from "@/lib/i18n";
 import type { Schedule } from "@/lib/types";
 import { MonthView } from "@/components/calendar/month-view";
 import { WeekView } from "@/components/calendar/week-view";
@@ -20,6 +21,7 @@ const EMPTY_FORM: ScheduleFormState = { title: "", type: "meeting", start_at: ""
 
 export default function CalendarPage() {
   const { isReadOnly } = useAuth();
+  const t = useT();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
@@ -88,7 +90,7 @@ export default function CalendarPage() {
       {/* 헤더 */}
       <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold text-gray-900">캘린더</h1>
+          <h1 className="text-xl font-semibold text-gray-900">{t("calendar.title")}</h1>
           <div className="flex items-center gap-1">
             <button onClick={() => navigate(-1)} className="p-1.5 rounded-md hover:bg-gray-100">
               <ChevronLeft className="w-4 h-4 text-gray-600" />
@@ -100,22 +102,22 @@ export default function CalendarPage() {
               <ChevronRight className="w-4 h-4 text-gray-600" />
             </button>
             <button onClick={() => setCurrentDate(new Date())} className="ml-2 px-2.5 py-1 text-xs font-medium text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50">
-              오늘
+              {t("calendar.today")}
             </button>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex border border-gray-200 rounded-lg overflow-hidden">
             <button onClick={() => setViewMode("month")} className={cn("px-3 py-1.5 text-xs font-medium", viewMode === "month" ? "bg-gray-100 text-gray-900" : "text-gray-500")}>
-              월간
+              {t("calendar.month")}
             </button>
             <button onClick={() => setViewMode("week")} className={cn("px-3 py-1.5 text-xs font-medium", viewMode === "week" ? "bg-gray-100 text-gray-900" : "text-gray-500")}>
-              주간
+              {t("calendar.week")}
             </button>
           </div>
           {!isReadOnly && (
             <button onClick={openForToday} className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
-              <Plus className="w-4 h-4" />일정 추가
+              <Plus className="w-4 h-4" />{t("calendar.add_event")}
             </button>
           )}
         </div>

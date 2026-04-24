@@ -4,12 +4,13 @@ import { useState } from "react";
 import { X, Mail, Shield, Star, User, Trash2, AlertTriangle } from "lucide-react";
 import { MemberAvatar } from "@/components/shared/badges";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import type { Member, CommonCode, MemberRole } from "@/lib/types";
 
-const ROLE_OPTIONS: { v: MemberRole; l: string; icon: React.ReactNode }[] = [
-  { v: "admin", l: "관리자", icon: <Shield className="w-3 h-3" /> },
-  { v: "leader", l: "리더",  icon: <Star className="w-3 h-3" /> },
-  { v: "member", l: "팀원",  icon: <User className="w-3 h-3" /> },
+const ROLE_OPTIONS: { v: MemberRole; labelKey: string; icon: React.ReactNode }[] = [
+  { v: "admin", labelKey: "role.admin", icon: <Shield className="w-3 h-3" /> },
+  { v: "leader", labelKey: "role.leader", icon: <Star className="w-3 h-3" /> },
+  { v: "member", labelKey: "role.member", icon: <User className="w-3 h-3" /> },
 ];
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }: Props) {
+  const t = useT();
   const [form, setForm] = useState({
     name: member.name,
     email: member.email,
@@ -44,7 +46,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
     setSaving(false);
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error ?? "저장에 실패했습니다");
+      setError(data.error ?? t("auth.save_failed"));
       return;
     }
     onUpdated(await res.json() as Member);
@@ -57,7 +59,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
     setDeleting(false);
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error ?? "삭제에 실패했습니다");
+      setError(data.error ?? t("auth.delete_failed"));
       return;
     }
     onDeleted(member.id);
@@ -89,15 +91,14 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
             <div className="flex items-start gap-3 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <p className="text-sm">
-                <span className="font-semibold">{member.name}</span>을(를) 팀원 목록에서 삭제합니다.
-                이 작업은 되돌릴 수 없습니다.
+                <span className="font-semibold">{member.name}</span>{t("member.delete_confirm_detail")}
               </p>
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-2">
-              <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">취소</button>
+              <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
               <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50">
-                {deleting ? "삭제 중…" : "삭제 확인"}
+                {deleting ? t("common.deleting") : t("auth.confirm_delete")}
               </button>
             </div>
           </div>
@@ -105,7 +106,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
           /* 수정 폼 */
           <form onSubmit={handleSave} className="p-5 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name")} *</label>
               <input
                 autoFocus
                 value={form.name}
@@ -114,7 +115,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">이메일 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.email")} *</label>
               <input
                 type="email"
                 value={form.email}
@@ -129,14 +130,14 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
                 onChange={e => setForm(f => ({ ...f, lob: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                <option value="">선택 안함</option>
+                <option value="">{t("common.none_select")}</option>
                 {lobs.map(l => (
                   <option key={l.code} value={l.code}>{l.title_local || l.code}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">역할</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.role")}</label>
               <div className="flex gap-2">
                 {ROLE_OPTIONS.map(r => (
                   <button
@@ -150,7 +151,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
                         : "border-gray-200 text-gray-500 hover:bg-gray-50"
                     )}
                   >
-                    {r.icon}{r.l}
+                    {r.icon}{t(r.labelKey)}
                   </button>
                 ))}
               </div>
@@ -164,16 +165,16 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
                 onClick={() => setConfirmDelete(true)}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
               >
-                <Trash2 className="w-4 h-4" />삭제
+                <Trash2 className="w-4 h-4" />{t("action.delete")}
               </button>
               <div className="flex gap-2">
-                <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">취소</button>
+                <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
                 <button
                   type="submit"
                   disabled={saving || !form.name.trim() || !form.email.trim()}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
                 >
-                  {saving ? "저장 중…" : "저장"}
+                  {saving ? t("common.saving") : t("action.save")}
                 </button>
               </div>
             </div>

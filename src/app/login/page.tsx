@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CheckSquare, Eye, EyeOff } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useT();
 
-  // 관리자 계정이 없으면 초기 설정 화면으로 이동
   useEffect(() => {
     fetch("/api/setup/status")
       .then(r => r.json())
@@ -35,53 +36,49 @@ export default function LoginPage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error ?? "로그인에 실패했습니다");
+      setError(data.error ?? t("auth.login_failed"));
       return;
     }
 
     const data = await res.json();
-    // router.push()는 AuthProvider를 재마운트하지 않아 이전 계정 상태가 남는다.
-    // 전체 페이지 리로드로 Provider 상태를 초기화한다.
     window.location.href = data.mustChange ? "/change-password" : "/";
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm mx-4">
-        {/* 로고 */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mb-3">
             <CheckSquare className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">TaskFlow</h1>
-          <p className="text-sm text-gray-500 mt-1">팀 업무 관리 시스템</p>
+          <p className="text-sm text-gray-500 mt-1">{t("auth.app_subtitle")}</p>
         </div>
 
-        {/* 카드 */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-5">로그인</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-5">{t("auth.login")}</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.email")}</label>
               <input
                 type="email"
                 autoFocus
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="이메일 주소"
+                placeholder={t("auth.email_placeholder")}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.password")}</label>
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="비밀번호"
+                  placeholder={t("auth.password_placeholder")}
                   className="w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
@@ -106,17 +103,17 @@ export default function LoginPage() {
               disabled={loading || !email || !password}
               className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? "로그인 중…" : "로그인"}
+              {loading ? t("auth.logging_in") : t("auth.login")}
             </button>
           </form>
 
           <p className="text-xs text-gray-400 text-center mt-4">
-            계정이 없으면 관리자에게 문의하세요
+            {t("auth.contact_admin")}
           </p>
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-4">
-          초기 비밀번호는 이메일 주소입니다
+          {t("auth.initial_hint")}
         </p>
       </div>
     </div>

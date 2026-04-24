@@ -5,9 +5,11 @@ import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { WorkloadChart } from "@/components/dashboard/workload-chart";
 import { PriorityChart } from "@/components/dashboard/priority-chart";
 import { DeadlineList, ActivityFeed } from "@/components/dashboard/deadline-activity";
+import { useT } from "@/lib/i18n";
 import type { DashboardSummary, WorkloadData, PriorityData, Task, ActivityLog } from "@/lib/types";
 
 export default function DashboardPage() {
+  const t = useT();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [workload, setWorkload] = useState<WorkloadData[]>([]);
   const [priority, setPriority] = useState<PriorityData[]>([]);
@@ -55,8 +57,8 @@ export default function DashboardPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">대시보드</h1>
-        <p className="text-sm text-gray-500 mt-0.5">팀 업무 현황을 한눈에 확인하세요</p>
+        <h1 className="text-xl font-semibold text-gray-900">{t("dashboard.title")}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t("dashboard.subtitle")}</p>
       </div>
       <SummaryCards data={summary} />
       <div className="grid grid-cols-2 gap-4">

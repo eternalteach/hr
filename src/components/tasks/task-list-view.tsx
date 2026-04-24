@@ -2,6 +2,7 @@
 
 import { PriorityBadge, StatusBadge, DDayBadge, MemberAvatar } from "@/components/shared/badges";
 import { formatDate } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import type { Task } from "@/lib/types";
 
 interface TaskListViewProps {
@@ -10,16 +11,17 @@ interface TaskListViewProps {
 }
 
 export function TaskListView({ tasks, onTaskClick }: TaskListViewProps) {
+  const t = useT();
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
-            <th className="text-left px-4 py-3 font-medium text-gray-500 w-[40%]">업무</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-500">상태</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-500">우선순위</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-500">담당자</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-500">마감일</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500 w-[40%]">{t("task.name")}</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500">{t("task.status")}</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500">{t("task.priority")}</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500">{t("task.assignees")}</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-500">{t("task.due_date")}</th>
           </tr>
         </thead>
         <tbody>
@@ -64,7 +66,7 @@ export function TaskListView({ tasks, onTaskClick }: TaskListViewProps) {
           {tasks.length === 0 && (
             <tr>
               <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
-                업무가 없습니다
+                {t("task.empty")}
               </td>
             </tr>
           )}

@@ -6,12 +6,13 @@ import { MemberEditModal } from "@/components/members/MemberEditModal";
 import { Plus, X, Mail, Shield, Star, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { useT } from "@/lib/i18n";
 import type { Member, CommonCode, MemberRole } from "@/lib/types";
 
-const ROLE_OPTIONS: { v: MemberRole; l: string }[] = [
-  { v: "admin", l: "관리자" },
-  { v: "leader", l: "리더" },
-  { v: "member", l: "팀원" },
+const ROLE_OPTIONS: { v: MemberRole; labelKey: string }[] = [
+  { v: "admin", labelKey: "role.admin" },
+  { v: "leader", labelKey: "role.leader" },
+  { v: "member", labelKey: "role.member" },
 ];
 
 const ROLE_ICON: Record<MemberRole, React.ReactNode> = {
@@ -28,6 +29,8 @@ const ROLE_COLOR: Record<MemberRole, string> = {
 
 export default function MembersPage() {
   const { isReadOnly } = useAuth();
+  const t = useT();
+  const ROLE_KEYS: Record<MemberRole, string> = { admin: "role.admin", leader: "role.leader", member: "role.member" };
   const [members, setMembers] = useState<Member[]>([]);
   const [lobs, setLobs] = useState<CommonCode[]>([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -61,15 +64,15 @@ export default function MembersPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">팀원 관리</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{members.length}명의 팀원</p>
+          <h1 className="text-xl font-semibold text-gray-900">{t("member.title")}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t("member.count", { n: members.length })}</p>
         </div>
         {!isReadOnly && (
           <button
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
           >
-            <Plus className="w-4 h-4" />팀원 추가
+            <Plus className="w-4 h-4" />{t("member.add")}
           </button>
         )}
       </div>
@@ -96,7 +99,7 @@ export default function MembersPage() {
                   ROLE_COLOR[m.role]
                 )}>
                   {ROLE_ICON[m.role]}
-                  {m.role === "admin" ? "관리자" : m.role === "leader" ? "리더" : "팀원"}
+                  {t(ROLE_KEYS[m.role])}
                 </span>
                 {m.lob && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700">
@@ -125,47 +128,47 @@ export default function MembersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowCreate(false)}>
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="text-lg font-semibold">팀원 추가</h2>
+              <h2 className="text-lg font-semibold">{t("member.add")}</h2>
               <button onClick={() => setShowCreate(false)} className="p-1 rounded-md hover:bg-gray-100 text-gray-400"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleCreate} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name")} *</label>
                 <input autoFocus value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">이메일 *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.email")} *</label>
                 <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">LOB</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.lob")}</label>
                 <select
                   value={form.lob}
                   onChange={e => setForm(f => ({ ...f, lob: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
-                  <option value="">선택 안함</option>
+                  <option value="">{t("common.none_select")}</option>
                   {lobs.map(l => (
                     <option key={l.code} value={l.code}>{l.title_local || l.code}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">역할</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.role")}</label>
                 <div className="flex gap-2">
                   {ROLE_OPTIONS.map(r => (
                     <button key={r.v} type="button" onClick={() => setForm(f => ({ ...f, role: r.v }))}
                       className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border", form.role === r.v ? "bg-blue-50 border-blue-300 text-blue-700" : "border-gray-200 text-gray-500")}>
-                      {r.l}
+                      {t(r.labelKey)}
                     </button>
                   ))}
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">취소</button>
-                <button type="submit" disabled={!form.name || !form.email} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">추가</button>
+                <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
+                <button type="submit" disabled={!form.name || !form.email} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">{t("action.add")}</button>
               </div>
             </form>
           </div>

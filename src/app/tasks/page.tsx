@@ -6,18 +6,20 @@ import { TaskListView } from "@/components/tasks/task-list-view";
 import { TaskCreateModal } from "@/components/tasks/task-create-modal";
 import { TaskDetailModal } from "@/components/tasks/task-detail-modal";
 import { PRIORITIES, TASK_STATUSES } from "@/lib/constants";
+import { useT, useLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Plus, LayoutGrid, List, Filter, X } from "lucide-react";
 import type { Task, Member, Lob, Sow, Brd } from "@/lib/types";
 
 export default function TasksPage() {
+  const t = useT();
+  const lbl = useLabel();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  // 필터 상태 (순서: LOB → SOW → BRD → 업무명 → 상태 → 우선순위 → 담당자)
   const [filterLob, setFilterLob] = useState("");
   const [filterSow, setFilterSow] = useState("");
   const [filterBrd, setFilterBrd] = useState("");
@@ -66,7 +68,6 @@ export default function TasksPage() {
   };
 
   const handleUpdate = async (taskId: number, updates: Record<string, unknown>) => {
-    // 낙관적 업데이트 (즉각적인 UI 반응)
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } as Task : t));
     if (selectedTask?.id === taskId) {
       setSelectedTask(prev => prev ? { ...prev, ...updates } as Task : null);
@@ -77,7 +78,6 @@ export default function TasksPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
-      // PATCH 성공 후 전체 재조회 — BRD JOIN 필드(brd_code, brd_lob 등)를 포함한 최신 데이터로 갱신
       const fresh = await fetchTasks();
       const freshTask = fresh.find(t => t.id === taskId);
       if (freshTask) setSelectedTask(freshTask);
@@ -113,7 +113,6 @@ export default function TasksPage() {
 
   const activeFilters = [filterLob, filterSow, filterBrd, filterTitle, filterStatus, filterPriority, filterAssignee].filter(Boolean).length;
 
-  // 캐스케이드 필터 — LOB/SOW 선택에 따라 하위 목록 좁힘
   const filteredSows = filterLob ? sows.filter(s => s.lob === filterLob) : sows;
   const filteredBrds = brds.filter(b =>
     (!filterLob || b.lob === filterLob) &&
@@ -124,11 +123,10 @@ export default function TasksPage() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* 헤더 */}
       <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">업무 관리</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{tasks.length}개의 업무</p>
+          <h1 className="text-xl font-semibold text-gray-900">{t("task.title")}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t("task.count", { n: tasks.length })}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -139,23 +137,17 @@ export default function TasksPage() {
             )}
           >
             <Filter className="w-4 h-4" />
-            필터
+            {t("action.filter")}
             {activeFilters > 0 && (
               <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">{activeFilters}</span>
             )}
           </button>
 
           <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setViewMode("kanban")}
-              className={cn("p-2 transition-colors", viewMode === "kanban" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600")}
-            >
+            <button onClick={() => setViewMode("kanban")} className={cn("p-2 transition-colors", viewMode === "kanban" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600")}>
               <LayoutGrid className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={cn("p-2 transition-colors", viewMode === "list" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600")}
-            >
+            <button onClick={() => setViewMode("list")} className={cn("p-2 transition-colors", viewMode === "list" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600")}>
               <List className="w-4 h-4" />
             </button>
           </div>
@@ -165,61 +157,44 @@ export default function TasksPage() {
             className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            새 업무
+            {t("task.new_short")}
           </button>
         </div>
       </div>
 
-      {/* 필터 바 */}
       {showFilters && (
         <div className="px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-x-4 gap-y-2">
-          {/* LOB */}
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium text-gray-500 whitespace-nowrap">LOB</span>
-            <select
-              value={filterLob}
-              onChange={e => { setFilterLob(e.target.value); setFilterSow(""); setFilterBrd(""); }}
-              className={selectCls}
-            >
-              <option value="">전체</option>
+            <select value={filterLob} onChange={e => { setFilterLob(e.target.value); setFilterSow(""); setFilterBrd(""); }} className={selectCls}>
+              <option value="">{t("common.all")}</option>
               {lobs.map(l => <option key={l.id} value={l.code}>{l.code}</option>)}
             </select>
           </div>
 
-          {/* SOW */}
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium text-gray-500 whitespace-nowrap">SOW</span>
-            <select
-              value={filterSow}
-              onChange={e => { setFilterSow(e.target.value); setFilterBrd(""); }}
-              className={selectCls}
-            >
-              <option value="">전체</option>
+            <select value={filterSow} onChange={e => { setFilterSow(e.target.value); setFilterBrd(""); }} className={selectCls}>
+              <option value="">{t("common.all")}</option>
               {filteredSows.map(s => <option key={s.id} value={s.sow_id}>{s.sow_id}</option>)}
             </select>
           </div>
 
-          {/* BRD */}
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium text-gray-500 whitespace-nowrap">BRD</span>
-            <select
-              value={filterBrd}
-              onChange={e => setFilterBrd(e.target.value)}
-              className={selectCls}
-            >
-              <option value="">전체</option>
+            <select value={filterBrd} onChange={e => setFilterBrd(e.target.value)} className={selectCls}>
+              <option value="">{t("common.all")}</option>
               {filteredBrds.map(b => <option key={b.id} value={b.id}>{b.brd_id}</option>)}
             </select>
           </div>
 
-          {/* 업무명 LIKE 검색 */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">업무명</span>
+            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">{t("task.name")}</span>
             <div className="relative">
               <input
                 value={filterTitle}
                 onChange={e => setFilterTitle(e.target.value)}
-                placeholder="검색…"
+                placeholder={t("task.search_placeholder")}
                 className="text-sm border border-gray-200 rounded-md pl-2 pr-6 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 w-36"
               />
               {filterTitle && (
@@ -230,41 +205,26 @@ export default function TasksPage() {
             </div>
           </div>
 
-          {/* 상태 */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">상태</span>
-            <select
-              value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
-              className={selectCls}
-            >
-              <option value="">전체</option>
-              {TASK_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">{t("task.status")}</span>
+            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectCls}>
+              <option value="">{t("common.all")}</option>
+              {TASK_STATUSES.map(s => <option key={s.value} value={s.value}>{lbl(s)}</option>)}
             </select>
           </div>
 
-          {/* 우선순위 */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">우선순위</span>
-            <select
-              value={filterPriority}
-              onChange={e => setFilterPriority(e.target.value)}
-              className={selectCls}
-            >
-              <option value="">전체</option>
-              {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">{t("task.priority")}</span>
+            <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className={selectCls}>
+              <option value="">{t("common.all")}</option>
+              {PRIORITIES.map(p => <option key={p.value} value={p.value}>{lbl(p)}</option>)}
             </select>
           </div>
 
-          {/* 담당자 */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">담당자</span>
-            <select
-              value={filterAssignee}
-              onChange={e => setFilterAssignee(e.target.value)}
-              className={selectCls}
-            >
-              <option value="">전체</option>
+            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">{t("task.assignees")}</span>
+            <select value={filterAssignee} onChange={e => setFilterAssignee(e.target.value)} className={selectCls}>
+              <option value="">{t("common.all")}</option>
               {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
@@ -272,16 +232,15 @@ export default function TasksPage() {
           {activeFilters > 0 && (
             <button onClick={resetFilters} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 ml-1">
               <X className="w-3 h-3" />
-              초기화
+              {t("common.reset")}
             </button>
           )}
         </div>
       )}
 
-      {/* 콘텐츠 */}
       <div className="flex-1 overflow-auto p-6">
         {loading ? (
-          <div className="flex items-center justify-center h-full text-gray-400">로딩 중...</div>
+          <div className="flex items-center justify-center h-full text-gray-400">{t("common.loading")}</div>
         ) : viewMode === "kanban" ? (
           <KanbanBoard tasks={tasks} onStatusChange={handleStatusChange} onTaskClick={setSelectedTask} onReorder={handleReorder} />
         ) : (

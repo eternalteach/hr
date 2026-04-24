@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import type { Brd, Sow } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
@@ -22,6 +23,7 @@ const EMPTY: FormState = {
 };
 
 export function BrdFormModal({ brd, onClose, onSaved }: Props) {
+  const t = useT();
   const isEdit = !!brd;
   const [form, setForm] = useState<FormState>(brd ? {
     brd_id: brd.brd_id, sow_id: brd.sow_id, lob: brd.lob ?? "",
@@ -100,7 +102,7 @@ export function BrdFormModal({ brd, onClose, onSaved }: Props) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 className="text-base font-semibold text-gray-900">{isEdit ? "BRD 수정" : "BRD 추가"}</h2>
+          <h2 className="text-base font-semibold text-gray-900">{isEdit ? t("brd.edit") : t("brd.add")}</h2>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
             <X className="w-5 h-5" />
           </button>
@@ -118,8 +120,8 @@ export function BrdFormModal({ brd, onClose, onSaved }: Props) {
                 value={form.sow_id}
                 onChange={handleSowChange}
                 options={sowOptions}
-                placeholder="SOW 선택"
-                searchPlaceholder="SOW ID 또는 타이틀 검색"
+                placeholder={t("form.sow_select")}
+                searchPlaceholder={t("form.sow_search")}
               />
             </div>
           </div>
@@ -129,7 +131,7 @@ export function BrdFormModal({ brd, onClose, onSaved }: Props) {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 LOB
-                <span className="ml-1 text-gray-400 font-normal">(SOW에서 자동 설정)</span>
+                <span className="ml-1 text-gray-400 font-normal">{t("form.sow_auto_lob")}</span>
               </label>
               <input
                 value={form.lob ?? ""}
@@ -138,7 +140,7 @@ export function BrdFormModal({ brd, onClose, onSaved }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">BRD 유효여부</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t("brd.is_active")}</label>
               <div className="flex gap-2 mt-1.5">
                 {(["Y", "N"] as const).map(v => (
                   <button
@@ -161,34 +163,34 @@ export function BrdFormModal({ brd, onClose, onSaved }: Props) {
 
           {/* 타이틀 */}
           <div className="grid grid-cols-2 gap-4">
-            {field("BRD 타이틀 (Local)", "title_local")}
-            {field("BRD 타이틀 (영문)", "title_en")}
+            {field(t("form.title_local"), "title_local")}
+            {field(t("form.title_en"), "title_en")}
           </div>
 
           {/* 내용 */}
           <div className="grid grid-cols-2 gap-4">
-            {field("BRD 내용 (Local)", "content_local", { required: true, textarea: true })}
-            {field("BRD 내용 (영어)", "content_en", { required: true, textarea: true })}
+            {field(t("form.content_local"), "content_local", { required: true, textarea: true })}
+            {field(t("form.content_en"), "content_en", { required: true, textarea: true })}
           </div>
 
           {/* 비고 */}
           <div className="grid grid-cols-2 gap-4">
-            {field("비고 (Local)", "note_local", { textarea: true })}
-            {field("비고 (영어)", "note_en", { textarea: true })}
+            {field(t("form.note_local"), "note_local", { textarea: true })}
+            {field(t("form.note_en"), "note_en", { textarea: true })}
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               disabled={saving || !form.brd_id.trim() || !form.sow_id.trim() || !form.content_local.trim() || !form.content_en.trim()}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
             >
-              {saving ? "저장 중…" : isEdit ? "수정" : "추가"}
+              {saving ? t("common.saving") : isEdit ? t("action.edit") : t("action.add")}
             </button>
           </div>
         </form>

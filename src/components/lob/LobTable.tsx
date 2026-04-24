@@ -3,6 +3,7 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
+import { useT } from "@/lib/i18n";
 import type { Lob } from "@/lib/types";
 
 interface Props {
@@ -17,21 +18,22 @@ const cell = (v: string | null | undefined) => (v ? v : nil);
 export function LobTable({ rows, onEdit, onDelete }: Props) {
   const { language } = useLanguage();
   const isEn = language === "en";
+  const t = useT();
 
   if (rows.length === 0) {
     return (
       <div className="border border-gray-200 rounded-xl p-12 text-center text-gray-400 text-sm">
-        등록된 LOB가 없습니다
+        {t("lob.empty")}
       </div>
     );
   }
 
   const headers = [
-    "코드",
-    isEn ? "타이틀(EN)" : "타이틀(Local)",
-    isEn ? "내용(EN)" : "내용(Local)",
-    isEn ? "비고(EN)" : "비고(Local)",
-    "유효여부", "",
+    t("common.code"),
+    isEn ? t("common.col_title_en") : t("common.col_title_local"),
+    isEn ? t("common.col_content_en") : t("common.col_content_local"),
+    isEn ? t("common.col_note_en") : t("common.col_note_local"),
+    t("common.is_active"), "",
   ];
 
   return (

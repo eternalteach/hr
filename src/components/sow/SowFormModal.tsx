@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import type { Sow, Lob, CommonCode } from "@/lib/types";
 
 interface Props {
@@ -21,6 +22,7 @@ const EMPTY: FormState = {
 };
 
 export function SowFormModal({ sow, onClose, onSaved }: Props) {
+  const t = useT();
   const isEdit = !!sow;
   const [form, setForm] = useState<FormState>(sow ? {
     sow_id: sow.sow_id, lob: sow.lob ?? "", title_local: sow.title_local ?? "", title_en: sow.title_en ?? "",
@@ -91,7 +93,7 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 className="text-base font-semibold text-gray-900">{isEdit ? "SOW 수정" : "SOW 추가"}</h2>
+          <h2 className="text-base font-semibold text-gray-900">{isEdit ? t("sow.edit") : t("sow.add")}</h2>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
             <X className="w-5 h-5" />
           </button>
@@ -108,7 +110,7 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
                 onChange={e => set("lob", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                <option value="">— 선택 안 함 —</option>
+                <option value="">{t("common.select_dash")}</option>
                 {lobs.map(l => (
                   <option key={l.code} value={l.code}>
                     {l.title_local || l.code}
@@ -120,32 +122,32 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
 
           {/* 타이틀 */}
           <div className="grid grid-cols-2 gap-4">
-            {field("SOW 타이틀 (Local)", "title_local")}
-            {field("SOW 타이틀 (영문)", "title_en")}
+            {field(t("form.title_local"), "title_local")}
+            {field(t("form.title_en"), "title_en")}
           </div>
 
           {/* 내용 */}
           <div className="grid grid-cols-2 gap-4">
-            {field("SOW 내용 (Local)", "content_local", { required: true, textarea: true })}
-            {field("SOW 내용 (영어)", "content_en", { required: true, textarea: true })}
+            {field(t("form.content_local"), "content_local", { required: true, textarea: true })}
+            {field(t("form.content_en"), "content_en", { required: true, textarea: true })}
           </div>
 
           {/* 비고 */}
           <div className="grid grid-cols-2 gap-4">
-            {field("비고 (Local)", "note_local", { textarea: true })}
-            {field("비고 (영어)", "note_en", { textarea: true })}
+            {field(t("form.note_local"), "note_local", { textarea: true })}
+            {field(t("form.note_en"), "note_en", { textarea: true })}
           </div>
 
           {/* 마일스톤 + 유효여부 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">마일스톤 시기</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t("sow.milestone")}</label>
               <select
                 value={form.milestone ?? ""}
                 onChange={e => set("milestone", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                <option value="">— 선택 안 함 —</option>
+                <option value="">{t("common.select_dash")}</option>
                 {milestones.map(m => (
                   <option key={m.code} value={m.code}>
                     {m.title_local || m.code}
@@ -154,7 +156,7 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">SOW 유효여부</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t("sow.is_active")}</label>
               <div className="flex gap-2 mt-1.5">
                 {(["Y", "N"] as const).map(v => (
                   <button
@@ -179,14 +181,14 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
 
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               disabled={saving || !form.sow_id.trim() || !form.content_local.trim() || !form.content_en.trim()}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
             >
-              {saving ? "저장 중…" : isEdit ? "수정" : "추가"}
+              {saving ? t("common.saving") : isEdit ? t("action.edit") : t("action.add")}
             </button>
           </div>
         </form>

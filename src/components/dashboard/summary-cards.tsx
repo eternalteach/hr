@@ -2,19 +2,21 @@
 
 import { cn } from "@/lib/utils";
 import { ClipboardList, Loader, CheckCircle, AlertTriangle } from "lucide-react";
+import { useT } from "@/lib/i18n";
 import type { DashboardSummary } from "@/lib/types";
 
-const cards = [
-  { key: "totalTasks", label: "전체 업무", icon: ClipboardList, color: "text-blue-600 bg-blue-50" },
-  { key: "inProgress", label: "진행 중", icon: Loader, color: "text-amber-600 bg-amber-50" },
-  { key: "completedThisWeek", label: "이번 주 완료", icon: CheckCircle, color: "text-green-600 bg-green-50" },
-  { key: "overdue", label: "지연", icon: AlertTriangle, color: "text-red-600 bg-red-50" },
+const CARD_DEFS = [
+  { key: "totalTasks",         labelKey: "dashboard.total_tasks",        icon: ClipboardList, color: "text-blue-600 bg-blue-50" },
+  { key: "inProgress",         labelKey: "dashboard.in_progress",        icon: Loader,        color: "text-amber-600 bg-amber-50" },
+  { key: "completedThisWeek",  labelKey: "dashboard.completed_this_week", icon: CheckCircle,   color: "text-green-600 bg-green-50" },
+  { key: "overdue",            labelKey: "dashboard.overdue",            icon: AlertTriangle, color: "text-red-600 bg-red-50" },
 ] as const;
 
 export function SummaryCards({ data }: { data: DashboardSummary | null }) {
+  const t = useT();
   return (
     <div className="grid grid-cols-4 gap-4">
-      {cards.map(card => {
+      {CARD_DEFS.map(card => {
         const Icon = card.icon;
         const value = data ? data[card.key as keyof DashboardSummary] : "-";
         return (
@@ -23,7 +25,7 @@ export function SummaryCards({ data }: { data: DashboardSummary | null }) {
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">{card.label}</p>
+              <p className="text-sm text-gray-500">{t(card.labelKey)}</p>
               <p className="text-2xl font-semibold text-gray-900">{value}</p>
             </div>
           </div>
