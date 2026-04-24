@@ -3,6 +3,7 @@
 import { X, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
+import { useT } from "@/lib/i18n";
 import { MarkdownView } from "@/components/shared/MarkdownView";
 import { AttachmentList } from "@/components/attachments/AttachmentList";
 import type { Post, Lob } from "@/lib/types";
@@ -20,6 +21,7 @@ interface Props {
 
 export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete, onClose }: Props) {
   const { language } = useLanguage();
+  const t = useT();
   const isEn = language === "en";
 
   const title = (isEn ? post.title_en : post.title_local) || post.title_local;
@@ -33,6 +35,9 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
         return (isEn ? found.title_en : found.title_local) || found.code;
       })()
     : null;
+
+  const refDateLabel = config.referenceDateLabelKey ? t(config.referenceDateLabelKey) : t("board.ref_date");
+  const contentLabel = t(config.contentLabelKey);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
@@ -50,7 +55,7 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
               )}
               {config.hasReferenceDate && post.reference_date && (
                 <span className="px-2 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-700 rounded-full tabular-nums">
-                  {config.referenceDateLabel ?? "날짜"} · {post.reference_date}
+                  {refDateLabel} · {post.reference_date}
                 </span>
               )}
               <span className={cn(
@@ -68,7 +73,7 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
                 onClick={onEdit}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100"
               >
-                <Pencil className="w-3.5 h-3.5" />수정
+                <Pencil className="w-3.5 h-3.5" />{t("action.edit")}
               </button>
             )}
             {canEdit && onDelete && (
@@ -76,7 +81,7 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
                 onClick={onDelete}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="w-3.5 h-3.5" />삭제
+                <Trash2 className="w-3.5 h-3.5" />{t("action.delete")}
               </button>
             )}
             <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
@@ -88,17 +93,17 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
         <div className="p-6 overflow-auto flex-1 min-h-0">
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              {config.contentLabel}
+              {contentLabel}
             </h3>
             {content.trim()
               ? <MarkdownView content={content} />
-              : <p className="text-sm text-gray-400">{config.contentLabel}이 없습니다</p>
+              : <p className="text-sm text-gray-400">{t("board.no_content", { label: contentLabel })}</p>
             }
           </section>
 
           {note.trim() && (
             <section className="mt-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">비고</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("board.note")}</h3>
               <MarkdownView content={note} />
             </section>
           )}

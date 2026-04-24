@@ -6,7 +6,7 @@ import { MemberAvatar, DDayBadge } from "@/components/shared/badges";
 import { TASK_STATUSES, PRIORITIES } from "@/lib/constants";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import { useSettings } from "@/lib/settings-context";
-import { useLabel } from "@/lib/i18n";
+import { useLabel, useT } from "@/lib/i18n";
 import type { Task, Comment, Member, Brd } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
@@ -27,6 +27,7 @@ interface EditForm {
 export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProps) {
   const { timezone } = useSettings();
   const lbl = useLabel();
+  const t = useT();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -108,7 +109,6 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
         className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        {/* 헤더 */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100">
           <div className="flex-1 min-w-0">
             {isEditing ? (
@@ -124,7 +124,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
           </div>
           <div className="flex items-center gap-1 ml-4 shrink-0">
             {!isEditing && (
-              <button onClick={enterEdit} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400" title="편집">
+              <button onClick={enterEdit} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400" title={t("action.edit")}>
                 <Pencil className="w-4 h-4" />
               </button>
             )}
@@ -135,24 +135,21 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
         </div>
 
         <div className="flex-1 overflow-auto">
-          {/* 편집 모드 */}
           {isEditing ? (
             <form onSubmit={handleSave} className="p-5 space-y-4">
-              {/* 설명 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">설명</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.description")}</label>
                 <textarea
                   rows={3}
                   value={editForm.description}
                   onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  placeholder="업무 설명 (선택)"
+                  placeholder={t("task.desc_optional")}
                 />
               </div>
 
-              {/* 우선순위 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">우선순위</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("task.priority")}</label>
                 <div className="flex gap-1.5">
                   {PRIORITIES.map(p => (
                     <button
@@ -170,9 +167,8 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                 </div>
               </div>
 
-              {/* 마감일 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">마감일</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.due_date")}</label>
                 <input
                   type="date"
                   value={editForm.due_date}
@@ -181,35 +177,33 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                 />
               </div>
 
-              {/* BRD + LOB 자동 */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">BRD 연결</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.brd")}</label>
                   <SearchableSelect
                     value={editForm.brd_id ? String(editForm.brd_id) : ""}
                     onChange={v => setEditForm(f => ({ ...f, brd_id: v ? Number(v) : null }))}
                     options={brdOptions}
-                    placeholder="BRD 선택 (선택 안 함)"
-                    searchPlaceholder="BRD ID 또는 타이틀 검색"
+                    placeholder={t("task.brd_select")}
+                    searchPlaceholder={t("task.brd_search")}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     LOB
-                    <span className="ml-1 text-xs font-normal text-gray-400">(BRD에서 자동)</span>
+                    <span className="ml-1 text-xs font-normal text-gray-400">{t("task.brd_auto_lob")}</span>
                   </label>
                   <input
                     value={editLobDisplay}
                     readOnly
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-                    placeholder="BRD 선택 시 자동 설정"
+                    placeholder={t("task.brd_auto_placeholder")}
                   />
                 </div>
               </div>
 
-              {/* 담당자 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">담당자</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("task.assignees")}</label>
                 <div className="flex flex-wrap gap-2">
                   {allMembers.map(m => (
                     <button
@@ -227,7 +221,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                       {m.name}
                     </button>
                   ))}
-                  {!allMembers.length && <p className="text-xs text-gray-400">팀원 불러오는 중…</p>}
+                  {!allMembers.length && <p className="text-xs text-gray-400">{t("task.loading_members")}</p>}
                 </div>
               </div>
 
@@ -237,28 +231,26 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                   onClick={() => setIsEditing(false)}
                   className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
                 >
-                  취소
+                  {t("action.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={!editForm.title.trim()}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
                 >
-                  저장
+                  {t("action.save")}
                 </button>
               </div>
             </form>
           ) : (
-            /* 보기 모드 */
             <>
               <div className="p-5 border-b border-gray-100 space-y-3">
                 {task.description && (
                   <p className="text-sm text-gray-600">{task.description}</p>
                 )}
 
-                {/* 상태 */}
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500 w-16">상태</span>
+                  <span className="text-sm text-gray-500 w-16">{t("task.status")}</span>
                   <div className="flex gap-1.5">
                     {TASK_STATUSES.map(s => (
                       <button
@@ -275,9 +267,8 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                   </div>
                 </div>
 
-                {/* 우선순위 */}
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500 w-16">우선순위</span>
+                  <span className="text-sm text-gray-500 w-16">{t("task.priority")}</span>
                   <div className="flex gap-1.5">
                     {PRIORITIES.map(p => (
                       <button
@@ -294,9 +285,8 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                   </div>
                 </div>
 
-                {/* 담당자 */}
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500 w-16">담당자</span>
+                  <span className="text-sm text-gray-500 w-16">{t("task.assignees")}</span>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {task.assignees?.map(a => {
                       const name = a.member?.name || (a as unknown as Record<string, unknown>).member_name as string || "?";
@@ -307,14 +297,13 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                         </div>
                       );
                     })}
-                    {!task.assignees?.length && <span className="text-sm text-gray-400">없음</span>}
+                    {!task.assignees?.length && <span className="text-sm text-gray-400">{t("common.none")}</span>}
                   </div>
                 </div>
 
-                {/* 마감일 */}
                 {task.due_date && (
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500 w-16">마감일</span>
+                    <span className="text-sm text-gray-500 w-16">{t("task.due_date")}</span>
                     <div className="flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-gray-400" />
                       <span className="text-sm text-gray-700">{task.due_date}</span>
@@ -323,7 +312,6 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                   </div>
                 )}
 
-                {/* BRD 연결 */}
                 {task.brd_id && (
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-gray-500 w-16">BRD</span>
@@ -336,9 +324,8 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                 )}
               </div>
 
-              {/* 댓글 */}
               <div className="p-5">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">댓글 ({comments.length})</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">{t("task.comments")} ({comments.length})</h3>
                 <div className="space-y-3">
                   {comments.map(c => (
                     <div key={c.id} className="flex gap-2.5">
@@ -353,7 +340,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                     </div>
                   ))}
                   {comments.length === 0 && (
-                    <p className="text-sm text-gray-400 text-center py-4">아직 댓글이 없습니다</p>
+                    <p className="text-sm text-gray-400 text-center py-4">{t("task.no_comments")}</p>
                   )}
                 </div>
               </div>
@@ -361,7 +348,6 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
           )}
         </div>
 
-        {/* 댓글 입력 (보기 모드에서만) */}
         {!isEditing && (
           <div className="p-4 border-t border-gray-100">
             <div className="flex gap-2">
@@ -370,7 +356,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                 onChange={e => setNewComment(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && !e.shiftKey && handleAddComment()}
                 className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="댓글을 입력하세요..."
+                placeholder={t("task.comment_placeholder")}
               />
               <button
                 onClick={handleAddComment}

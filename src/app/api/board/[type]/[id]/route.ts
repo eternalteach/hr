@@ -34,7 +34,7 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
 
   const b = await request.json();
   if (!b.title_local?.trim()) {
-    throw new ApiError(400, `${cfg.titleLabel}(Local)는 필수입니다`);
+    throw new ApiError(400, "제목(Local)은 필수입니다", "TITLE_REQUIRED");
   }
 
   db.run(

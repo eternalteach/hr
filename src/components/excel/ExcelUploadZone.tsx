@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X, Download } from "lucide-react";
 import { parseExcel, type ColumnDef } from "@/lib/excel-parser";
+import { useT } from "@/lib/i18n";
 import * as XLSX from "xlsx";
 
 export type { ColumnDef };
@@ -40,6 +41,7 @@ function downloadTemplate(columns: ColumnDef[], fileName: string) {
 }
 
 export function ExcelUploadZone({ columns, onImport, templateName = "template", disabled }: ExcelUploadZoneProps) {
+  const t = useT();
   const [stage, setStage] = useState<Stage>("idle");
   const [fileName, setFileName] = useState("");
   const [parsed, setParsed] = useState<{ rows: Record<string, unknown>[]; errors: string[] } | null>(null);
@@ -47,7 +49,7 @@ export function ExcelUploadZone({ columns, onImport, templateName = "template", 
 
   const processFile = async (file: File) => {
     if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
-      setParsed({ rows: [], errors: ["xlsx, xls, csv 파일만 지원합니다"] });
+      setParsed({ rows: [], errors: [t("excel.format_error")] });
       setFileName(file.name);
       setStage("preview");
       return;
@@ -82,9 +84,9 @@ export function ExcelUploadZone({ columns, onImport, templateName = "template", 
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-green-700">
         <CheckCircle2 className="w-10 h-10" />
-        <p className="text-sm font-medium">가져오기 완료 — {parsed?.rows.length}건</p>
+        <p className="text-sm font-medium">{t("excel.done", { n: parsed?.rows.length ?? 0 })}</p>
         <button onClick={reset} className="text-xs text-gray-500 hover:underline mt-1">
-          다시 업로드
+          {t("excel.re_upload")}
         </button>
       </div>
     );
@@ -141,7 +143,7 @@ export function ExcelUploadZone({ columns, onImport, templateName = "template", 
             </table>
             {parsed.rows.length > 5 && (
               <p className="text-xs text-gray-400 text-center py-1.5 border-t border-gray-100">
-                … 외 {parsed.rows.length - 5}행
+                {t("excel.more_rows", { n: parsed.rows.length - 5 })}
               </p>
             )}
           </div>
@@ -149,14 +151,14 @@ export function ExcelUploadZone({ columns, onImport, templateName = "template", 
 
         <div className="flex justify-end gap-2">
           <button onClick={reset} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-            취소
+            {t("action.cancel")}
           </button>
           <button
             onClick={handleImport}
             disabled={hasErrors || stage === "importing"}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
           >
-            {stage === "importing" ? "가져오는 중…" : `${parsed?.rows.length ?? 0}건 가져오기`}
+            {stage === "importing" ? t("excel.importing") : t("excel.import_n", { n: parsed?.rows.length ?? 0 })}
           </button>
         </div>
       </div>
@@ -182,10 +184,10 @@ export function ExcelUploadZone({ columns, onImport, templateName = "template", 
           disabled={disabled}
         />
         <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm font-medium text-gray-700">파일을 드래그하거나 클릭해서 선택</p>
+        <p className="text-sm font-medium text-gray-700">{t("excel.drop_hint")}</p>
         <p className="text-xs text-gray-400 mt-1">.xlsx / .xls / .csv</p>
         {requiredLabels && (
-          <p className="text-xs text-gray-400 mt-2">필수 컬럼: {requiredLabels}</p>
+          <p className="text-xs text-gray-400 mt-2">{t("excel.required_cols")} {requiredLabels}</p>
         )}
       </div>
 
@@ -195,7 +197,7 @@ export function ExcelUploadZone({ columns, onImport, templateName = "template", 
         className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
       >
         <Download className="w-4 h-4" />
-        엑셀 템플릿 다운로드
+        {t("excel.template_download")}
       </button>
     </div>
   );

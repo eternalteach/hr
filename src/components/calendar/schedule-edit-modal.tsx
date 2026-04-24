@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Trash2, AlertTriangle } from "lucide-react";
 import { SCHEDULE_TYPES } from "@/lib/constants";
-import { useLabel } from "@/lib/i18n";
+import { useLabel, useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Schedule } from "@/lib/types";
 
@@ -20,6 +20,7 @@ function toDatetimeLocal(iso: string | null): string {
 
 export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: Props) {
   const lbl = useLabel();
+  const t = useT();
   const [form, setForm] = useState({
     title: schedule.title,
     type: schedule.type as string,
@@ -46,7 +47,8 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
     });
     setSaving(false);
     if (!res.ok) {
-      setError(((await res.json()) as { error: string }).error ?? "저장에 실패했습니다");
+      const data = await res.json() as { error?: string; code?: string };
+      setError(data.code ? t(`error.${data.code}`) : (data.error ?? t("auth.save_failed")));
       return;
     }
     onUpdated((await res.json()) as Schedule);
@@ -58,7 +60,8 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
     const res = await fetch(`/api/schedules/${schedule.id}`, { method: "DELETE" });
     setDeleting(false);
     if (!res.ok) {
-      setError(((await res.json()) as { error: string }).error ?? "삭제에 실패했습니다");
+      const data = await res.json() as { error?: string; code?: string };
+      setError(data.code ? t(`error.${data.code}`) : (data.error ?? t("auth.delete_failed")));
       return;
     }
     onDeleted(schedule.id);
@@ -68,22 +71,19 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4" onClick={e => e.stopPropagation()}>
-        {/* 헤더 */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">일정 수정</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t("calendar.edit_schedule")}</h2>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* 삭제 확인 */}
         {confirmDelete ? (
           <div className="p-5 space-y-4">
             <div className="flex items-start gap-3 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <p className="text-sm">
-                <span className="font-semibold">{schedule.title}</span> 일정을 삭제합니다.
-                이 작업은 되돌릴 수 없습니다.
+                {t("calendar.delete_schedule_confirm", { title: schedule.title })}
               </p>
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -92,22 +92,21 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
                 onClick={() => setConfirmDelete(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
               >
-                취소
+                {t("action.cancel")}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
               >
-                {deleting ? "삭제 중…" : "삭제 확인"}
+                {deleting ? t("common.deleting") : t("auth.confirm_delete")}
               </button>
             </div>
           </div>
         ) : (
-          /* 수정 폼 */
           <form onSubmit={handleSave} className="p-5 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("calendar.event_title")} *</label>
               <input
                 autoFocus
                 value={form.title}
@@ -116,26 +115,26 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">유형</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("calendar.event_type")}</label>
               <div className="flex gap-2">
-                {SCHEDULE_TYPES.map(t => (
+                {SCHEDULE_TYPES.map(t_ => (
                   <button
-                    key={t.value}
+                    key={t_.value}
                     type="button"
-                    onClick={() => set("type", t.value)}
+                    onClick={() => set("type", t_.value)}
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-xs font-medium border",
-                      form.type === t.value ? t.color + " ring-1" : "border-gray-200 text-gray-500"
+                      form.type === t_.value ? t_.color + " ring-1" : "border-gray-200 text-gray-500"
                     )}
                   >
-                    {lbl(t)}
+                    {lbl(t_)}
                   </button>
                 ))}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">시작</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("calendar.start")}</label>
                 <input
                   type="datetime-local"
                   value={form.start_at}
@@ -144,7 +143,7 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">종료</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("calendar.end")}</label>
                 <input
                   type="datetime-local"
                   value={form.end_at}
@@ -155,12 +154,12 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
             </div>
             {form.type === "meeting" && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">장소</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("calendar.location")}</label>
                 <input
                   value={form.location}
                   onChange={e => set("location", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="회의실, 온라인 등"
+                  placeholder={t("calendar.location_placeholder")}
                 />
               </div>
             )}
@@ -171,7 +170,7 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
                 onClick={() => setConfirmDelete(true)}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
               >
-                <Trash2 className="w-4 h-4" />삭제
+                <Trash2 className="w-4 h-4" />{t("action.delete")}
               </button>
               <div className="flex gap-2">
                 <button
@@ -179,14 +178,14 @@ export function ScheduleEditModal({ schedule, onClose, onUpdated, onDeleted }: P
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
                 >
-                  취소
+                  {t("action.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={saving || !form.title.trim() || !form.start_at}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
                 >
-                  {saving ? "저장 중…" : "저장"}
+                  {saving ? t("common.saving") : t("action.save")}
                 </button>
               </div>
             </div>

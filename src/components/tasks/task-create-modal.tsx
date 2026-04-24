@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { PRIORITIES } from "@/lib/constants";
-import { useLabel } from "@/lib/i18n";
+import { useLabel, useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Member, Tag, Brd } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -16,6 +16,7 @@ interface TaskCreateModalProps {
 
 export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProps) {
   const lbl = useLabel();
+  const t = useT();
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [brds, setBrds] = useState<Brd[]>([]);
@@ -74,41 +75,38 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">새 업무 만들기</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t("task.new")}</h2>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* 제목 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.name")} *</label>
             <input
               autoFocus
               value={form.title}
               onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="업무 제목을 입력하세요"
+              placeholder={t("task.title_placeholder")}
             />
           </div>
 
-          {/* 설명 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">설명</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.description")}</label>
             <textarea
               rows={3}
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              placeholder="업무 설명 (마크다운 지원)"
+              placeholder={t("task.desc_placeholder")}
             />
           </div>
 
-          {/* 우선순위 + 마감일 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">우선순위</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.priority")}</label>
               <div className="flex flex-wrap gap-1.5">
                 {PRIORITIES.map(p => (
                   <button
@@ -126,7 +124,7 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">마감일</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.due_date")}</label>
               <input
                 type="date"
                 value={form.due_date}
@@ -136,35 +134,33 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
             </div>
           </div>
 
-          {/* BRD 연결 + LOB 자동표시 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">BRD 연결</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.brd")}</label>
               <SearchableSelect
                 value={brdId ? String(brdId) : ""}
                 onChange={handleBrdChange}
                 options={brdOptions}
-                placeholder="BRD 선택 (선택 안 함)"
-                searchPlaceholder="BRD ID 또는 타이틀 검색"
+                placeholder={t("task.brd_select")}
+                searchPlaceholder={t("task.brd_search")}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 LOB
-                <span className="ml-1 text-xs font-normal text-gray-400">(BRD에서 자동)</span>
+                <span className="ml-1 text-xs font-normal text-gray-400">{t("task.brd_auto_lob")}</span>
               </label>
               <input
                 value={lobDisplay}
                 readOnly
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-                placeholder="BRD 선택 시 자동 설정"
+                placeholder={t("task.brd_auto_placeholder")}
               />
             </div>
           </div>
 
-          {/* 담당자 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">담당자</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("task.assignees")}</label>
             <div className="flex flex-wrap gap-2">
               {members.map(m => (
                 <button
@@ -190,21 +186,20 @@ export function TaskCreateModal({ open, onClose, onSubmit }: TaskCreateModalProp
             </div>
           </div>
 
-          {/* 버튼 */}
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               disabled={!form.title.trim()}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
             >
-              만들기
+              {t("task.create")}
             </button>
           </div>
         </form>

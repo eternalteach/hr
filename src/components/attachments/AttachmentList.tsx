@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Paperclip, Upload, Trash2, Download, FileText, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import type { Attachment, AttachmentOwnerType } from "@/lib/types";
 
 interface Props {
@@ -18,6 +19,7 @@ function formatBytes(n: number): string {
 }
 
 export function AttachmentList({ ownerType, ownerId, canEdit }: Props) {
+  const t = useT();
   const [items, setItems] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -53,7 +55,7 @@ export function AttachmentList({ ownerType, ownerId, canEdit }: Props) {
   };
 
   const remove = async (id: number) => {
-    if (!confirm("이 첨부파일을 삭제할까요? 되돌릴 수 없습니다.")) return;
+    if (!confirm(t("attachment.delete_confirm"))) return;
     const res = await fetch(`/api/attachments/${id}`, { method: "DELETE" });
     if (!res.ok) {
       setError(((await res.json()) as { error: string }).error);
@@ -66,7 +68,7 @@ export function AttachmentList({ ownerType, ownerId, canEdit }: Props) {
     <section>
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
         <Paperclip className="w-3.5 h-3.5" />
-        첨부파일
+        {t("attachment.title")}
         <span className="text-gray-400 normal-case font-normal">
           ({loading ? "…" : items.length})
         </span>
@@ -96,16 +98,16 @@ export function AttachmentList({ ownerType, ownerId, canEdit }: Props) {
           />
           <div className="flex items-center justify-center gap-2 text-gray-500">
             <Upload className="w-4 h-4" />
-            <span>{uploading ? "업로드 중…" : "파일을 끌어다 놓거나"}</span>
+            <span>{uploading ? t("attachment.uploading") : t("attachment.drop_hint")}</span>
             <button
               type="button"
               disabled={uploading}
               onClick={() => inputRef.current?.click()}
               className="text-blue-600 hover:underline font-medium"
             >
-              선택
+              {t("attachment.select")}
             </button>
-            <span className="text-gray-400">— 여러 파일 가능, 1건당 최대 20MB</span>
+            <span className="text-gray-400">{t("attachment.hint")}</span>
           </div>
         </div>
       )}
@@ -114,14 +116,14 @@ export function AttachmentList({ ownerType, ownerId, canEdit }: Props) {
         <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span className="truncate">{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto text-xs text-red-500 hover:underline">닫기</button>
+          <button onClick={() => setError(null)} className="ml-auto text-xs text-red-500 hover:underline">{t("action.close")}</button>
         </div>
       )}
 
       {loading ? (
-        <p className="text-sm text-gray-400">로딩 중…</p>
+        <p className="text-sm text-gray-400">{t("attachment.loading")}</p>
       ) : items.length === 0 ? (
-        <p className="text-sm text-gray-400">등록된 첨부파일이 없습니다.</p>
+        <p className="text-sm text-gray-400">{t("attachment.empty")}</p>
       ) : (
         <ul className="border border-gray-200 rounded-lg divide-y divide-gray-100">
           {items.map(att => (
@@ -139,7 +141,7 @@ export function AttachmentList({ ownerType, ownerId, canEdit }: Props) {
                 <a
                   href={`/api/attachments/${att.id}`}
                   className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700"
-                  title="다운로드"
+                  title={t("action.download")}
                 >
                   <Download className="w-3.5 h-3.5" />
                 </a>
@@ -147,7 +149,7 @@ export function AttachmentList({ ownerType, ownerId, canEdit }: Props) {
                   <button
                     onClick={() => remove(att.id)}
                     className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-600"
-                    title="삭제"
+                    title={t("action.delete")}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

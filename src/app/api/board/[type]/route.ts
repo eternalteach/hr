@@ -36,7 +36,7 @@ export const POST = withApiHandler(async (request: NextRequest, { params }: Para
   const cfg = BOARD_CONFIGS[type];
 
   if (!b.title_local?.trim()) {
-    throw new ApiError(400, `${cfg.titleLabel}(Local)는 필수입니다`);
+    throw new ApiError(400, "제목(Local)은 필수입니다", "TITLE_REQUIRED");
   }
 
   const now = new Date().toISOString();

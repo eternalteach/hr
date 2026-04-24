@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
+import { useT } from "@/lib/i18n";
 import type { Post, Lob } from "@/lib/types";
 import type { BoardConfig } from "@/lib/boards/config";
 
@@ -30,6 +31,7 @@ const makeEmpty = (lob: string | null | undefined): FormState => ({
 export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSaved }: Props) {
   const isEdit = !!post;
   const { language } = useLanguage();
+  const t = useT();
   const isEn = language === "en";
   const [form, setForm] = useState<FormState>(post ? {
     lob: post.lob ?? "",
@@ -66,7 +68,7 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
     <div>
       <label className="block text-xs font-medium text-gray-600 mb-1">
         {label}{opts?.required && <span className="text-red-500 ml-0.5">*</span>}
-        {opts?.markdown && <span className="ml-1.5 text-[10px] font-normal text-gray-400">Markdown 지원</span>}
+        {opts?.markdown && <span className="ml-1.5 text-[10px] font-normal text-gray-400">{t("board.markdown_hint")}</span>}
       </label>
       {opts?.textarea ? (
         <textarea
@@ -91,6 +93,11 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
   );
 
   const canSubmit = !saving && form.title_local.trim().length > 0;
+  const titleLabel = t(config.titleLabelKey);
+  const contentLabel = t(config.contentLabelKey);
+  const localSuffix = t("form.local_suffix");
+  const enSuffix = t("form.en_suffix");
+  const refDateLabel = config.referenceDateLabelKey ? t(config.referenceDateLabelKey) : t("board.ref_date");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
@@ -100,7 +107,9 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 className="text-base font-semibold text-gray-900">
-            {isEdit ? `${config.pageTitle} 수정` : `${config.pageTitle} 추가`}
+            {isEdit
+              ? t("board.form_title_edit", { title: t(config.pageTitleKey) })
+              : t("board.form_title_add", { title: t(config.pageTitleKey) })}
           </h2>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
             <X className="w-5 h-5" />
@@ -108,7 +117,6 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* 1행: LOB / reference_date / 유효여부 */}
           <div className={cn("grid gap-4", config.hasReferenceDate ? "grid-cols-3" : "grid-cols-2")}>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">LOB</label>
@@ -117,7 +125,7 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
                 onChange={e => set("lob", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                <option value="">— 선택 안 함 —</option>
+                <option value="">{t("common.select_dash")}</option>
                 {lobs.map(l => (
                   <option key={l.code} value={l.code}>
                     {(isEn ? l.title_en : l.title_local) || l.code}
@@ -128,7 +136,7 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
             {config.hasReferenceDate && (
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {config.referenceDateLabel ?? "날짜"}
+                  {refDateLabel}
                 </label>
                 <input
                   type="date"
@@ -139,7 +147,7 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
               </div>
             )}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">유효여부</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t("board.is_active")}</label>
               <div className="flex gap-2 mt-1.5">
                 {(["Y", "N"] as const).map(v => (
                   <button
@@ -161,40 +169,40 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {field(`${config.titleLabel} (Local)`, "title_local", {
+            {field(`${titleLabel} ${localSuffix}`, "title_local", {
               required: true,
               placeholder: config.titlePlaceholder,
             })}
-            {field(`${config.titleLabel} (영문)`, "title_en")}
+            {field(`${titleLabel} ${enSuffix}`, "title_en")}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {field(`${config.contentLabel} (Local)`, "content_local", {
+            {field(`${contentLabel} ${localSuffix}`, "content_local", {
               textarea: true, markdown: true,
               placeholder: config.contentPlaceholder,
             })}
-            {field(`${config.contentLabel} (영어)`, "content_en", {
+            {field(`${contentLabel} ${enSuffix}`, "content_en", {
               textarea: true, markdown: true,
             })}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {field("비고 (Local)", "note_local", { textarea: true, markdown: true })}
-            {field("비고 (영어)", "note_en", { textarea: true, markdown: true })}
+            {field(`${t("board.note")} ${localSuffix}`, "note_local", { textarea: true, markdown: true })}
+            {field(`${t("board.note")} ${enSuffix}`, "note_en", { textarea: true, markdown: true })}
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               disabled={!canSubmit}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
             >
-              {saving ? "저장 중…" : isEdit ? "수정" : "추가"}
+              {saving ? t("common.saving") : isEdit ? t("action.edit") : t("action.add")}
             </button>
           </div>
         </form>

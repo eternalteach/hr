@@ -7,6 +7,7 @@ import { BoardFormModal } from "./BoardFormModal";
 import { BoardDetailModal } from "./BoardDetailModal";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
+import { useT } from "@/lib/i18n";
 import type { Post, Lob } from "@/lib/types";
 import type { BoardConfig } from "@/lib/boards/config";
 
@@ -20,6 +21,7 @@ const NONE_KEY = "__none__";
 export function BoardPage({ config }: Props) {
   const { isReadOnly } = useAuth();
   const { language } = useLanguage();
+  const t = useT();
   const isEn = language === "en";
 
   const [allRows, setAllRows] = useState<Post[]>([]);
@@ -90,15 +92,15 @@ export function BoardPage({ config }: Props) {
     <div className="p-6 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">{config.pageTitle}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{rows.length}건 · {config.pageDescription}</p>
+          <h1 className="text-xl font-semibold text-gray-900">{t(config.pageTitleKey)}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t("common.count", { n: rows.length })} · {t(config.pageDescriptionKey)}</p>
         </div>
         {!isReadOnly && (
           <button
             onClick={() => setEditTarget(null)}
             className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
           >
-            <Plus className="w-4 h-4" />{config.addButtonLabel}
+            <Plus className="w-4 h-4" />{t(config.addButtonLabelKey)}
           </button>
         )}
       </div>
@@ -107,7 +109,7 @@ export function BoardPage({ config }: Props) {
         <LobTab
           active={activeLob === ALL_KEY}
           onClick={() => setActiveLob(ALL_KEY)}
-          label="전체"
+          label={t("common.all")}
           count={allRows.length}
         />
         {lobs.map(l => (
@@ -123,7 +125,7 @@ export function BoardPage({ config }: Props) {
           <LobTab
             active={activeLob === NONE_KEY}
             onClick={() => setActiveLob(NONE_KEY)}
-            label="(LOB 없음)"
+            label={t("board.no_lob")}
             count={noneCount}
           />
         )}
@@ -134,13 +136,13 @@ export function BoardPage({ config }: Props) {
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder={config.searchPlaceholder}
+          placeholder={t(config.searchPlaceholderKey)}
           className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {loading ? (
-        <div className="text-center text-gray-400 py-20">로딩 중…</div>
+        <div className="text-center text-gray-400 py-20">{t("common.loading")}</div>
       ) : (
         <BoardTable
           config={config}
@@ -180,7 +182,7 @@ export function BoardPage({ config }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDeleteTarget(null)}>
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="text-base font-semibold text-gray-900">{config.deleteTitle}</h2>
+              <h2 className="text-base font-semibold text-gray-900">{t(config.deleteTitleKey)}</h2>
               <button onClick={() => setDeleteTarget(null)} className="p-1 rounded-md hover:bg-gray-100 text-gray-400">
                 <X className="w-5 h-5" />
               </button>
@@ -188,12 +190,12 @@ export function BoardPage({ config }: Props) {
             <div className="p-5 space-y-4">
               <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-700 text-sm">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                <p><span className="font-semibold">{deleteLabel(deleteTarget)}</span>를 삭제합니다. 되돌릴 수 없습니다.</p>
+                <p><span className="font-semibold">{deleteLabel(deleteTarget)}</span>{t("common.delete_suffix")}</p>
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setDeleteTarget(null)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">취소</button>
+                <button onClick={() => setDeleteTarget(null)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
                 <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50">
-                  {deleting ? "삭제 중…" : "삭제"}
+                  {deleting ? t("common.deleting") : t("action.delete")}
                 </button>
               </div>
             </div>
