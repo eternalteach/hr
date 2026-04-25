@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export const GET = withApiHandler(async () => {
   const db = await getDb();
-  const data = queryAll(db, `
+  const data = await queryAll(db, `
     SELECT al.*, m.name as member_name, t.title as task_title
     FROM activity_logs al
     LEFT JOIN members m ON al.member_id = m.id

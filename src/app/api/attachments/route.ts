@@ -29,7 +29,7 @@ function parseOwnerId(raw: string | null): number {
 async function assertOwnerExists(ownerType: AttachmentOwnerType, ownerId: number) {
   const db = await getDb();
   if (ownerType === "board_post") {
-    const row = queryOne(db, "SELECT id FROM board_posts WHERE id = ?", [ownerId]);
+    const row = await queryOne(db, "SELECT id FROM board_posts WHERE id = ?", [ownerId]);
     if (!row) throw new ApiError(404, "대상 게시글을 찾을 수 없습니다", "POST_NOT_FOUND");
   }
 }
@@ -39,7 +39,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
   const ownerType = parseOwnerType(url.searchParams.get("owner_type"));
   const ownerId = parseOwnerId(url.searchParams.get("owner_id"));
   const db = await getDb();
-  return NextResponse.json(listAttachments(db, ownerType, ownerId));
+  return NextResponse.json(await listAttachments(db, ownerType, ownerId));
 });
 
 export const POST = withApiHandler(async (request: NextRequest) => {
@@ -68,7 +68,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   const saved = [];
   for (const f of files) {
     const buf = Buffer.from(await f.arrayBuffer());
-    saved.push(saveAttachment(db, ownerType, ownerId, {
+    saved.push(await saveAttachment(db, ownerType, ownerId, {
       name: f.name,
       type: f.type,
       bytes: buf,

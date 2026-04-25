@@ -18,7 +18,7 @@ function parseId(raw: string): number {
 export const GET = withApiHandler(async (_req: NextRequest, { params }: Params) => {
   const id = parseId((await params).id);
   const db = await getDb();
-  const att = getAttachment(db, id);
+  const att = await getAttachment(db, id);
   if (!att) throw new ApiError(404, "첨부파일을 찾을 수 없습니다");
 
   const bytes = readAttachmentBytes(att);
@@ -43,7 +43,7 @@ export const GET = withApiHandler(async (_req: NextRequest, { params }: Params) 
 export const DELETE = withApiHandler(async (_req: NextRequest, { params }: Params) => {
   const id = parseId((await params).id);
   const db = await getDb();
-  if (!getAttachment(db, id)) throw new ApiError(404, "첨부파일을 찾을 수 없습니다");
-  deleteAttachment(db, id);
+  if (!await getAttachment(db, id)) throw new ApiError(404, "첨부파일을 찾을 수 없습니다");
+  await deleteAttachment(db, id);
   return NextResponse.json({ ok: true });
 });

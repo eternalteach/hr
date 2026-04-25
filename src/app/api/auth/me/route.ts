@@ -15,7 +15,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
   if (!session) throw new ApiError(401, "세션이 만료되었습니다");
 
   const db = await getDb();
-  const member = queryOne(
+  const member = await queryOne(
     db,
     "SELECT id, name, email, avatar_url, lob, role, must_change_password FROM members WHERE id = ?",
     [session.sub]

@@ -13,7 +13,7 @@
 
 import fs from "fs";
 import path from "path";
-import type { Database as SqlJsDatabase } from "sql.js";
+import type { DbAdapter } from "@/db/adapter";
 import { queryAll, queryOne, insertAndGetId } from "@/db/helpers";
 import { saveDb } from "@/db";
 import type { Attachment, AttachmentOwnerType } from "@/lib/types";
@@ -59,12 +59,12 @@ function rowToAttachment(row: Record<string, unknown>): Attachment {
   };
 }
 
-export function listAttachments(
-  db: SqlJsDatabase,
+export async function listAttachments(
+  db: DbAdapter,
   ownerType: AttachmentOwnerType,
   ownerId: number,
-): Attachment[] {
-  const rows = queryAll(
+): Promise<Attachment[]> {
+  const rows = await queryAll(
     db,
     "SELECT * FROM attachments WHERE owner_type = ? AND owner_id = ? ORDER BY id ASC",
     [ownerType, ownerId],
@@ -72,8 +72,8 @@ export function listAttachments(
   return rows.map(rowToAttachment);
 }
 
-export function getAttachment(db: SqlJsDatabase, id: number): Attachment | null {
-  const row = queryOne(db, "SELECT * FROM attachments WHERE id = ?", [id]);
+export async function getAttachment(db: DbAdapter, id: number): Promise<Attachment | null> {
+  const row = await queryOne(db, "SELECT * FROM attachments WHERE id = ?", [id]);
   return row ? rowToAttachment(row) : null;
 }
 
@@ -82,20 +82,20 @@ export function getAttachment(db: SqlJsDatabase, id: number): Attachment | null 
  * 파일명에 자동 증가 id를 prefix로 붙여 충돌을 차단한다.
  * DB 저장(saveDb)은 호출자가 책임지지 않고 여기서 처리 — 첨부는 단발 작업.
  */
-export function saveAttachment(
-  db: SqlJsDatabase,
+export async function saveAttachment(
+  db: DbAdapter,
   ownerType: AttachmentOwnerType,
   ownerId: number,
   file: { name: string; type: string; bytes: Buffer },
   uploadedBy: number | null,
-): Attachment {
+): Promise<Attachment> {
   const safe = sanitizeFilename(file.name);
 
   const dir = ownerDir(ownerType, ownerId);
   fs.mkdirSync(dir, { recursive: true });
 
   // 임시로 size만 들고 INSERT → 진짜 파일명에 id를 붙여 저장 → storage_path UPDATE
-  const id = insertAndGetId(
+  const id = await insertAndGetId(
     db,
     `INSERT INTO attachments
        (owner_type, owner_id, filename, storage_path, mime_type, size_bytes, uploaded_by, uploaded_at)
@@ -118,10 +118,10 @@ export function saveAttachment(
 
   fs.writeFileSync(fullPath, file.bytes);
 
-  db.run("UPDATE attachments SET storage_path = ? WHERE id = ?", [relPath, id]);
-  saveDb();
+  await db.run("UPDATE attachments SET storage_path = ? WHERE id = ?", [relPath, id]);
+  await saveDb();
 
-  return getAttachment(db, id)!;
+  return (await getAttachment(db, id))!;
 }
 
 export function readAttachmentBytes(att: Attachment): Buffer {
@@ -130,8 +130,8 @@ export function readAttachmentBytes(att: Attachment): Buffer {
 }
 
 /** 1건 삭제 — DB 행 + 디스크 파일 모두. 파일 부재는 무시. */
-export function deleteAttachment(db: SqlJsDatabase, id: number): void {
-  const att = getAttachment(db, id);
+export async function deleteAttachment(db: DbAdapter, id: number): Promise<void> {
+  const att = await getAttachment(db, id);
   if (!att) return;
   const abs = path.join(process.cwd(), att.storage_path);
   try {
@@ -139,17 +139,17 @@ export function deleteAttachment(db: SqlJsDatabase, id: number): void {
   } catch {
     // 이미 없으면 통과
   }
-  db.run("DELETE FROM attachments WHERE id = ?", [id]);
-  saveDb();
+  await db.run("DELETE FROM attachments WHERE id = ?", [id]);
+  await saveDb();
 }
 
 /** owner의 모든 첨부 + 디렉터리째 삭제. owner 삭제 라우트에서 호출. */
-export function deleteAllForOwner(
-  db: SqlJsDatabase,
+export async function deleteAllForOwner(
+  db: DbAdapter,
   ownerType: AttachmentOwnerType,
   ownerId: number,
-): void {
-  db.run("DELETE FROM attachments WHERE owner_type = ? AND owner_id = ?", [ownerType, ownerId]);
+): Promise<void> {
+  await db.run("DELETE FROM attachments WHERE owner_type = ? AND owner_id = ?", [ownerType, ownerId]);
   const dir = ownerDir(ownerType, ownerId);
   try {
     fs.rmSync(dir, { recursive: true, force: true });

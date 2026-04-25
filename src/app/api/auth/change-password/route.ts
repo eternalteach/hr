@@ -20,7 +20,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   }
 
   const db = await getDb();
-  const row = queryOne(
+  const row = await queryOne(
     db,
     "SELECT id, password_hash, must_change_password FROM members WHERE id = ?",
     [session.sub]
@@ -35,11 +35,11 @@ export const POST = withApiHandler(async (request: NextRequest) => {
     }
   }
 
-  db.run(
+  await db.run(
     "UPDATE members SET password_hash = ?, must_change_password = 0 WHERE id = ?",
     [hashPassword(newPassword), session.sub]
   );
-  saveDb();
+  await saveDb();
 
   // 새 토큰 발급 (mustChange → false)
   const newToken = await signSession({

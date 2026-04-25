@@ -1,7 +1,10 @@
-import initSqlJs, { type Database as SqlJsDatabase } from "sql.js";
+import initSqlJs from "sql.js";
 import { NextRequest } from "next/server";
+import { SqliteAdapter } from "@/db/adapters/sqlite";
+import type { DbAdapter } from "@/db/adapter";
 
-export async function createTestDb(): Promise<SqlJsDatabase> {
+/** 테스트용 인메모리 SQLite 어댑터 생성 */
+export async function createTestDb(): Promise<DbAdapter> {
   const SQL = await initSqlJs();
   const db = new SQL.Database();
 
@@ -15,7 +18,7 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('admin','leader','member')),
       password_hash TEXT,
       must_change_password INTEGER NOT NULL DEFAULT 1,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE tags (
@@ -28,31 +31,24 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       code_group TEXT NOT NULL DEFAULT 'LOB',
       code TEXT NOT NULL UNIQUE,
-      title_local TEXT,
-      title_en TEXT,
-      content_local TEXT,
-      content_en TEXT,
-      note_local TEXT,
-      note_en TEXT,
+      title_local TEXT, title_en TEXT,
+      content_local TEXT, content_en TEXT,
+      note_local TEXT, note_en TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE sow (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sow_id TEXT NOT NULL UNIQUE,
       lob TEXT,
-      title_local TEXT,
-      title_en TEXT,
-      content_local TEXT NOT NULL,
-      content_en TEXT NOT NULL,
-      note_local TEXT,
-      note_en TEXT,
-      milestone TEXT,
+      title_local TEXT, title_en TEXT,
+      content_local TEXT NOT NULL, content_en TEXT NOT NULL,
+      note_local TEXT, note_en TEXT, milestone TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE brd (
@@ -60,15 +56,12 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       brd_id TEXT NOT NULL UNIQUE,
       sow_id TEXT NOT NULL,
       lob TEXT,
-      title_local TEXT,
-      title_en TEXT,
-      content_local TEXT NOT NULL,
-      content_en TEXT NOT NULL,
-      note_local TEXT,
-      note_en TEXT,
+      title_local TEXT, title_en TEXT,
+      content_local TEXT NOT NULL, content_en TEXT NOT NULL,
+      note_local TEXT, note_en TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE tasks (
@@ -83,15 +76,15 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       brd_id INTEGER,
       created_by INTEGER,
       deleted_at TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE task_assignees (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       task_id INTEGER NOT NULL,
       member_id INTEGER NOT NULL,
-      assigned_at TEXT NOT NULL DEFAULT (datetime('now'))
+      assigned_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE task_tags (
@@ -105,7 +98,7 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       task_id INTEGER NOT NULL,
       member_id INTEGER NOT NULL,
       content TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE schedules (
@@ -117,23 +110,20 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       location TEXT,
       task_id INTEGER,
       created_by INTEGER,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE TABLE board_posts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       board_type TEXT NOT NULL,
       lob TEXT,
-      title_local TEXT NOT NULL,
-      title_en TEXT,
-      content_local TEXT,
-      content_en TEXT,
-      note_local TEXT,
-      note_en TEXT,
+      title_local TEXT NOT NULL, title_en TEXT,
+      content_local TEXT, content_en TEXT,
+      note_local TEXT, note_en TEXT,
       reference_date TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE INDEX idx_board_posts_type_lob ON board_posts(board_type, lob);
@@ -147,7 +137,7 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       mime_type TEXT,
       size_bytes INTEGER NOT NULL,
       uploaded_by INTEGER,
-      uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
+      uploaded_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
 
     CREATE INDEX idx_attachments_owner ON attachments(owner_type, owner_id);
@@ -158,11 +148,11 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       member_id INTEGER,
       action TEXT NOT NULL,
       detail TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
     );
   `);
 
-  return db;
+  return new SqliteAdapter(db);
 }
 
 export function get(url: string, params?: Record<string, string>): NextRequest {
