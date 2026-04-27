@@ -1,12 +1,15 @@
 "use client";
 
-import { X, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Pencil, Trash2, CheckSquare, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
-import { useT } from "@/lib/i18n";
+import { useT, useLabel } from "@/lib/i18n";
 import { MarkdownView } from "@/components/shared/MarkdownView";
 import { AttachmentList } from "@/components/attachments/AttachmentList";
-import type { Post, Lob } from "@/lib/types";
+import { LinkedItemsPicker } from "@/components/shared/LinkedItemsPicker";
+import { TASK_STATUSES } from "@/lib/constants";
+import type { Post, Lob, Task, LinkedTaskSummary } from "@/lib/types";
 import type { BoardConfig } from "@/lib/boards/config";
 
 interface Props {
@@ -22,7 +25,41 @@ interface Props {
 export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete, onClose }: Props) {
   const { language } = useLanguage();
   const t = useT();
+  const lbl = useLabel();
   const isEn = language === "en";
+
+  const showLinkedTasks = config.type === "meeting-notes";
+  const [linkedTasks, setLinkedTasks] = useState<LinkedTaskSummary[]>([]);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (!showLinkedTasks) return;
+    fetch(`/api/board/${config.type}/${post.id}/links`)
+      .then(r => r.json())
+      .then(setLinkedTasks)
+      .catch(() => setLinkedTasks([]));
+  }, [showLinkedTasks, config.type, post.id]);
+
+  useEffect(() => {
+    if (!showLinkedTasks) return;
+    fetch("/api/tasks").then(r => r.json()).then(setAllTasks).catch(() => setAllTasks([]));
+  }, [showLinkedTasks]);
+
+  const updateLinkedTasks = async (nextIds: number[]) => {
+    const res = await fetch(`/api/board/${config.type}/${post.id}/links`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task_ids: nextIds }),
+    });
+    if (res.ok) setLinkedTasks(await res.json());
+  };
+
+  const taskOptions = allTasks.map(tk => ({
+    value: String(tk.id),
+    label: tk.title,
+    sub: [tk.brd_lob, tk.brd_code].filter(Boolean).join(" · ") || undefined,
+  }));
+  const linkedTasksById = new Map<number, LinkedTaskSummary>(linkedTasks.map(tk => [tk.id, tk]));
 
   const title = (isEn ? post.title_en : post.title_local) || post.title_local;
   const content = (isEn ? post.content_en : post.content_local) ?? "";
@@ -111,6 +148,47 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
           <div className="mt-6">
             <AttachmentList ownerType="board_post" ownerId={post.id} canEdit={canEdit} />
           </div>
+
+          {showLinkedTasks && (
+            <section className="mt-6">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                {t("task.linked_tasks")}
+              </h3>
+              <LinkedItemsPicker
+                selectedIds={linkedTasks.map(tk => tk.id)}
+                options={taskOptions}
+                canEdit={canEdit}
+                onAdd={id => updateLinkedTasks([...linkedTasks.map(tk => tk.id), id])}
+                onRemove={id => updateLinkedTasks(linkedTasks.map(tk => tk.id).filter(x => x !== id))}
+                emptyLabel={t("task.linked_tasks_empty")}
+                addLabel={t("task.linked_tasks_add")}
+                selectPlaceholder={t("task.linked_tasks_select")}
+                searchPlaceholder={t("task.linked_tasks_search")}
+                renderItem={id => {
+                  const tk = linkedTasksById.get(id);
+                  if (!tk) return <span className="text-gray-400">#{id}</span>;
+                  const statusCfg = TASK_STATUSES.find(s => s.value === tk.status);
+                  const isDone = tk.status === "done";
+                  return (
+                    <div className="flex items-center gap-2 min-w-0">
+                      {isDone
+                        ? <CheckSquare className="w-4 h-4 text-green-600 shrink-0" />
+                        : <Square className="w-4 h-4 text-gray-300 shrink-0" />
+                      }
+                      <span className={cn("truncate", isDone ? "text-gray-500 line-through" : "text-gray-800")}>
+                        {tk.title}
+                      </span>
+                      {statusCfg && (
+                        <span className={cn("px-1.5 py-0.5 rounded-full text-[10px] font-medium shrink-0", statusCfg.color)}>
+                          {lbl(statusCfg)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                }}
+              />
+            </section>
+          )}
         </div>
       </div>
     </div>

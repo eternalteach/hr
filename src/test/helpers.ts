@@ -152,6 +152,15 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
 
     CREATE INDEX idx_attachments_owner ON attachments(owner_type, owner_id);
 
+    CREATE TABLE task_post_links (
+      task_id INTEGER NOT NULL,
+      post_id INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (task_id, post_id)
+    );
+
+    CREATE INDEX idx_task_post_links_post ON task_post_links(post_id);
+
     CREATE TABLE activity_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       task_id INTEGER,

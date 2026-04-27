@@ -290,6 +290,23 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
+  // task_post_links — 업무 ↔ 회의록(board_post) 양방향 링크
+  const hasTaskPostLinks = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='task_post_links'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasTaskPostLinks) {
+    database.run(`
+      CREATE TABLE task_post_links (
+        task_id INTEGER NOT NULL REFERENCES tasks(id),
+        post_id INTEGER NOT NULL REFERENCES board_posts(id),
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (task_id, post_id)
+      )
+    `);
+    database.run("CREATE INDEX idx_task_post_links_post ON task_post_links(post_id)");
+    dirty = true;
+  }
+
   // members.password_hash + must_change_password
   const membersCols2 = (database.exec("PRAGMA table_info(members)")[0]?.values ?? []).map(r => r[1] as string);
 
@@ -462,6 +479,15 @@ function initSchema(database: SqlJsDatabase) {
     );
 
     CREATE INDEX IF NOT EXISTS idx_attachments_owner ON attachments(owner_type, owner_id);
+
+    CREATE TABLE IF NOT EXISTS task_post_links (
+      task_id INTEGER NOT NULL REFERENCES tasks(id),
+      post_id INTEGER NOT NULL REFERENCES board_posts(id),
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (task_id, post_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_task_post_links_post ON task_post_links(post_id);
 
     CREATE TABLE IF NOT EXISTS activity_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

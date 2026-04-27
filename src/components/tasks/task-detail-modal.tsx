@@ -7,8 +7,9 @@ import { TASK_STATUSES, PRIORITIES } from "@/lib/constants";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import { useSettings } from "@/lib/settings-context";
 import { useLabel, useT } from "@/lib/i18n";
-import type { Task, Comment, Member, Brd } from "@/lib/types";
+import type { Task, Comment, Member, Brd, Post } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { LinkedItemsPicker } from "@/components/shared/LinkedItemsPicker";
 
 interface TaskDetailModalProps {
   task: Task | null;
@@ -34,13 +35,20 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
   const [editForm, setEditForm] = useState<EditForm>({ title: "", description: "", due_date: "", assignee_ids: [], brd_id: null });
   const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [brds, setBrds] = useState<Brd[]>([]);
+  const [linkedPosts, setLinkedPosts] = useState<Post[]>([]);
+  const [allMeetingNotes, setAllMeetingNotes] = useState<Post[]>([]);
 
   useEffect(() => {
     if (task) {
       fetch(`/api/tasks/${task.id}/comments`).then(r => r.json()).then(setComments).catch(() => setComments([]));
+      fetch(`/api/tasks/${task.id}/links`).then(r => r.json()).then(setLinkedPosts).catch(() => setLinkedPosts([]));
       setIsEditing(false);
     }
   }, [task?.id]);
+
+  useEffect(() => {
+    fetch("/api/board/meeting-notes").then(r => r.json()).then(setAllMeetingNotes).catch(() => setAllMeetingNotes([]));
+  }, []);
 
   if (!task) return null;
 
@@ -90,6 +98,27 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
         ? f.assignee_ids.filter(x => x !== id)
         : [...f.assignee_ids, id],
     }));
+
+  const updateLinkedPosts = async (nextIds: number[]) => {
+    const res = await fetch(`/api/tasks/${task.id}/links`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post_ids: nextIds }),
+    });
+    if (res.ok) setLinkedPosts(await res.json());
+  };
+
+  const handleAddPost = (postId: number) =>
+    updateLinkedPosts([...linkedPosts.map(p => p.id), postId]);
+  const handleRemovePost = (postId: number) =>
+    updateLinkedPosts(linkedPosts.map(p => p.id).filter(id => id !== postId));
+
+  const meetingNoteOptions = allMeetingNotes.map(p => ({
+    value: String(p.id),
+    label: p.title_local,
+    sub: p.reference_date ?? undefined,
+  }));
+  const postsById = new Map<number, Post>(linkedPosts.map(p => [p.id, p]));
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
@@ -322,6 +351,35 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                     </div>
                   </div>
                 )}
+
+                <div>
+                  <div className="text-sm text-gray-500 mb-1.5">{t("task.linked_posts")}</div>
+                  <LinkedItemsPicker
+                    selectedIds={linkedPosts.map(p => p.id)}
+                    options={meetingNoteOptions}
+                    canEdit
+                    onAdd={handleAddPost}
+                    onRemove={handleRemovePost}
+                    emptyLabel={t("task.linked_posts_empty")}
+                    addLabel={t("task.linked_posts_add")}
+                    selectPlaceholder={t("task.linked_posts_select")}
+                    searchPlaceholder={t("task.linked_posts_search")}
+                    renderItem={id => {
+                      const p = postsById.get(id);
+                      if (!p) return <span className="text-gray-400">#{id}</span>;
+                      return (
+                        <div className="flex items-center gap-2 min-w-0">
+                          {p.reference_date && (
+                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-xs tabular-nums shrink-0">
+                              {p.reference_date}
+                            </span>
+                          )}
+                          <span className="text-gray-800 truncate">{p.title_local}</span>
+                        </div>
+                      );
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="p-5">

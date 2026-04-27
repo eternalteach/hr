@@ -187,6 +187,21 @@ export interface Attachment {
   uploaded_at: string;
 }
 
+/** 회의록 상세에서 보여줄 연관 업무 요약 — `/api/board/[type]/[id]/links` GET 응답 */
+export interface LinkedTaskSummary {
+  id: number;
+  title: string;
+  status: TaskStatus;
+  priority: Priority;
+  due_date: string | null;
+  completed_at: string | null;
+  brd_id: number | null;
+  brd_code: string | null;
+  brd_lob: string | null;
+  brd_title_local: string | null;
+  brd_title_en: string | null;
+}
+
 export interface DashboardSummary {
   totalTasks: number;
   inProgress: number;

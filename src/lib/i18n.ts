@@ -110,6 +110,16 @@ const dict: Record<Lang, Record<string, string>> = {
     "task.desc_optional": "업무 설명 (선택)",
     "task.loading_members": "팀원 불러오는 중…",
     "task.create": "만들기",
+    "task.linked_posts": "관련 회의록",
+    "task.linked_posts_empty": "연결된 회의록이 없습니다",
+    "task.linked_posts_add": "회의록 추가",
+    "task.linked_posts_select": "회의록 선택",
+    "task.linked_posts_search": "회의명 검색",
+    "task.linked_tasks": "관련 업무",
+    "task.linked_tasks_empty": "연결된 업무가 없습니다",
+    "task.linked_tasks_add": "업무 추가",
+    "task.linked_tasks_select": "업무 선택",
+    "task.linked_tasks_search": "업무명 검색",
 
     // Calendar
     "calendar.title": "캘린더",
@@ -463,6 +473,16 @@ const dict: Record<Lang, Record<string, string>> = {
     "task.desc_optional": "Task description (optional)",
     "task.loading_members": "Loading members…",
     "task.create": "Create",
+    "task.linked_posts": "Related Meeting Notes",
+    "task.linked_posts_empty": "No linked meeting notes",
+    "task.linked_posts_add": "Add Notes",
+    "task.linked_posts_select": "Select notes",
+    "task.linked_posts_search": "Search meeting name",
+    "task.linked_tasks": "Related Tasks",
+    "task.linked_tasks_empty": "No linked tasks",
+    "task.linked_tasks_add": "Add Task",
+    "task.linked_tasks_select": "Select task",
+    "task.linked_tasks_search": "Search task title",
 
     // Calendar
     "calendar.title": "Calendar",
