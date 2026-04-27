@@ -1,0 +1,10 @@
+{
+  "model": "sonnet",
+  "provider": "anthropic",
+  "brave": true,
+  "skill-locations": ["./.junie/skills"],
+  "skill-default-locations": true,
+  "agent-locations": ["./.junie/agents"],
+  "agent-default-location": true,
+  "guidelines-location": "./.junie/AGENTS.md"
+}
