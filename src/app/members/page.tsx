@@ -28,7 +28,7 @@ const ROLE_COLOR: Record<MemberRole, string> = {
 };
 
 export default function MembersPage() {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, currentUser } = useAuth();
   const t = useT();
   const ROLE_KEYS: Record<MemberRole, string> = { admin: "role.admin", leader: "role.leader", member: "role.member" };
   const [members, setMembers] = useState<Member[]>([]);
@@ -127,6 +127,7 @@ export default function MembersPage() {
         <MemberEditModal
           member={editTarget}
           lobs={lobs}
+          isAdmin={currentUser?.role === "admin"}
           onClose={() => setEditTarget(null)}
           onUpdated={updated => setMembers(ms => ms.map(m => m.id === updated.id ? updated as Member : m))}
           onDeleted={id => setMembers(ms => ms.filter(m => m.id !== id))}

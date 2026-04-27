@@ -149,6 +149,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "member.name_en_placeholder": "Gildong Hong",
     "member.email_placeholder": "example@company.com",
     "member.delete_confirm_detail": "을(를) 팀원 목록에서 삭제합니다. 이 작업은 되돌릴 수 없습니다.",
+    "member.reset_password": "비밀번호 초기화",
+    "member.reset_password_confirm": "비밀번호를 이메일 주소로 초기화합니다. 팀원은 다음 로그인 시 새 비밀번호를 설정해야 합니다.",
 
     // LOB
     "lob.title": "LOB 관리",
@@ -303,6 +305,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "auth.save_failed": "저장에 실패했습니다",
     "auth.delete_failed": "삭제에 실패했습니다",
     "auth.confirm_delete": "삭제 확인",
+    "auth.resetting": "초기화 중…",
+    "auth.reset_failed": "비밀번호 초기화에 실패했습니다",
 
     // Common UI
     "common.loading": "로딩 중...",
@@ -516,6 +520,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "member.name_en_placeholder": "Gildong Hong",
     "member.email_placeholder": "example@company.com",
     "member.delete_confirm_detail": "will be removed from the team. This cannot be undone.",
+    "member.reset_password": "Reset Password",
+    "member.reset_password_confirm": "Password will be reset to the email address. The member must set a new password on next login.",
 
     // LOB
     "lob.title": "LOB",
@@ -670,6 +676,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "auth.save_failed": "Failed to save",
     "auth.delete_failed": "Failed to delete",
     "auth.confirm_delete": "Confirm Delete",
+    "auth.resetting": "Resetting…",
+    "auth.reset_failed": "Failed to reset password",
 
     // Common UI
     "common.loading": "Loading...",

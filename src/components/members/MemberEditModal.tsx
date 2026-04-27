@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Mail, Shield, Star, User, Trash2, AlertTriangle } from "lucide-react";
+import { X, Mail, Shield, Star, User, Trash2, AlertTriangle, KeyRound } from "lucide-react";
 import { MemberAvatar } from "@/components/shared/badges";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
@@ -16,12 +16,13 @@ const ROLE_OPTIONS: { v: MemberRole; labelKey: string; icon: React.ReactNode }[]
 interface Props {
   member: Member;
   lobs: CommonCode[];
+  isAdmin?: boolean;
   onClose: () => void;
   onUpdated: (member: Member) => void;
   onDeleted: (id: number) => void;
 }
 
-export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }: Props) {
+export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onDeleted }: Props) {
   const t = useT();
   const [form, setForm] = useState({
     name: member.name,
@@ -31,8 +32,10 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
     role: member.role,
   });
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -64,6 +67,19 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
       return;
     }
     onDeleted(member.id);
+    onClose();
+  };
+
+  const handleReset = async () => {
+    setResetting(true);
+    setError(null);
+    const res = await fetch(`/api/members/${member.id}/reset-password`, { method: "POST" });
+    setResetting(false);
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.code ? t(`error.${data.code}`) : (data.error ?? t("auth.reset_failed")));
+      return;
+    }
     onClose();
   };
 
@@ -103,6 +119,24 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
               <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
               <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50">
                 {deleting ? t("common.deleting") : t("auth.confirm_delete")}
+              </button>
+            </div>
+          </div>
+        ) : confirmReset ? (
+          /* 비밀번호 초기화 확인 화면 */
+          <div className="p-5 space-y-4">
+            <div className="flex items-start gap-3 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <KeyRound className="w-4 h-4 shrink-0 mt-0.5" />
+              <p className="text-sm">
+                <span className="font-semibold">{member.name}</span>
+                {"님 — "}{t("member.reset_password_confirm")}
+              </p>
+            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <div className="flex justify-end gap-2">
+              <button onClick={() => { setConfirmReset(false); setError(null); }} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
+              <button onClick={handleReset} disabled={resetting} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">
+                {resetting ? t("auth.resetting") : t("member.reset_password")}
               </button>
             </div>
           </div>
@@ -174,13 +208,24 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <div className="flex items-center justify-between pt-2">
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
-              >
-                <Trash2 className="w-4 h-4" />{t("action.delete")}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                >
+                  <Trash2 className="w-4 h-4" />{t("action.delete")}
+                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmReset(true)}
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded-lg"
+                  >
+                    <KeyRound className="w-4 h-4" />{t("member.reset_password")}
+                  </button>
+                )}
+              </div>
               <div className="flex gap-2">
                 <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
                 <button
