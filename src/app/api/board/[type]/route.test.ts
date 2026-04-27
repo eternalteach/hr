@@ -48,6 +48,32 @@ describe("GET /api/board/[type]", () => {
     const res = await GET(get("/api/board/invalid-type"), makeParams({ type: "invalid-type" }));
     expect(res.status).toBe(400);
   });
+
+  it("연관 업무의 done/total 카운트를 반환한다", async () => {
+    _db.run("INSERT INTO tasks (title, status, priority, position) VALUES ('A','done','medium',0), ('B','todo','medium',0), ('C','in_progress','medium',0)");
+    _db.run("INSERT INTO task_post_links (task_id, post_id) VALUES (1, 2), (2, 2), (3, 2)");
+    const res = await GET(get("/api/board/meeting-notes"), makeParams({ type: "meeting-notes" }));
+    const body = await res.json();
+    expect(body[0].linked_tasks_total).toBe(3);
+    expect(body[0].linked_tasks_done).toBe(1);
+  });
+
+  it("삭제된 업무는 카운트에서 제외된다", async () => {
+    _db.run("INSERT INTO tasks (title, status, priority, position) VALUES ('A','done','medium',0), ('B','todo','medium',0)");
+    _db.run("INSERT INTO task_post_links (task_id, post_id) VALUES (1, 2), (2, 2)");
+    _db.run("UPDATE tasks SET deleted_at = datetime('now') WHERE id = 1");
+    const res = await GET(get("/api/board/meeting-notes"), makeParams({ type: "meeting-notes" }));
+    const body = await res.json();
+    expect(body[0].linked_tasks_total).toBe(1);
+    expect(body[0].linked_tasks_done).toBe(0);
+  });
+
+  it("연관 업무가 없으면 0을 반환한다", async () => {
+    const res = await GET(get("/api/board/meeting-notes"), makeParams({ type: "meeting-notes" }));
+    const body = await res.json();
+    expect(body[0].linked_tasks_total).toBe(0);
+    expect(body[0].linked_tasks_done).toBe(0);
+  });
 });
 
 describe("POST /api/board/[type]", () => {

@@ -154,6 +154,9 @@ export interface Post {
   is_active: "Y" | "N";
   updated_at: string;
   created_at: string;
+  /** 회의록 등 task 링크가 있는 보드용 진행률 — list GET에서만 채워짐 */
+  linked_tasks_total?: number;
+  linked_tasks_done?: number;
 }
 
 export interface Brd {

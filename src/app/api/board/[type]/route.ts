@@ -15,15 +15,25 @@ export const GET = withApiHandler(async (request: NextRequest, { params }: Param
   const type = parseType((await params).type);
   const db = await getDb();
   const lob = new URL(request.url).searchParams.get("lob");
+
+  // 회의록처럼 task 링크가 의미 있는 보드를 위해 진행률 카운트 함께 반환 — glossary는 항상 0
+  const baseSelect = `
+    SELECT bp.*,
+      (SELECT COUNT(*) FROM task_post_links l JOIN tasks t ON t.id = l.task_id
+        WHERE l.post_id = bp.id AND t.deleted_at IS NULL) AS linked_tasks_total,
+      (SELECT COUNT(*) FROM task_post_links l JOIN tasks t ON t.id = l.task_id
+        WHERE l.post_id = bp.id AND t.deleted_at IS NULL AND t.status = 'done') AS linked_tasks_done
+    FROM board_posts bp
+  `;
   const rows = lob
     ? queryAll(
         db,
-        "SELECT * FROM board_posts WHERE board_type = ? AND lob = ? ORDER BY COALESCE(reference_date, created_at) DESC, id DESC",
+        `${baseSelect} WHERE bp.board_type = ? AND bp.lob = ? ORDER BY COALESCE(bp.reference_date, bp.created_at) DESC, bp.id DESC`,
         [type, lob]
       )
     : queryAll(
         db,
-        "SELECT * FROM board_posts WHERE board_type = ? ORDER BY COALESCE(reference_date, created_at) DESC, id DESC",
+        `${baseSelect} WHERE bp.board_type = ? ORDER BY COALESCE(bp.reference_date, bp.created_at) DESC, bp.id DESC`,
         [type]
       );
   return NextResponse.json(rows);

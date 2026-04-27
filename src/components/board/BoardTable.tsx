@@ -92,9 +92,24 @@ export function BoardTable({ config, rows, lobs, showLobColumn, onOpen, onEdit, 
                     {cell(row.reference_date)}
                   </td>
                 )}
-                <td className="px-4 py-3 font-medium text-gray-900 max-w-[260px] truncate"
+                <td className="px-4 py-3 font-medium text-gray-900 max-w-[260px]"
                   title={(isEn ? row.title_en : row.title_local) ?? ""}>
-                  {cell(isEn ? row.title_en : row.title_local)}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="truncate">{cell(isEn ? row.title_en : row.title_local)}</span>
+                    {(row.linked_tasks_total ?? 0) > 0 && (
+                      <span
+                        className={cn(
+                          "shrink-0 px-1.5 py-0.5 rounded-full text-[11px] font-medium tabular-nums border",
+                          (row.linked_tasks_done ?? 0) === row.linked_tasks_total
+                            ? "bg-green-50 border-green-200 text-green-700"
+                            : "bg-gray-50 border-gray-200 text-gray-600"
+                        )}
+                        title={t("task.linked_tasks")}
+                      >
+                        {row.linked_tasks_done ?? 0}/{row.linked_tasks_total}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 max-w-[360px] truncate text-gray-600"
                   title={contentPreview}>
