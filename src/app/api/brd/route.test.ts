@@ -56,15 +56,15 @@ describe("POST /api/brd", () => {
     expect(res.status).toBe(400);
   });
 
-  it("content_local이 없으면 400을 반환한다", async () => {
+  it("content_local이 없으면 400을 반환한다 (data_language가 local일 때)", async () => {
     const { content_local: _cl, ...rest } = validBrd;
-    const res = await POST(post("/api/brd", { ...rest, brd_id: "BRD-002" }));
+    const res = await POST(post("/api/brd", { ...rest, brd_id: "BRD-002", data_language: "local" }));
     expect(res.status).toBe(400);
   });
 
-  it("content_en이 없으면 400을 반환한다", async () => {
+  it("content_en이 없으면 400을 반환한다 (data_language가 en일 때)", async () => {
     const { content_en: _ce, ...rest } = validBrd;
-    const res = await POST(post("/api/brd", { ...rest, brd_id: "BRD-002" }));
+    const res = await POST(post("/api/brd", { ...rest, brd_id: "BRD-002", data_language: "en" }));
     expect(res.status).toBe(400);
   });
 

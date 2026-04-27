@@ -15,24 +15,29 @@ interface Props {
 
 type FormState = Omit<Sow, "id" | "updated_at" | "created_at">;
 
-const EMPTY: FormState = {
-  sow_id: "", lob: "", title_local: "", title_en: "",
-  content_local: "", content_en: "",
-  note_local: "", note_en: "",
-  milestone: "", is_active: "Y",
-};
-
 export function SowFormModal({ sow, onClose, onSaved }: Props) {
   const t = useT();
   const { dataLanguage } = useSettings();
   const isEn = dataLanguage === "en";
   const isEdit = !!sow;
+
   const [form, setForm] = useState<FormState>(sow ? {
     sow_id: sow.sow_id, lob: sow.lob ?? "", title_local: sow.title_local ?? "", title_en: sow.title_en ?? "",
     content_local: sow.content_local, content_en: sow.content_en,
     note_local: sow.note_local ?? "", note_en: sow.note_en ?? "",
     milestone: sow.milestone ?? "", is_active: sow.is_active,
-  } : EMPTY);
+    data_language: sow.data_language,
+  } : {
+    sow_id: "", lob: "", title_local: "", title_en: "",
+    content_local: "", content_en: "",
+    note_local: "", note_en: "",
+    milestone: "", is_active: "Y",
+    data_language: dataLanguage,
+  });
+
+  const registrationLanguage = form.data_language || (isEdit ? null : dataLanguage);
+  const isReadOnly = isEdit && registrationLanguage && registrationLanguage !== dataLanguage;
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lobs, setLobs] = useState<Lob[]>([]);
@@ -65,29 +70,36 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
     onClose();
   };
 
-  const field = (label: string, key: keyof FormState, opts?: { required?: boolean; textarea?: boolean; placeholder?: string }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
-        {label}{opts?.required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      {opts?.textarea ? (
-        <textarea
-          rows={3}
-          value={String(form[key] ?? "")}
-          onChange={e => set(key, e.target.value as FormState[typeof key])}
-          placeholder={opts.placeholder}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-        />
-      ) : (
-        <input
-          value={String(form[key] ?? "")}
-          onChange={e => set(key, e.target.value as FormState[typeof key])}
-          placeholder={opts?.placeholder}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      )}
-    </div>
-  );
+  const field = (label: string, key: keyof FormState, opts?: { required?: boolean; textarea?: boolean; placeholder?: string }) => {
+    const readOnly = isReadOnly && (key.endsWith("_local") || key.endsWith("_en"));
+    const placeholder = readOnly ? "(Auto-translated)" : opts?.placeholder;
+
+    return (
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          {label}{opts?.required && <span className="text-red-500 ml-0.5">*</span>}
+        </label>
+        {opts?.textarea ? (
+          <textarea
+            rows={3}
+            value={String(form[key] ?? "")}
+            onChange={e => set(key, e.target.value as FormState[typeof key])}
+            placeholder={placeholder}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:bg-gray-50 disabled:text-gray-500"
+          />
+        ) : (
+          <input
+            value={String(form[key] ?? "")}
+            onChange={e => set(key, e.target.value as FormState[typeof key])}
+            placeholder={placeholder}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
@@ -188,7 +200,7 @@ export function SowFormModal({ sow, onClose, onSaved }: Props) {
             </button>
             <button
               type="submit"
-              disabled={saving || !form.sow_id.trim() || (isEn ? !form.content_en.trim() : !form.content_local.trim())}
+              disabled={saving || !form.sow_id.trim() || (isEn ? (!isReadOnly && !form.content_en.trim()) : (!isReadOnly && !form.content_local.trim()))}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
             >
               {saving ? t("common.saving") : isEdit ? t("action.edit") : t("action.add")}

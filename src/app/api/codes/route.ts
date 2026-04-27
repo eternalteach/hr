@@ -27,8 +27,8 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   const id = insertAndGetId(
     db,
     `INSERT INTO common_codes
-       (code_group, code, title_local, title_en, content_local, content_en, note_local, note_en, is_active, updated_at, created_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+       (code_group, code, title_local, title_en, content_local, content_en, note_local, note_en, is_active, data_language, updated_at, created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       b.code_group.trim(),
       b.code.trim(),
@@ -39,6 +39,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
       b.note_local?.trim() || null,
       b.note_en?.trim() || null,
       b.is_active === "N" ? "N" : "Y",
+      b.data_language || "local",
       now, now,
     ]
   );

@@ -116,6 +116,7 @@ export interface Sow {
   note_en: string | null;
   milestone: string | null;
   is_active: "Y" | "N";
+  data_language: "en" | "local" | null;
   updated_at: string;
   created_at: string;
 }
@@ -130,6 +131,7 @@ export interface Lob {
   note_local: string | null;
   note_en: string | null;
   is_active: "Y" | "N";
+  data_language: "en" | "local" | null;
   updated_at: string;
   created_at: string;
 }
@@ -145,6 +147,7 @@ export interface CommonCode {
   note_local: string | null;
   note_en: string | null;
   is_active: "Y" | "N";
+  data_language: "en" | "local" | null;
   updated_at: string;
   created_at: string;
 }
@@ -165,6 +168,7 @@ export interface Post {
   /** ISO date (YYYY-MM-DD) — 회의록처럼 날짜가 필요한 게시판용. 없는 보드는 null */
   reference_date: string | null;
   is_active: "Y" | "N";
+  data_language: "en" | "local" | null;
   updated_at: string;
   created_at: string;
   /** 회의록 등 task 링크가 있는 보드용 진행률 — list GET에서만 채워짐 */
@@ -184,6 +188,7 @@ export interface Brd {
   note_local: string | null;
   note_en: string | null;
   is_active: "Y" | "N";
+  data_language: "en" | "local" | null;
   updated_at: string;
   created_at: string;
 }

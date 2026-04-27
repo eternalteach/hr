@@ -36,6 +36,7 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       note_local TEXT,
       note_en TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -46,12 +47,13 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       lob TEXT,
       title_local TEXT,
       title_en TEXT,
-      content_local TEXT NOT NULL,
-      content_en TEXT NOT NULL,
+      content_local TEXT,
+      content_en TEXT,
       note_local TEXT,
       note_en TEXT,
       milestone TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -63,11 +65,12 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       lob TEXT,
       title_local TEXT,
       title_en TEXT,
-      content_local TEXT NOT NULL,
-      content_en TEXT NOT NULL,
+      content_local TEXT,
+      content_en TEXT,
       note_local TEXT,
       note_en TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -133,6 +136,7 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
       note_en TEXT,
       reference_date TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );

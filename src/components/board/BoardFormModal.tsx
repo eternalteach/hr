@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/lib/language-context";
 import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { Post, Lob } from "@/lib/types";
 import type { BoardConfig } from "@/lib/boards/config";
 
@@ -19,20 +19,12 @@ interface Props {
 
 type FormState = Omit<Post, "id" | "board_type" | "updated_at" | "created_at">;
 
-const makeEmpty = (lob: string | null | undefined): FormState => ({
-  lob: lob ?? "",
-  title_local: "", title_en: "",
-  content_local: "", content_en: "",
-  note_local: "", note_en: "",
-  reference_date: "",
-  is_active: "Y",
-});
-
 export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSaved }: Props) {
   const isEdit = !!post;
-  const { language } = useLanguage();
+  const { dataLanguage } = useSettings();
   const t = useT();
-  const isEn = language === "en";
+  const isEn = dataLanguage === "en";
+
   const [form, setForm] = useState<FormState>(post ? {
     lob: post.lob ?? "",
     title_local: post.title_local ?? "", title_en: post.title_en ?? "",
@@ -40,7 +32,20 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
     note_local: post.note_local ?? "", note_en: post.note_en ?? "",
     reference_date: post.reference_date ?? "",
     is_active: post.is_active,
-  } : makeEmpty(defaultLob));
+    data_language: post.data_language,
+  } : {
+    lob: defaultLob ?? "",
+    title_local: "", title_en: "",
+    content_local: "", content_en: "",
+    note_local: "", note_en: "",
+    reference_date: "",
+    is_active: "Y",
+    data_language: dataLanguage,
+  });
+
+  const registrationLanguage = form.data_language || (isEdit ? null : dataLanguage);
+  const isReadOnly = isEdit && registrationLanguage && registrationLanguage !== dataLanguage;
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,35 +69,42 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
     onClose();
   };
 
-  const field = (label: string, key: keyof FormState, opts?: { required?: boolean; textarea?: boolean; markdown?: boolean; placeholder?: string }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
-        {label}{opts?.required && <span className="text-red-500 ml-0.5">*</span>}
-        {opts?.markdown && <span className="ml-1.5 text-[10px] font-normal text-gray-400">{t("board.markdown_hint")}</span>}
-      </label>
-      {opts?.textarea ? (
-        <textarea
-          rows={opts.markdown ? 8 : 3}
-          value={String(form[key] ?? "")}
-          onChange={e => set(key, e.target.value as FormState[typeof key])}
-          placeholder={opts.placeholder}
-          className={cn(
-            "w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y",
-            opts.markdown && "font-mono text-xs leading-relaxed"
-          )}
-        />
-      ) : (
-        <input
-          value={String(form[key] ?? "")}
-          onChange={e => set(key, e.target.value as FormState[typeof key])}
-          placeholder={opts?.placeholder}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      )}
-    </div>
-  );
+  const field = (label: string, key: keyof FormState, opts?: { required?: boolean; textarea?: boolean; markdown?: boolean; placeholder?: string }) => {
+    const readOnly = isReadOnly && (key.endsWith("_local") || key.endsWith("_en"));
+    const placeholder = readOnly ? "(Auto-translated)" : opts?.placeholder;
 
-  const canSubmit = !saving && (isEn ? form.title_en.trim().length > 0 : form.title_local.trim().length > 0);
+    return (
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          {label}{opts?.required && <span className="text-red-500 ml-0.5">*</span>}
+          {opts?.markdown && <span className="ml-1.5 text-[10px] font-normal text-gray-400">{t("board.markdown_hint")}</span>}
+        </label>
+        {opts?.textarea ? (
+          <textarea
+            rows={opts.markdown ? 8 : 3}
+            value={String(form[key] ?? "")}
+            onChange={e => set(key, e.target.value as FormState[typeof key])}
+            placeholder={placeholder}
+            disabled={readOnly}
+            className={cn(
+              "w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y disabled:bg-gray-50 disabled:text-gray-500",
+              opts.markdown && "font-mono text-xs leading-relaxed"
+            )}
+          />
+        ) : (
+          <input
+            value={String(form[key] ?? "")}
+            onChange={e => set(key, e.target.value as FormState[typeof key])}
+            placeholder={placeholder}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          />
+        )}
+      </div>
+    );
+  };
+
+  const canSubmit = !saving && (isEn ? (isReadOnly || form.title_en.trim().length > 0) : (isReadOnly || form.title_local.trim().length > 0));
   const titleLabel = t(config.titleLabelKey);
   const contentLabel = t(config.contentLabelKey);
   const refDateLabel = config.referenceDateLabelKey ? t(config.referenceDateLabelKey) : t("board.ref_date");

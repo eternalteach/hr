@@ -46,15 +46,15 @@ describe("PUT /api/sow/[id]", () => {
     expect(res.status).toBe(400);
   });
 
-  it("content_local이 없으면 400을 반환한다", async () => {
+  it("content_local이 없으면 400을 반환한다 (data_language가 local일 때)", async () => {
     const { content_local: _cl, ...rest } = validBody;
-    const res = await PUT(put("/api/sow/1", rest), makeParams({ id: "1" }));
+    const res = await PUT(put("/api/sow/1", { ...rest, data_language: "local" }), makeParams({ id: "1" }));
     expect(res.status).toBe(400);
   });
 
-  it("content_en이 없으면 400을 반환한다", async () => {
+  it("content_en이 없으면 400을 반환한다 (data_language가 en일 때)", async () => {
     const { content_en: _ce, ...rest } = validBody;
-    const res = await PUT(put("/api/sow/1", rest), makeParams({ id: "1" }));
+    const res = await PUT(put("/api/sow/1", { ...rest, data_language: "en" }), makeParams({ id: "1" }));
     expect(res.status).toBe(400);
   });
 });

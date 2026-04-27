@@ -33,8 +33,13 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   if (!existing) throw new ApiError(404, "게시글을 찾을 수 없습니다", "POST_NOT_FOUND");
 
   const b = await request.json();
-  if (!b.title_local?.trim()) {
-    throw new ApiError(400, "제목(Local)은 필수입니다", "TITLE_REQUIRED");
+  const existingPost = queryOne(db, "SELECT data_language FROM board_posts WHERE id = ?", [id]) as { data_language: string | null } | null;
+  const dl = b.data_language || existingPost?.data_language || "local";
+
+  if (dl === "en") {
+    if (!b.title_en?.trim()) throw new ApiError(400, "제목(영어)은 필수입니다", "TITLE_REQUIRED");
+  } else {
+    if (!b.title_local?.trim()) throw new ApiError(400, "제목(Local)은 필수입니다", "TITLE_REQUIRED");
   }
 
   db.run(
@@ -44,8 +49,8 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
      WHERE id=? AND board_type=?`,
     [
       b.lob?.trim() || null,
-      b.title_local.trim(),
-      b.title_en?.trim() || null,
+      b.title_local?.trim() || "",
+      b.title_en?.trim() || "",
       b.content_local?.trim() || null,
       b.content_en?.trim() || null,
       b.note_local?.trim() || null,

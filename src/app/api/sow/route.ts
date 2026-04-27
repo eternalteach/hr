@@ -15,26 +15,30 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   const b = await request.json();
 
   if (!b.sow_id?.trim()) throw new ApiError(400, "SOW ID는 필수입니다");
-  if (!b.content_local?.trim()) throw new ApiError(400, "SOW 내용(Local)은 필수입니다");
-  if (!b.content_en?.trim()) throw new ApiError(400, "SOW 내용(영어)은 필수입니다");
+  if (b.data_language === "en") {
+    if (!b.content_en?.trim()) throw new ApiError(400, "SOW 내용(영어)은 필수입니다");
+  } else {
+    if (!b.content_local?.trim()) throw new ApiError(400, "SOW 내용(Local)은 필수입니다");
+  }
 
   const now = new Date().toISOString();
   const id = insertAndGetId(
     db,
     `INSERT INTO sow
-       (sow_id, lob, title_local, title_en, content_local, content_en, note_local, note_en, milestone, is_active, updated_at, created_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+       (sow_id, lob, title_local, title_en, content_local, content_en, note_local, note_en, milestone, is_active, data_language, updated_at, created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       b.sow_id.trim(),
       b.lob?.trim() || null,
       b.title_local?.trim() || null,
       b.title_en?.trim() || null,
-      b.content_local.trim(),
-      b.content_en.trim(),
+      b.content_local?.trim() || "",
+      b.content_en?.trim() || "",
       b.note_local?.trim() || null,
       b.note_en?.trim() || null,
       b.milestone?.trim() || null,
       b.is_active === "N" ? "N" : "Y",
+      b.data_language || "local",
       now, now,
     ]
   );

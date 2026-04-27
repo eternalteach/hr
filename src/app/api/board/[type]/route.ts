@@ -45,27 +45,30 @@ export const POST = withApiHandler(async (request: NextRequest, { params }: Para
   const b = await request.json();
   const cfg = BOARD_CONFIGS[type];
 
-  if (!b.title_local?.trim()) {
-    throw new ApiError(400, "제목(Local)은 필수입니다", "TITLE_REQUIRED");
+  if (b.data_language === "en") {
+    if (!b.title_en?.trim()) throw new ApiError(400, "제목(영어)은 필수입니다", "TITLE_REQUIRED");
+  } else {
+    if (!b.title_local?.trim()) throw new ApiError(400, "제목(Local)은 필수입니다", "TITLE_REQUIRED");
   }
 
   const now = new Date().toISOString();
   const id = insertAndGetId(
     db,
     `INSERT INTO board_posts
-       (board_type, lob, title_local, title_en, content_local, content_en, note_local, note_en, reference_date, is_active, updated_at, created_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+       (board_type, lob, title_local, title_en, content_local, content_en, note_local, note_en, reference_date, is_active, data_language, updated_at, created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       type,
       b.lob?.trim() || null,
-      b.title_local.trim(),
-      b.title_en?.trim() || null,
+      b.title_local?.trim() || "",
+      b.title_en?.trim() || "",
       b.content_local?.trim() || null,
       b.content_en?.trim() || null,
       b.note_local?.trim() || null,
       b.note_en?.trim() || null,
       cfg.hasReferenceDate ? (b.reference_date?.trim() || null) : null,
       b.is_active === "N" ? "N" : "Y",
+      b.data_language || "local",
       now, now,
     ]
   );

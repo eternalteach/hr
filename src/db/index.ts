@@ -335,6 +335,28 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
+  // data_language 컬럼 추가 (sow, brd, common_codes, board_posts)
+  const sowColsDataLang = (database.exec("PRAGMA table_info(sow)")[0]?.values ?? []).map(r => r[1] as string);
+  if (!sowColsDataLang.includes("data_language")) {
+    database.run("ALTER TABLE sow ADD COLUMN data_language TEXT");
+    dirty = true;
+  }
+  const brdColsDataLang = (database.exec("PRAGMA table_info(brd)")[0]?.values ?? []).map(r => r[1] as string);
+  if (!brdColsDataLang.includes("data_language")) {
+    database.run("ALTER TABLE brd ADD COLUMN data_language TEXT");
+    dirty = true;
+  }
+  const commonCodesColsDataLang = (database.exec("PRAGMA table_info(common_codes)")[0]?.values ?? []).map(r => r[1] as string);
+  if (!commonCodesColsDataLang.includes("data_language")) {
+    database.run("ALTER TABLE common_codes ADD COLUMN data_language TEXT");
+    dirty = true;
+  }
+  const boardPostsColsDataLang = (database.exec("PRAGMA table_info(board_posts)")[0]?.values ?? []).map(r => r[1] as string);
+  if (!boardPostsColsDataLang.includes("data_language")) {
+    database.run("ALTER TABLE board_posts ADD COLUMN data_language TEXT");
+    dirty = true;
+  }
+
   if (dirty) saveDb(database);
 }
 
@@ -421,6 +443,7 @@ function initSchema(database: SqlJsDatabase) {
       note_en TEXT,
       milestone TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -437,6 +460,7 @@ function initSchema(database: SqlJsDatabase) {
       note_local TEXT,
       note_en TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -452,6 +476,7 @@ function initSchema(database: SqlJsDatabase) {
       note_local TEXT,
       note_en TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -468,6 +493,7 @@ function initSchema(database: SqlJsDatabase) {
       note_en TEXT,
       reference_date TEXT,
       is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      data_language TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );

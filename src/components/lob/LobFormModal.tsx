@@ -15,26 +15,31 @@ interface Props {
 
 type FormState = Omit<Lob, "id" | "updated_at" | "created_at">;
 
-const EMPTY: FormState = {
-  code: "",
-  title_local: "", title_en: "",
-  content_local: "", content_en: "",
-  note_local: "", note_en: "",
-  is_active: "Y",
-};
-
 export function LobFormModal({ lob, onClose, onSaved }: Props) {
   const t = useT();
   const { dataLanguage } = useSettings();
   const isEn = dataLanguage === "en";
   const isEdit = !!lob;
+
   const [form, setForm] = useState<FormState>(lob ? {
     code: lob.code,
     title_local: lob.title_local ?? "", title_en: lob.title_en ?? "",
     content_local: lob.content_local ?? "", content_en: lob.content_en ?? "",
     note_local: lob.note_local ?? "", note_en: lob.note_en ?? "",
     is_active: lob.is_active,
-  } : EMPTY);
+    data_language: lob.data_language,
+  } : {
+    code: "",
+    title_local: "", title_en: "",
+    content_local: "", content_en: "",
+    note_local: "", note_en: "",
+    is_active: "Y",
+    data_language: dataLanguage,
+  });
+
+  const registrationLanguage = form.data_language || (isEdit ? null : dataLanguage);
+  const isReadOnly = isEdit && registrationLanguage && registrationLanguage !== dataLanguage;
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,29 +61,36 @@ export function LobFormModal({ lob, onClose, onSaved }: Props) {
     onClose();
   };
 
-  const field = (label: string, key: keyof FormState, opts?: { required?: boolean; textarea?: boolean; placeholder?: string }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
-        {label}{opts?.required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      {opts?.textarea ? (
-        <textarea
-          rows={2}
-          value={String(form[key] ?? "")}
-          onChange={e => set(key, e.target.value as FormState[typeof key])}
-          placeholder={opts.placeholder}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-        />
-      ) : (
-        <input
-          value={String(form[key] ?? "")}
-          onChange={e => set(key, e.target.value as FormState[typeof key])}
-          placeholder={opts?.placeholder}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      )}
-    </div>
-  );
+  const field = (label: string, key: keyof FormState, opts?: { required?: boolean; textarea?: boolean; placeholder?: string }) => {
+    const readOnly = isReadOnly && (key.endsWith("_local") || key.endsWith("_en"));
+    const placeholder = readOnly ? "(Auto-translated)" : opts?.placeholder;
+
+    return (
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          {label}{opts?.required && <span className="text-red-500 ml-0.5">*</span>}
+        </label>
+        {opts?.textarea ? (
+          <textarea
+            rows={2}
+            value={String(form[key] ?? "")}
+            onChange={e => set(key, e.target.value as FormState[typeof key])}
+            placeholder={placeholder}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:bg-gray-50 disabled:text-gray-500"
+          />
+        ) : (
+          <input
+            value={String(form[key] ?? "")}
+            onChange={e => set(key, e.target.value as FormState[typeof key])}
+            placeholder={placeholder}
+            disabled={readOnly}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
