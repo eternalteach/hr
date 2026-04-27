@@ -277,6 +277,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.language_local_desc": "Display local language columns only",
     "settings.language_en": "English",
     "settings.language_en_desc": "Display English columns by default",
+    "settings.local_language": "Local Language",
+    "settings.local_language_desc": "The selected language is the language to be used for Local",
     "settings.show_english": "영문 표시",
 
     // Auth
@@ -648,6 +650,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.language_local_desc": "Display local language columns only",
     "settings.language_en": "English",
     "settings.language_en_desc": "Display English columns by default",
+    "settings.local_language": "Local Language",
+    "settings.local_language_desc": "The selected language is the language to be used for Local",
     "settings.show_english": "Show English",
 
     // Auth

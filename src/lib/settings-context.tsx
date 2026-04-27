@@ -9,6 +9,8 @@ export interface AppSettings {
   dataLanguage: "en" | "local";
   /** Label language: which language to use for UI labels via useT() */
   labelLanguage: "en" | "local";
+  /** Language to be used for 'local' columns, e.g. "ko" */
+  localLanguage: string;
 }
 
 interface SettingsContextValue extends AppSettings {
@@ -19,6 +21,7 @@ interface SettingsContextValue extends AppSettings {
   setTimezone: (tz: string) => void;
   setDataLanguage: (lang: "en" | "local") => void;
   setLabelLanguage: (lang: "en" | "local") => void;
+  setLocalLanguage: (lang: string) => void;
   /** @deprecated use setDataLanguage instead */
   setLanguage: (lang: "en" | "local") => void;
   /** @deprecated use setDataLanguage instead */
@@ -31,6 +34,7 @@ const DEFAULT: AppSettings = {
   timezone: "Asia/Seoul",
   dataLanguage: "en",
   labelLanguage: "local",
+  localLanguage: "ko",
 };
 
 const STORAGE_KEY = "taskflow.settings";
@@ -71,6 +75,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setTimezone = (timezone: string) => setSettings(s => ({ ...s, timezone }));
   const setDataLanguage = (dataLanguage: "en" | "local") => setSettings(s => ({ ...s, dataLanguage }));
   const setLabelLanguage = (labelLanguage: "en" | "local") => setSettings(s => ({ ...s, labelLanguage }));
+  const setLocalLanguage = (localLanguage: string) => setSettings(s => ({ ...s, localLanguage }));
   const showEnglish = settings.dataLanguage === "en";
 
   return (
@@ -81,6 +86,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setTimezone,
       setDataLanguage,
       setLabelLanguage,
+      setLocalLanguage,
       setLanguage: setDataLanguage,
       toggle: () => setDataLanguage(showEnglish ? "local" : "en"),
       setShowEnglish: (v: boolean) => setDataLanguage(v ? "en" : "local"),
@@ -118,4 +124,22 @@ export const COMMON_TIMEZONES = [
   { value: "America/Denver", label: "America/Denver (산악 표준시 MST, UTC-7/-6)" },
   { value: "America/Los_Angeles", label: "America/Los_Angeles (태평양 표준시 PST, UTC-8/-7)" },
   { value: "Australia/Sydney", label: "Australia/Sydney (호주 동부 표준시 AEST, UTC+10/+11)" },
+];
+
+export const LOCAL_LANGUAGES = [
+  { value: "ko", label: "Korean (한국어)" },
+  { value: "ja", label: "Japanese (日本語)" },
+  { value: "zh", label: "Chinese Simplified (简体中文)" },
+  { value: "zt", label: "Chinese Traditional (繁體中文)" },
+  { value: "vi", label: "Vietnamese (Tiếng Việt)" },
+  { value: "th", label: "Thai (ไทย)" },
+  { value: "id", label: "Indonesian (Bahasa Indonesia)" },
+  { value: "fr", label: "French (Français)" },
+  { value: "de", label: "German (Deutsch)" },
+  { value: "es", label: "Spanish (Español)" },
+  { value: "pt", label: "Portuguese (Português)" },
+  { value: "it", label: "Italian (Italiano)" },
+  { value: "ru", label: "Russian (Русский)" },
+  { value: "tr", label: "Turkish (Türkçe)" },
+  { value: "ar", label: "Arabic (العربية)" },
 ];

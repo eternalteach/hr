@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Database, Tag, Clock, Check } from "lucide-react";
-import { useSettings, COMMON_TIMEZONES } from "@/lib/settings-context";
+import { Settings, Database, Tag, Clock, Check, Globe } from "lucide-react";
+import { useSettings, COMMON_TIMEZONES, LOCAL_LANGUAGES } from "@/lib/settings-context";
 import { useT } from "@/lib/i18n";
 
 export default function SettingsPage() {
-  const { timezone, dataLanguage, labelLanguage, setTimezone, setDataLanguage, setLabelLanguage } = useSettings();
+  const { 
+    timezone, dataLanguage, labelLanguage, localLanguage,
+    setTimezone, setDataLanguage, setLabelLanguage, setLocalLanguage 
+  } = useSettings();
   const t = useT();
 
   return (
@@ -40,6 +43,28 @@ export default function SettingsPage() {
               description={t("settings.language_local_desc")}
             />
           </div>
+        </section>
+
+        {/* Local Language */}
+        <section className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Globe className="w-4 h-4 text-gray-500" />
+            <h2 className="text-sm font-semibold text-gray-800">{t("settings.local_language")}</h2>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            {t("settings.local_language_desc")}
+          </p>
+          <select
+            value={localLanguage}
+            onChange={e => setLocalLanguage(e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            {LOCAL_LANGUAGES.map(lang => (
+              <option key={lang.value} value={lang.value}>
+                {lang.label}
+              </option>
+            ))}
+          </select>
         </section>
 
         {/* 라벨 언어 */}
