@@ -5,7 +5,10 @@ export type ScheduleType = "meeting" | "deadline" | "milestone";
 
 export interface Member {
   id: number;
+  /** 로컬 언어 이름 — 신규 입력은 항상 채워짐 */
   name: string;
+  /** 영문 이름 — 신규 입력은 항상 채워지나, 마이그레이션 이전 행은 null일 수 있음 */
+  name_en: string | null;
   email: string;
   avatar_url: string | null;
   lob: string | null;

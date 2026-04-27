@@ -29,6 +29,9 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   if (!body.name?.trim() || !body.email?.trim()) {
     throw new ApiError(400, "이름과 이메일은 필수입니다", "NAME_EMAIL_REQUIRED");
   }
+  if (!body.name_en?.trim()) {
+    throw new ApiError(400, "영문 이름은 필수입니다", "NAME_EN_REQUIRED");
+  }
 
   const role = ["admin", "leader", "member"].includes(body.role) ? body.role : "member";
 
@@ -38,8 +41,8 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   }
 
   db.run(
-    "UPDATE members SET name = ?, email = ?, lob = ?, role = ? WHERE id = ?",
-    [body.name.trim(), body.email.trim(), body.lob ?? null, role, id]
+    "UPDATE members SET name = ?, name_en = ?, email = ?, lob = ?, role = ? WHERE id = ?",
+    [body.name.trim(), body.name_en.trim(), body.email.trim(), body.lob ?? null, role, id]
   );
   saveDb();
 

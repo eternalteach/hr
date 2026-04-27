@@ -32,40 +32,50 @@ describe("GET /api/members", () => {
 });
 
 describe("POST /api/members", () => {
-  it("새 팀원을 생성한다", async () => {
-    const res = await POST(post("/api/members", { name: "홍길동", email: "hong@test.com", role: "member" }));
+  it("새 팀원을 생성한다 — name_en 포함", async () => {
+    const res = await POST(post("/api/members", { name: "홍길동", name_en: "Gildong Hong", email: "hong@test.com", role: "member" }));
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.id).toBeGreaterThan(0);
     expect(body.name).toBe("홍길동");
+    expect(body.name_en).toBe("Gildong Hong");
+    const row = _db.exec("SELECT name, name_en FROM members WHERE email = 'hong@test.com'")[0].values[0];
+    expect(row).toEqual(["홍길동", "Gildong Hong"]);
   });
 
   it("이름이 없으면 400을 반환한다", async () => {
-    const res = await POST(post("/api/members", { email: "hong@test.com" }));
+    const res = await POST(post("/api/members", { name_en: "Hong", email: "hong@test.com" }));
     expect(res.status).toBe(400);
   });
 
   it("이메일이 없으면 400을 반환한다", async () => {
-    const res = await POST(post("/api/members", { name: "홍길동" }));
+    const res = await POST(post("/api/members", { name: "홍길동", name_en: "Hong" }));
     expect(res.status).toBe(400);
   });
 
-  it("role이 없으면 기본값 member로 DB에 저장한다", async () => {
+  it("name_en이 없으면 400 NAME_EN_REQUIRED를 반환한다", async () => {
     const res = await POST(post("/api/members", { name: "홍길동", email: "hong@test.com" }));
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.code).toBe("NAME_EN_REQUIRED");
+  });
+
+  it("role이 없으면 기본값 member로 DB에 저장한다", async () => {
+    const res = await POST(post("/api/members", { name: "홍길동", name_en: "Hong", email: "hong@test.com" }));
     expect(res.status).toBe(201);
     const dbRow = _db.exec("SELECT role FROM members WHERE email = 'hong@test.com'")[0];
     expect(dbRow.values[0][0]).toBe("member");
   });
 
   it("잘못된 role은 member로 대체하여 DB에 저장한다", async () => {
-    const res = await POST(post("/api/members", { name: "홍길동", email: "hong@test.com", role: "superadmin" }));
+    const res = await POST(post("/api/members", { name: "홍길동", name_en: "Hong", email: "hong@test.com", role: "superadmin" }));
     expect(res.status).toBe(201);
     const dbRow = _db.exec("SELECT role FROM members WHERE email = 'hong@test.com'")[0];
     expect(dbRow.values[0][0]).toBe("member");
   });
 
   it("admin role을 지정할 수 있다", async () => {
-    const res = await POST(post("/api/members", { name: "관리자", email: "admin@test.com", role: "admin" }));
+    const res = await POST(post("/api/members", { name: "관리자", name_en: "Admin", email: "admin@test.com", role: "admin" }));
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.role).toBe("admin");

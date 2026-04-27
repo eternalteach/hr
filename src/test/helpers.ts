@@ -9,6 +9,7 @@ export async function createTestDb(): Promise<SqlJsDatabase> {
     CREATE TABLE members (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      name_en TEXT,
       email TEXT NOT NULL UNIQUE,
       avatar_url TEXT,
       lob TEXT,

@@ -25,6 +25,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
   const t = useT();
   const [form, setForm] = useState({
     name: member.name,
+    name_en: member.name_en ?? "",
     email: member.email,
     lob: member.lob ?? "",
     role: member.role,
@@ -46,7 +47,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
     setSaving(false);
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error ?? t("auth.save_failed"));
+      setError(data.code ? t(`error.${data.code}`) : (data.error ?? t("auth.save_failed")));
       return;
     }
     onUpdated(await res.json() as Member);
@@ -74,7 +75,10 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
           <div className="flex items-center gap-3">
             <MemberAvatar name={member.name} size="lg" />
             <div>
-              <h2 className="text-base font-semibold text-gray-900">{member.name}</h2>
+              <h2 className="text-base font-semibold text-gray-900">
+                {member.name}
+                {member.name_en && <span className="ml-1.5 text-xs font-normal text-gray-400">{member.name_en}</span>}
+              </h2>
               <p className="text-xs text-gray-400 flex items-center gap-1">
                 <Mail className="w-3 h-3" />{member.email}
               </p>
@@ -105,14 +109,24 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
         ) : (
           /* 수정 폼 */
           <form onSubmit={handleSave} className="p-5 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name")} *</label>
-              <input
-                autoFocus
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name_local")} *</label>
+                <input
+                  autoFocus
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name_en")} *</label>
+                <input
+                  value={form.name_en}
+                  onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.email")} *</label>
@@ -171,7 +185,7 @@ export function MemberEditModal({ member, lobs, onClose, onUpdated, onDeleted }:
                 <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
                 <button
                   type="submit"
-                  disabled={saving || !form.name.trim() || !form.email.trim()}
+                  disabled={saving || !form.name.trim() || !form.name_en.trim() || !form.email.trim()}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
                 >
                   {saving ? t("common.saving") : t("action.save")}

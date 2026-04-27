@@ -307,6 +307,13 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
+  // members.name_en — 영문 이름 (nullable; 기존 행은 NULL로 두고 신규 입력은 폼/API에서 강제)
+  const membersColsName = (database.exec("PRAGMA table_info(members)")[0]?.values ?? []).map(r => r[1] as string);
+  if (!membersColsName.includes("name_en")) {
+    database.run("ALTER TABLE members ADD COLUMN name_en TEXT");
+    dirty = true;
+  }
+
   // members.password_hash + must_change_password
   const membersCols2 = (database.exec("PRAGMA table_info(members)")[0]?.values ?? []).map(r => r[1] as string);
 
@@ -337,6 +344,7 @@ function initSchema(database: SqlJsDatabase) {
     CREATE TABLE IF NOT EXISTS members (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      name_en TEXT,
       email TEXT NOT NULL UNIQUE,
       avatar_url TEXT,
       lob TEXT,

@@ -35,9 +35,10 @@ export default function MembersPage() {
   const [lobs, setLobs] = useState<CommonCode[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [editTarget, setEditTarget] = useState<Member | null>(null);
-  const [form, setForm] = useState<{ name: string; email: string; role: MemberRole; lob: string }>({
-    name: "", email: "", role: "member", lob: "",
+  const [form, setForm] = useState<{ name: string; name_en: string; email: string; role: MemberRole; lob: string }>({
+    name: "", name_en: "", email: "", role: "member", lob: "",
   });
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/members").then(r => r.json()).then(setMembers);
@@ -48,16 +49,22 @@ export default function MembersPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email) return;
-    await fetch("/api/members", {
+    if (!form.name.trim() || !form.name_en.trim() || !form.email.trim()) return;
+    setCreateError(null);
+    const res = await fetch("/api/members", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, lob: form.lob || null }),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setCreateError(data.code ? t(`error.${data.code}`) : (data.error ?? t("auth.save_failed")));
+      return;
+    }
     setShowCreate(false);
-    setForm({ name: "", email: "", role: "member", lob: "" });
-    const res = await fetch("/api/members");
-    setMembers(await res.json());
+    setForm({ name: "", name_en: "", email: "", role: "member", lob: "" });
+    const refreshed = await fetch("/api/members");
+    setMembers(await refreshed.json());
   };
 
   return (
@@ -89,7 +96,10 @@ export default function MembersPage() {
           >
             <MemberAvatar name={m.name} size="lg" />
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900">{m.name}</h3>
+              <h3 className="font-semibold text-gray-900 truncate">
+                {m.name}
+                {m.name_en && <span className="ml-1.5 text-xs font-normal text-gray-400">{m.name_en}</span>}
+              </h3>
               <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
                 <Mail className="w-3.5 h-3.5" />{m.email}
               </p>
@@ -132,10 +142,19 @@ export default function MembersPage() {
               <button onClick={() => setShowCreate(false)} className="p-1 rounded-md hover:bg-gray-100 text-gray-400"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleCreate} className="p-5 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name")} *</label>
-                <input autoFocus value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name_local")} *</label>
+                  <input autoFocus value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder={t("member.name_placeholder")}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.name_en")} *</label>
+                  <input value={form.name_en} onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))}
+                    placeholder={t("member.name_en_placeholder")}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t("member.email")} *</label>
@@ -166,9 +185,10 @@ export default function MembersPage() {
                   ))}
                 </div>
               </div>
+              {createError && <p className="text-sm text-red-600">{createError}</p>}
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
-                <button type="submit" disabled={!form.name || !form.email} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">{t("action.add")}</button>
+                <button type="submit" disabled={!form.name.trim() || !form.name_en.trim() || !form.email.trim()} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">{t("action.add")}</button>
               </div>
             </form>
           </div>
