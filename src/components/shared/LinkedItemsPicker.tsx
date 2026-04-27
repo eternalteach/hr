@@ -15,6 +15,8 @@ interface Props {
   renderItem: (id: number) => React.ReactNode;
   onAdd: (id: number) => void;
   onRemove: (id: number) => void;
+  /** 항목 클릭 시 호출 — 제공되면 칩이 클릭 가능한 버튼이 됨 (예: 상세 페이지 이동) */
+  onItemClick?: (id: number) => void;
   /** 편집 가능 여부. false면 추가/삭제 버튼 숨김 */
   canEdit?: boolean;
   emptyLabel: string;
@@ -33,6 +35,7 @@ export function LinkedItemsPicker({
   renderItem,
   onAdd,
   onRemove,
+  onItemClick,
   canEdit,
   emptyLabel,
   addLabel,
@@ -56,9 +59,22 @@ export function LinkedItemsPicker({
           {selectedIds.map(id => (
             <li
               key={id}
-              className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-50 rounded-md text-sm"
+              className={cn(
+                "flex items-center gap-2 px-2.5 py-1.5 bg-gray-50 rounded-md text-sm",
+                onItemClick && "hover:bg-blue-50 transition-colors"
+              )}
             >
-              <div className="flex-1 min-w-0">{renderItem(id)}</div>
+              {onItemClick ? (
+                <button
+                  type="button"
+                  onClick={() => onItemClick(id)}
+                  className="flex-1 min-w-0 text-left cursor-pointer"
+                >
+                  {renderItem(id)}
+                </button>
+              ) : (
+                <div className="flex-1 min-w-0">{renderItem(id)}</div>
+              )}
               {canEdit && (
                 <button
                   type="button"
@@ -79,6 +95,7 @@ export function LinkedItemsPicker({
           {picking ? (
             <>
               <SearchableSelect
+                autoOpen
                 value=""
                 onChange={v => {
                   if (!v) return;

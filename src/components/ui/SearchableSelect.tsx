@@ -21,6 +21,8 @@ interface Props {
   searchPlaceholder?: string;
   disabled?: boolean;
   className?: string;
+  /** 마운트 시 드롭다운을 즉시 열어 둘지. 추가 버튼 → 드롭다운 노출 같은 흐름에 사용. */
+  autoOpen?: boolean;
 }
 
 /**
@@ -38,8 +40,9 @@ export function SearchableSelect({
   searchPlaceholder = "검색…",
   disabled,
   className,
+  autoOpen = false,
 }: Props) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
   const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

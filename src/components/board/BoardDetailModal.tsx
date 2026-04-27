@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { X, Pencil, Trash2, CheckSquare, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete, onClose }: Props) {
+  const router = useRouter();
   const { language } = useLanguage();
   const t = useT();
   const lbl = useLabel();
@@ -160,6 +162,7 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
                 canEdit={canEdit}
                 onAdd={id => updateLinkedTasks([...linkedTasks.map(tk => tk.id), id])}
                 onRemove={id => updateLinkedTasks(linkedTasks.map(tk => tk.id).filter(x => x !== id))}
+                onItemClick={id => router.push(`/tasks?id=${id}`)}
                 emptyLabel={t("task.linked_tasks_empty")}
                 addLabel={t("task.linked_tasks_add")}
                 selectPlaceholder={t("task.linked_tasks_select")}

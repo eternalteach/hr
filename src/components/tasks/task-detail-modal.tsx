@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { X, Send, Clock, Pencil } from "lucide-react";
 import { MemberAvatar, DDayBadge } from "@/components/shared/badges";
 import { TASK_STATUSES, PRIORITIES } from "@/lib/constants";
@@ -26,6 +27,7 @@ interface EditForm {
 }
 
 export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProps) {
+  const router = useRouter();
   const { timezone } = useSettings();
   const lbl = useLabel();
   const t = useT();
@@ -360,6 +362,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
                     canEdit
                     onAdd={handleAddPost}
                     onRemove={handleRemovePost}
+                    onItemClick={id => router.push(`/meeting-notes?id=${id}`)}
                     emptyLabel={t("task.linked_posts_empty")}
                     addLabel={t("task.linked_posts_add")}
                     selectPlaceholder={t("task.linked_posts_select")}

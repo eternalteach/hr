@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { KanbanBoard } from "@/components/tasks/kanban-board";
 import { TaskListView } from "@/components/tasks/task-list-view";
 import { TaskCreateModal } from "@/components/tasks/task-create-modal";
@@ -14,6 +15,9 @@ import type { Task, Member, Lob, Sow, Brd } from "@/lib/types";
 export default function TasksPage() {
   const t = useT();
   const lbl = useLabel();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const deepLinkId = searchParams.get("id");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
@@ -51,6 +55,18 @@ export default function TasksPage() {
   }, [filterLob, filterSow, filterBrd, filterTitle, filterStatus, filterPriority, filterAssignee]);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
+
+  // 외부 페이지에서 /tasks?id=N 으로 진입하면 해당 업무 상세 모달을 자동으로 연다
+  useEffect(() => {
+    if (!deepLinkId) return;
+    const id = Number(deepLinkId);
+    if (!Number.isInteger(id) || id <= 0) return;
+    fetch(`/api/tasks/${id}`).then(r => r.ok ? r.json() : null).then((task: Task | null) => {
+      if (task) setSelectedTask(task);
+      // URL을 정리해서 다시 닫았다 열어도 모달이 안 다시 뜨도록
+      router.replace("/tasks");
+    });
+  }, [deepLinkId, router]);
   useEffect(() => {
     fetch("/api/members").then(r => r.json()).then(setMembers);
     fetch("/api/lob").then(r => r.json()).then((d: Lob[]) => setLobs(d.filter(l => l.is_active === "Y")));

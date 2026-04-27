@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Plus, X, AlertTriangle, Search } from "lucide-react";
 import { BoardTable } from "./BoardTable";
 import { BoardFormModal } from "./BoardFormModal";
@@ -22,6 +23,10 @@ export function BoardPage({ config }: Props) {
   const { isReadOnly } = useAuth();
   const { language } = useLanguage();
   const t = useT();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const deepLinkId = searchParams.get("id");
   const isEn = language === "en";
 
   const [allRows, setAllRows] = useState<Post[]>([]);
@@ -44,6 +49,16 @@ export function BoardPage({ config }: Props) {
       setLoading(false);
     });
   }, [config.type]);
+
+  // /meeting-notes?id=N 같은 딥링크로 진입하면 해당 게시글 상세를 자동으로 연다
+  useEffect(() => {
+    if (!deepLinkId || !allRows.length) return;
+    const id = Number(deepLinkId);
+    if (!Number.isInteger(id) || id <= 0) return;
+    const target = allRows.find(r => r.id === id);
+    if (target) setViewTarget(target);
+    router.replace(pathname);
+  }, [deepLinkId, allRows, router, pathname]);
 
   const rows = useMemo(() => {
     const byLob = activeLob === ALL_KEY
