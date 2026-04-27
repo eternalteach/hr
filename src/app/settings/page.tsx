@@ -61,7 +61,7 @@ export default function SettingsPage() {
           >
             {LOCAL_LANGUAGES.map(lang => (
               <option key={lang.value} value={lang.value}>
-                {lang.label}
+                {t(`language.${lang.value}`)}
               </option>
             ))}
           </select>

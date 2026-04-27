@@ -277,9 +277,26 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.language_local_desc": "Display local language columns only",
     "settings.language_en": "English",
     "settings.language_en_desc": "Display English columns by default",
-    "settings.local_language": "Local Language",
-    "settings.local_language_desc": "The selected language is the language to be used for Local",
+    "settings.local_language": "로컬 언어",
+    "settings.local_language_desc": "선택한 언어는 Local 에 사용할 언어",
     "settings.show_english": "영문 표시",
+
+    // Languages
+    "language.ko": "Korean (한국어)",
+    "language.ja": "Japanese (日本語)",
+    "language.zh": "Chinese Simplified (简体中文)",
+    "language.zt": "Chinese Traditional (繁體中文)",
+    "language.vi": "Vietnamese (Tiếng Việt)",
+    "language.th": "Thai (ไทย)",
+    "language.id": "Indonesian (Bahasa Indonesia)",
+    "language.fr": "French (Français)",
+    "language.de": "German (Deutsch)",
+    "language.es": "Spanish (Español)",
+    "language.pt": "Portuguese (Português)",
+    "language.it": "Italian (Italiano)",
+    "language.ru": "Russian (Русский)",
+    "language.tr": "Turkish (Türkçe)",
+    "language.ar": "Arabic (العربية)",
 
     // Auth
     "auth.login": "로그인",
@@ -653,6 +670,23 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.local_language": "Local Language",
     "settings.local_language_desc": "The selected language is the language to be used for Local",
     "settings.show_english": "Show English",
+
+    // Languages
+    "language.ko": "Korean (한국어)",
+    "language.ja": "Japanese (日本語)",
+    "language.zh": "Chinese Simplified (简体中文)",
+    "language.zt": "Chinese Traditional (繁體中文)",
+    "language.vi": "Vietnamese (Tiếng Việt)",
+    "language.th": "Thai (ไทย)",
+    "language.id": "Indonesian (Bahasa Indonesia)",
+    "language.fr": "French (Français)",
+    "language.de": "German (Deutsch)",
+    "language.es": "Spanish (Español)",
+    "language.pt": "Portuguese (Português)",
+    "language.it": "Italian (Italiano)",
+    "language.ru": "Russian (Русский)",
+    "language.tr": "Turkish (Türkçe)",
+    "language.ar": "Arabic (العربية)",
 
     // Auth
     "auth.login": "Login",
