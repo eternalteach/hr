@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { Brd, Sow } from "@/lib/types";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
@@ -24,6 +25,8 @@ const EMPTY: FormState = {
 
 export function BrdFormModal({ brd, onClose, onSaved }: Props) {
   const t = useT();
+  const { dataLanguage } = useSettings();
+  const isEn = dataLanguage === "en";
   const isEdit = !!brd;
   const [form, setForm] = useState<FormState>(brd ? {
     brd_id: brd.brd_id, sow_id: brd.sow_id, lob: brd.lob ?? "",
@@ -162,21 +165,21 @@ export function BrdFormModal({ brd, onClose, onSaved }: Props) {
           </div>
 
           {/* 타이틀 */}
-          <div className="grid grid-cols-2 gap-4">
-            {field(t("form.title_local"), "title_local")}
-            {field(t("form.title_en"), "title_en")}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn ? field(t("form.title_en"), "title_en") : field(t("form.title_local"), "title_local")}
           </div>
 
           {/* 내용 */}
-          <div className="grid grid-cols-2 gap-4">
-            {field(t("form.content_local"), "content_local", { required: true, textarea: true })}
-            {field(t("form.content_en"), "content_en", { required: true, textarea: true })}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn
+              ? field(t("form.content_en"), "content_en", { required: true, textarea: true })
+              : field(t("form.content_local"), "content_local", { required: true, textarea: true })
+            }
           </div>
 
           {/* 비고 */}
-          <div className="grid grid-cols-2 gap-4">
-            {field(t("form.note_local"), "note_local", { textarea: true })}
-            {field(t("form.note_en"), "note_en", { textarea: true })}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn ? field(t("form.note_en"), "note_en", { textarea: true }) : field(t("form.note_local"), "note_local", { textarea: true })}
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -187,7 +190,7 @@ export function BrdFormModal({ brd, onClose, onSaved }: Props) {
             </button>
             <button
               type="submit"
-              disabled={saving || !form.brd_id.trim() || !form.sow_id.trim() || !form.content_local.trim() || !form.content_en.trim()}
+              disabled={saving || !form.brd_id.trim() || !form.sow_id || (isEn ? !form.content_en.trim() : !form.content_local.trim())}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
             >
               {saving ? t("common.saving") : isEdit ? t("action.edit") : t("action.add")}

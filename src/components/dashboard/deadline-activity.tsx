@@ -5,6 +5,7 @@ import { formatRelativeTime } from "@/lib/utils";
 import { useSettings } from "@/lib/settings-context";
 import { useT } from "@/lib/i18n";
 import type { Task, ActivityLog } from "@/lib/types";
+import Link from "next/link";
 
 const ACTION_COLORS: Record<string, string> = {
   created: "bg-green-500",
@@ -22,7 +23,12 @@ export function DeadlineList({ tasks }: { tasks: Task[] }) {
         {tasks.map(task => (
           <div key={task.id} className="flex items-center gap-3 py-1.5">
             {task.due_date && <DDayBadge dueDate={task.due_date} />}
-            <span className="text-sm text-gray-900 flex-1 truncate">{task.title}</span>
+            <Link 
+              href={`/tasks?id=${task.id}`}
+              className="text-sm text-gray-900 flex-1 truncate hover:text-blue-600 hover:underline transition-colors"
+            >
+              {task.title}
+            </Link>
             <span className="text-xs text-gray-400 shrink-0">{task.assignee_names || ""}</span>
             <StatusBadge status={task.status} />
           </div>
@@ -68,7 +74,12 @@ export function ActivityFeed({ logs }: { logs: ActivityLog[] }) {
                 </p>
                 {log.task_id && (
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {log.task_title}
+                    <Link 
+                      href={`/tasks?id=${log.task_id}`}
+                      className="hover:text-blue-600 hover:underline transition-colors"
+                    >
+                      {log.task_title}
+                    </Link>
                     {detail && ` · ${detail}`}
                   </p>
                 )}

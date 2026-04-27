@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { X, Mail, Shield, Star, User, Trash2, AlertTriangle, KeyRound } from "lucide-react";
+import { X, Mail, Shield, Star, User, Trash2, AlertTriangle, KeyRound, Eye, EyeOff } from "lucide-react";
 import { MemberAvatar } from "@/components/shared/badges";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { useSettings } from "@/lib/settings-context";
+import { useAuth } from "@/lib/auth-context";
 import type { Member, CommonCode, MemberRole } from "@/lib/types";
 
 const ROLE_OPTIONS: { v: MemberRole; labelKey: string; icon: React.ReactNode }[] = [
@@ -26,6 +27,9 @@ interface Props {
 export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onDeleted }: Props) {
   const t = useT();
   const { showEnglish } = useSettings();
+  const { currentUser } = useAuth();
+  const isMe = currentUser?.id === member.id;
+
   const [form, setForm] = useState({
     name: member.name,
     name_en: member.name_en ?? "",
@@ -35,9 +39,18 @@ export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onD
   });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [changing, setChanging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -82,6 +95,37 @@ export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onD
       setError(data.code ? t(`error.${data.code}`) : (data.error ?? t("auth.reset_failed")));
       return;
     }
+    onClose();
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPw !== confirmPw) {
+      setError(t("auth.password_mismatch_inline"));
+      return;
+    }
+    if (newPw.length < 8) {
+      setError(t("auth.password_too_short"));
+      return;
+    }
+
+    setChanging(true);
+    setError(null);
+
+    const res = await fetch("/api/auth/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword: currentPw || undefined, newPassword: newPw }),
+    });
+
+    setChanging(false);
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? t("auth.change_failed"));
+      return;
+    }
+
     onClose();
   };
 
@@ -144,6 +188,72 @@ export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onD
               </button>
             </div>
           </div>
+        ) : showChangePassword ? (
+          /* 비밀번호 변경 화면 */
+          <form onSubmit={handleChangePassword} className="p-5 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+              <KeyRound className="w-5 h-5 text-blue-600" />
+              <h2 className="text-lg font-semibold text-gray-900">{t("auth.change_password")}</h2>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.current_password")}</label>
+              <input
+                type="password"
+                value={currentPw}
+                onChange={e => setCurrentPw(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.new_password")}</label>
+              <div className="relative">
+                <input
+                  type={showNew ? "text" : "password"}
+                  value={newPw}
+                  onChange={e => setNewPw(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button type="button" onClick={() => setShowNew(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>
+                  {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.confirm_password")}</label>
+              <div className="relative">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirmPw}
+                  onChange={e => setConfirmPw(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button type="button" onClick={() => setShowConfirm(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {confirmPw && newPw !== confirmPw && (
+                <p className="text-xs text-red-500 mt-1">{t("auth.password_mismatch_inline")}</p>
+              )}
+            </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => { setShowChangePassword(false); setError(null); }} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">{t("action.cancel")}</button>
+              <button
+                type="submit"
+                disabled={changing || !newPw || !confirmPw}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
+              >
+                {changing ? t("auth.changing") : t("auth.change_password")}
+              </button>
+            </div>
+          </form>
         ) : (
           /* 수정 폼 */
           <form onSubmit={handleSave} className="p-5 space-y-4">
@@ -220,13 +330,22 @@ export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onD
                 >
                   <Trash2 className="w-4 h-4" />{t("action.delete")}
                 </button>
-                {isAdmin && (
+                {!isMe && isAdmin && (
                   <button
                     type="button"
                     onClick={() => setConfirmReset(true)}
                     className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded-lg"
                   >
                     <KeyRound className="w-4 h-4" />{t("member.reset_password")}
+                  </button>
+                )}
+                {isMe && (
+                  <button
+                    type="button"
+                    onClick={() => setShowChangePassword(true)}
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg"
+                  >
+                    <KeyRound className="w-4 h-4" />{t("auth.change_password")}
                   </button>
                 )}
               </div>

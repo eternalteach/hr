@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { CommonCode } from "@/lib/types";
 
 interface Props {
@@ -25,6 +26,8 @@ const EMPTY: FormState = {
 
 export function CodesFormModal({ code, group, onClose, onSaved }: Props) {
   const t = useT();
+  const { dataLanguage } = useSettings();
+  const isEn = dataLanguage === "en";
   const isEdit = !!code;
   const [form, setForm] = useState<FormState>(code ? {
     code: code.code,
@@ -119,19 +122,16 @@ export function CodesFormModal({ code, group, onClose, onSaved }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {field(t("form.title_local"), "title_local")}
-            {field(t("form.title_en"), "title_en")}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn ? field(t("form.title_en"), "title_en") : field(t("form.title_local"), "title_local")}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {field(t("form.content_local"), "content_local", { textarea: true })}
-            {field(t("form.content_en"), "content_en", { textarea: true })}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn ? field(t("form.content_en"), "content_en", { textarea: true }) : field(t("form.content_local"), "content_local", { textarea: true })}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {field(t("form.note_local"), "note_local", { textarea: true })}
-            {field(t("form.note_en"), "note_en", { textarea: true })}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn ? field(t("form.note_en"), "note_en", { textarea: true }) : field(t("form.note_local"), "note_local", { textarea: true })}
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

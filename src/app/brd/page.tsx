@@ -7,25 +7,31 @@ import { BrdFormModal } from "@/components/brd/BrdFormModal";
 import { ExcelUploadZone, type ColumnDef } from "@/components/excel/ExcelUploadZone";
 import { useAuth } from "@/lib/auth-context";
 import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { Brd } from "@/lib/types";
-
-const EXCEL_COLUMNS: ColumnDef[] = [
-  { excelHeader: "BRD ID",            field: "brd_id",       required: true,  sampleValue: "BRD-2025-001" },
-  { excelHeader: "SOW ID",            field: "sow_id",       required: true,  sampleValue: "SOW-2025-001" },
-  { excelHeader: "LOB",               field: "lob",                           sampleValue: "RETAIL" },
-  { excelHeader: "BRD 타이틀(Local)", field: "title_local",                   sampleValue: "상품 검색 고도화" },
-  { excelHeader: "BRD 타이틀(영문)",  field: "title_en",                      sampleValue: "Product Search Enhancement" },
-  { excelHeader: "BRD 내용(Local)",   field: "content_local", required: true,  sampleValue: "상품 검색 및 필터링 기능 요구사항" },
-  { excelHeader: "BRD 내용(영어)",    field: "content_en",    required: true,  sampleValue: "Requirements for product search and filtering" },
-  { excelHeader: "비고(Local)",       field: "note_local",                    sampleValue: "" },
-  { excelHeader: "비고(영어)",        field: "note_en",                       sampleValue: "" },
-  { excelHeader: "BRD 유효여부",      field: "is_active",                     sampleValue: "Y" },
-];
 
 export default function BrdPage() {
   const { isReadOnly } = useAuth();
+  const { dataLanguage } = useSettings();
+  const isEn = dataLanguage === "en";
   const t = useT();
   const [rows, setRows] = useState<Brd[]>([]);
+  
+  const EXCEL_COLUMNS: ColumnDef[] = [
+    { excelHeader: "BRD ID", field: "brd_id", required: true, sampleValue: "BRD-2025-001" },
+    { excelHeader: "SOW ID", field: "sow_id", required: true, sampleValue: "SOW-2025-001" },
+    { excelHeader: "LOB", field: "lob", sampleValue: "RETAIL" },
+    ...(isEn ? [
+      { excelHeader: t("form.title_en"), field: "title_en", sampleValue: "Product Search Enhancement" },
+      { excelHeader: t("form.content_en"), field: "content_en", required: true, sampleValue: "Requirements for product search and filtering" },
+      { excelHeader: t("form.note_en"), field: "note_en", sampleValue: "" },
+    ] : [
+      { excelHeader: t("form.title_local"), field: "title_local", sampleValue: "상품 검색 고도화" },
+      { excelHeader: t("form.content_local"), field: "content_local", required: true, sampleValue: "상품 검색 및 필터링 기능 요구사항" },
+      { excelHeader: t("form.note_local"), field: "note_local", sampleValue: "" },
+    ]),
+    { excelHeader: t("common.is_active"), field: "is_active", sampleValue: "Y" },
+  ];
   const [loading, setLoading] = useState(true);
   const [editTarget, setEditTarget] = useState<Brd | null | undefined>(undefined);
   const [deleteTarget, setDeleteTarget] = useState<Brd | null>(null);

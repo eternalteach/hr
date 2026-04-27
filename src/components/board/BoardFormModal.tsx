@@ -92,11 +92,9 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
     </div>
   );
 
-  const canSubmit = !saving && form.title_local.trim().length > 0;
+  const canSubmit = !saving && (isEn ? form.title_en.trim().length > 0 : form.title_local.trim().length > 0);
   const titleLabel = t(config.titleLabelKey);
   const contentLabel = t(config.contentLabelKey);
-  const localSuffix = t("form.local_suffix");
-  const enSuffix = t("form.en_suffix");
   const refDateLabel = config.referenceDateLabelKey ? t(config.referenceDateLabelKey) : t("board.ref_date");
 
   return (
@@ -168,27 +166,37 @@ export function BoardFormModal({ config, post, defaultLob, lobs, onClose, onSave
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {field(`${titleLabel} ${localSuffix}`, "title_local", {
-              required: true,
-              placeholder: config.titlePlaceholder,
-            })}
-            {field(`${titleLabel} ${enSuffix}`, "title_en")}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn
+              ? field(`${titleLabel}`, "title_en", {
+                required: true,
+                placeholder: config.titlePlaceholder,
+              })
+              : field(`${titleLabel}`, "title_local", {
+                required: true,
+                placeholder: config.titlePlaceholder,
+              })
+            }
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {field(`${contentLabel} ${localSuffix}`, "content_local", {
-              textarea: true, markdown: true,
-              placeholder: config.contentPlaceholder,
-            })}
-            {field(`${contentLabel} ${enSuffix}`, "content_en", {
-              textarea: true, markdown: true,
-            })}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn
+              ? field(`${contentLabel}`, "content_en", {
+                textarea: true, markdown: true,
+                placeholder: config.contentPlaceholder,
+              })
+              : field(`${contentLabel}`, "content_local", {
+                textarea: true, markdown: true,
+                placeholder: config.contentPlaceholder,
+              })
+            }
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {field(`${t("board.note")} ${localSuffix}`, "note_local", { textarea: true, markdown: true })}
-            {field(`${t("board.note")} ${enSuffix}`, "note_en", { textarea: true, markdown: true })}
+          <div className="grid grid-cols-1 gap-4">
+            {isEn
+              ? field(`${t("board.note")}`, "note_en", { textarea: true, markdown: true })
+              : field(`${t("board.note")}`, "note_local", { textarea: true, markdown: true })
+            }
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

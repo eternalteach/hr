@@ -43,15 +43,13 @@ export function BoardTable({ config, rows, lobs, showLobColumn, onOpen, onEdit, 
 
   const titleLabel = t(config.titleLabelKey);
   const contentLabel = t(config.contentLabelKey);
-  const localSuffix = t("form.local_suffix");
-  const enSuffix = t("form.en_suffix");
 
   const headers: string[] = [
     ...(showLobColumn ? ["LOB"] : []),
     ...(config.hasReferenceDate ? [config.referenceDateLabelKey ? t(config.referenceDateLabelKey) : t("board.ref_date")] : []),
-    isEn ? `${titleLabel}${enSuffix}` : `${titleLabel}${localSuffix}`,
-    isEn ? `${contentLabel}${enSuffix}` : `${contentLabel}${localSuffix}`,
-    isEn ? `${t("board.note")}${enSuffix}` : `${t("board.note")}${localSuffix}`,
+    titleLabel,
+    contentLabel,
+    t("board.note"),
     t("board.is_active"),
     ...((onEdit || onDelete) ? [""] : []),
   ];

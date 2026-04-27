@@ -7,25 +7,31 @@ import { SowFormModal } from "@/components/sow/SowFormModal";
 import { ExcelUploadZone, type ColumnDef } from "@/components/excel/ExcelUploadZone";
 import { useAuth } from "@/lib/auth-context";
 import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { Sow } from "@/lib/types";
-
-const EXCEL_COLUMNS: ColumnDef[] = [
-  { excelHeader: "SOW ID",            field: "sow_id",       required: true,  sampleValue: "SOW-2025-001" },
-  { excelHeader: "LOB",               field: "lob",                           sampleValue: "RETAIL" },
-  { excelHeader: "SOW 타이틀(Local)", field: "title_local",                   sampleValue: "리테일 플랫폼 구축" },
-  { excelHeader: "SOW 타이틀(영문)",  field: "title_en",                      sampleValue: "Retail Platform Build" },
-  { excelHeader: "SOW 내용(Local)",   field: "content_local", required: true,  sampleValue: "리테일 채널 통합 플랫폼 구축 범위" },
-  { excelHeader: "SOW 내용(영어)",    field: "content_en",    required: true,  sampleValue: "Scope of retail channel integration platform" },
-  { excelHeader: "비고(Local)",       field: "note_local",                    sampleValue: "" },
-  { excelHeader: "비고(영어)",        field: "note_en",                       sampleValue: "" },
-  { excelHeader: "마일스톤 시기",     field: "milestone",                     sampleValue: "2025-Q2" },
-  { excelHeader: "SOW 유효여부",      field: "is_active",                     sampleValue: "Y" },
-];
 
 export default function SowPage() {
   const { isReadOnly } = useAuth();
+  const { dataLanguage } = useSettings();
+  const isEn = dataLanguage === "en";
   const t = useT();
   const [rows, setRows] = useState<Sow[]>([]);
+  
+  const EXCEL_COLUMNS: ColumnDef[] = [
+    { excelHeader: "SOW ID", field: "sow_id", required: true, sampleValue: "SOW-2025-001" },
+    { excelHeader: "LOB", field: "lob", sampleValue: "RETAIL" },
+    ...(isEn ? [
+      { excelHeader: t("form.title_en"), field: "title_en", sampleValue: "Retail Platform Build" },
+      { excelHeader: t("form.content_en"), field: "content_en", required: true, sampleValue: "Scope of retail channel integration platform" },
+      { excelHeader: t("form.note_en"), field: "note_en", sampleValue: "" },
+    ] : [
+      { excelHeader: t("form.title_local"), field: "title_local", sampleValue: "리테일 플랫폼 구축" },
+      { excelHeader: t("form.content_local"), field: "content_local", required: true, sampleValue: "리테일 채널 통합 플랫폼 구축 범위" },
+      { excelHeader: t("form.note_local"), field: "note_local", sampleValue: "" },
+    ]),
+    { excelHeader: t("sow.milestone"), field: "milestone", sampleValue: "2025-Q2" },
+    { excelHeader: t("common.is_active"), field: "is_active", sampleValue: "Y" },
+  ];
   const [loading, setLoading] = useState(true);
   const [editTarget, setEditTarget] = useState<Sow | null | undefined>(undefined); // undefined=closed, null=create
   const [deleteTarget, setDeleteTarget] = useState<Sow | null>(null);
