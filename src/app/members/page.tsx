@@ -7,6 +7,7 @@ import { Plus, X, Mail, Shield, Star, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { Member, CommonCode, MemberRole } from "@/lib/types";
 
 const ROLE_OPTIONS: { v: MemberRole; labelKey: string }[] = [
@@ -30,6 +31,7 @@ const ROLE_COLOR: Record<MemberRole, string> = {
 export default function MembersPage() {
   const { isReadOnly, currentUser } = useAuth();
   const t = useT();
+  const { showEnglish } = useSettings();
   const ROLE_KEYS: Record<MemberRole, string> = { admin: "role.admin", leader: "role.leader", member: "role.member" };
   const [members, setMembers] = useState<Member[]>([]);
   const [lobs, setLobs] = useState<CommonCode[]>([]);
@@ -94,11 +96,13 @@ export default function MembersPage() {
               isReadOnly ? "cursor-default" : "hover:border-blue-300 hover:shadow-sm"
             )}
           >
-            <MemberAvatar name={m.name} size="lg" />
+            <MemberAvatar name={showEnglish ? (m.name_en || m.name) : m.name} size="lg" />
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900 truncate">
-                {m.name}
-                {m.name_en && <span className="ml-1.5 text-xs font-normal text-gray-400">{m.name_en}</span>}
+                {showEnglish ? (m.name_en || m.name) : m.name}
+                <span className="ml-1.5 text-xs font-normal text-gray-400">
+                  {showEnglish ? m.name : m.name_en}
+                </span>
               </h3>
               <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
                 <Mail className="w-3.5 h-3.5" />{m.email}

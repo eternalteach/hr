@@ -5,6 +5,7 @@ import { X, Mail, Shield, Star, User, Trash2, AlertTriangle, KeyRound } from "lu
 import { MemberAvatar } from "@/components/shared/badges";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { Member, CommonCode, MemberRole } from "@/lib/types";
 
 const ROLE_OPTIONS: { v: MemberRole; labelKey: string; icon: React.ReactNode }[] = [
@@ -24,6 +25,7 @@ interface Props {
 
 export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onDeleted }: Props) {
   const t = useT();
+  const { showEnglish } = useSettings();
   const [form, setForm] = useState({
     name: member.name,
     name_en: member.name_en ?? "",
@@ -89,11 +91,13 @@ export function MemberEditModal({ member, lobs, isAdmin, onClose, onUpdated, onD
         {/* 헤더 */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <MemberAvatar name={member.name} size="lg" />
+            <MemberAvatar name={showEnglish ? (member.name_en || member.name) : member.name} size="lg" />
             <div>
               <h2 className="text-base font-semibold text-gray-900">
-                {member.name}
-                {member.name_en && <span className="ml-1.5 text-xs font-normal text-gray-400">{member.name_en}</span>}
+                {showEnglish ? (member.name_en || member.name) : member.name}
+                <span className="ml-1.5 text-xs font-normal text-gray-400">
+                  {showEnglish ? member.name : member.name_en}
+                </span>
               </h2>
               <p className="text-xs text-gray-400 flex items-center gap-1">
                 <Mail className="w-3 h-3" />{member.email}
