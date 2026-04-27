@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Settings, Database, Tag, Clock, Check, Globe } from "lucide-react";
 import { useSettings, COMMON_TIMEZONES, LOCAL_LANGUAGES } from "@/lib/settings-context";
 import { useT } from "@/lib/i18n";
+import { LlmConfigSection } from "@/components/settings/LlmConfigSection";
 
 export default function SettingsPage() {
   const { 
@@ -91,6 +92,9 @@ export default function SettingsPage() {
             />
           </div>
         </section>
+
+        {/* LLM 설정 */}
+        <LlmConfigSection />
 
         {/* 타임존 */}
         <section className="bg-white border border-gray-200 rounded-xl p-6">

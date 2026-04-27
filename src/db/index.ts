@@ -357,6 +357,28 @@ function migrateSchema(database: SqlJsDatabase) {
     dirty = true;
   }
 
+  // llm_configs 테이블 추가
+  const hasLlmConfigs = (database.exec(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='llm_configs'"
+  )[0]?.values[0][0] as number) > 0;
+  if (!hasLlmConfigs) {
+    database.run(`
+      CREATE TABLE llm_configs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        base_url TEXT,
+        api_key TEXT NOT NULL,
+        model TEXT,
+        is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+        is_default TEXT NOT NULL DEFAULT 'N' CHECK(is_default IN ('Y','N')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    dirty = true;
+  }
+
   if (dirty) saveDb(database);
 }
 
@@ -529,6 +551,19 @@ function initSchema(database: SqlJsDatabase) {
       member_id INTEGER REFERENCES members(id),
       action TEXT NOT NULL,
       detail TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS llm_configs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      base_url TEXT,
+      api_key TEXT NOT NULL,
+      model TEXT,
+      is_active TEXT NOT NULL DEFAULT 'Y' CHECK(is_active IN ('Y','N')),
+      is_default TEXT NOT NULL DEFAULT 'N' CHECK(is_default IN ('Y','N')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);

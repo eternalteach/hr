@@ -229,6 +229,19 @@ const dict: Record<Lang, Record<string, string>> = {
     "board.form_title_edit": "{title} 수정",
     "board.form_title_add": "{title} 추가",
 
+    // LLM
+    "llm.title": "LLM 설정 관리",
+    "llm.name": "이름",
+    "llm.provider": "제공자",
+    "llm.apiKey": "API 키",
+    "llm.model": "기본 모델",
+    "llm.baseUrl": "Base URL (선택)",
+    "llm.isDefault": "기본값",
+    "llm.add": "LLM 설정 추가",
+    "llm.edit": "LLM 설정 수정",
+    "llm.empty": "등록된 LLM 설정이 없습니다.",
+    "llm.delete_confirm": "이 LLM 설정을 삭제하시겠습니까?",
+
     // Attachment
     "attachment.title": "첨부파일",
     "attachment.uploading": "업로드 중…",
@@ -279,6 +292,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.language_en_desc": "Display English columns by default",
     "settings.local_language": "로컬 언어",
     "settings.local_language_desc": "선택한 언어는 Local 에 사용할 언어",
+    "settings.llm_config": "LLM 설정",
+    "settings.llm_config_desc": "LLM 접속 정보를 관리합니다. 번역, 요약 등에 사용됩니다.",
     "settings.show_english": "영문 표시",
 
     // Languages
@@ -619,6 +634,19 @@ const dict: Record<Lang, Record<string, string>> = {
     "board.form_title_edit": "Edit {title}",
     "board.form_title_add": "Add {title}",
 
+    // LLM
+    "llm.title": "LLM Settings",
+    "llm.name": "Name",
+    "llm.provider": "Provider",
+    "llm.apiKey": "API Key",
+    "llm.model": "Model",
+    "llm.baseUrl": "Base URL (Optional)",
+    "llm.isDefault": "Default",
+    "llm.add": "Add LLM Config",
+    "llm.edit": "Edit LLM Config",
+    "llm.empty": "No LLM configurations registered.",
+    "llm.delete_confirm": "Are you sure you want to delete this LLM configuration?",
+
     // Attachment
     "attachment.title": "Attachments",
     "attachment.uploading": "Uploading…",
@@ -669,6 +697,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.language_en_desc": "Display English columns by default",
     "settings.local_language": "Local Language",
     "settings.local_language_desc": "The selected language is the language to be used for Local",
+    "settings.llm_config": "LLM Settings",
+    "settings.llm_config_desc": "Manage LLM connection information for translation, summarization, etc.",
     "settings.show_english": "Show English",
 
     // Languages

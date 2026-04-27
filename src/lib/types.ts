@@ -193,6 +193,19 @@ export interface Brd {
   created_at: string;
 }
 
+export interface LlmConfig {
+  id: number;
+  name: string;
+  provider: string;
+  base_url: string | null;
+  api_key: string;
+  model: string | null;
+  is_active: "Y" | "N";
+  is_default: "Y" | "N";
+  updated_at: string;
+  created_at: string;
+}
+
 /** 첨부파일 owner 종류 — 새 도메인 추가 시 여기에 추가 */
 export type AttachmentOwnerType = "board_post";
 

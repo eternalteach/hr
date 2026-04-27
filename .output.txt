@@ -1,0 +1,245 @@
+Command finished with exit code 0.
+Command output:
+
+> team-task-manager@0.1.0 verify
+> npm run lint && npx tsc --noEmit && npm run test:run
+
+
+> team-task-manager@0.1.0 lint
+> eslint
+
+
+C:\dev\project\hr\src\app\api\activity-logs\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\auth\logout\route.ts
+  5:43  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\brd\[id]\route.test.ts
+  45:21  warning  '_bid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  51:21  warning  '_sid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  57:28  warning  '_cl' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  63:25  warning  '_ce' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\brd\route.test.ts
+  48:21  warning  '_brd_id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  54:21  warning  '_sow_id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  60:28  warning  '_cl' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  66:25  warning  '_ce' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\brd\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\dashboard\deadlines\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\dashboard\priority\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\dashboard\summary\route.ts
+  5:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\dashboard\workload\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\lob\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\members\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\schedules\upcoming\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\seed\route.ts
+  6:43  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\settings\llm\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\setup\status\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\sow\[id]\route.test.ts
+  44:21  warning  '_sid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  50:28  warning  '_cl' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  56:25  warning  '_ce' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\sow\route.test.ts
+  49:21  warning  '_sid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  55:28  warning  '_cl' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  61:25  warning  '_ce' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\sow\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\app\api\tags\route.ts
+  6:42  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\components\tasks\task-create-modal.tsx
+  21:10  warning  'tags' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\dev\project\hr\src\components\tasks\task-detail-modal.tsx
+  50:6  warning  React Hook useEffect has a missing dependency: 'task'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 31 problems (0 errors, 31 warnings)
+
+
+> team-task-manager@0.1.0 test:run
+> vitest run
+
+
+ RUN  v4.1.5 C:/dev/project/hr
+
+ ✓ src/db/helpers.test.ts (12 tests) 170ms
+ ✓ src/app/api/lob/route.test.ts (3 tests) 174ms
+ ✓ src/lib/crypto.test.ts (8 tests) 359ms
+ ✓ src/app/api/codes/[id]/route.test.ts (9 tests) 191ms
+ ✓ src/app/api/brd/bulk/route.test.ts (4 tests) 190ms
+ ✓ src/app/api/sow/bulk/route.test.ts (4 tests) 202ms
+ ✓ src/app/api/setup/route.test.ts (6 tests) 201ms
+ ✓ src/app/api/sow/route.test.ts (6 tests) 214ms
+ ✓ src/app/api/attachments/[id]/route.test.ts (7 tests) 215ms
+ ✓ src/app/api/brd/route.test.ts (7 tests) 225ms
+ ✓ src/app/api/members/route.test.ts (9 tests) 231ms
+ ✓ src/app/api/tasks/[id]/links/route.test.ts (8 tests) 238ms
+ ✓ src/lib/attachments/storage.test.ts (17 tests) 196ms
+ ✓ src/app/api/dashboard/summary/route.test.ts (4 tests) 207ms
+ ✓ src/app/api/schedules/upcoming/route.test.ts (3 tests) 246ms
+ ✓ src/app/api/tasks/[id]/route.test.ts (15 tests) 262ms
+ ✓ src/app/api/lob/[id]/route.test.ts (7 tests) 258ms
+ ✓ src/app/api/board/[type]/[id]/links/route.test.ts (10 tests) 214ms
+ ✓ src/app/api/sow/[id]/route.test.ts (9 tests) 260ms
+ ✓ src/app/api/setup/status/route.test.ts (3 tests) 258ms
+ ✓ src/app/api/schedules/route.test.ts (9 tests) 264ms
+ ✓ src/app/api/tasks/[id]/comments/route.test.ts (7 tests) 278ms
+ ✓ src/app/api/auth/me/route.test.ts (4 tests) 282ms
+ ✓ src/app/api/codes/route.test.ts (6 tests) 288ms
+ ✓ src/app/api/board/[type]/[id]/route.test.ts (12 tests) 253ms
+ ✓ src/app/api/tasks/route.test.ts (15 tests) 293ms
+ ✓ src/app/api/attachments/route.test.ts (11 tests) 301ms
+ ✓ src/app/api/brd/[id]/route.test.ts (10 tests) 316ms
+ ✓ src/app/api/members/[id]/route.test.ts (13 tests) 326ms
+ ✓ src/lib/session.test.ts (7 tests) 9ms
+ ✓ src/lib/api-handler.test.ts (5 tests) 12ms
+ ✓ src/app/api/auth/logout/route.test.ts (1 test) 8ms
+ ✓ src/app/api/activity-logs/route.test.ts (3 tests) 71ms
+ ✓ src/app/api/auth/login/route.test.ts (7 tests) 596ms
+ ✓ src/app/api/dashboard/workload/route.test.ts (2 tests) 72ms
+ ✓ src/app/api/tags/route.test.ts (2 tests) 67ms
+ ✓ src/app/api/tasks/reorder/route.test.ts (4 tests) 76ms
+ ✓ src/app/api/settings/llm/route.test.ts (4 tests) 75ms
+ ✓ src/app/api/dashboard/priority/route.test.ts (2 tests) 60ms
+ ✓ src/app/api/auth/change-password/route.test.ts (7 tests) 625ms
+     ✓ 올바른 현재 비밀번호로 변경에 성공한다  343ms
+ ✓ src/app/api/dashboard/deadlines/route.test.ts (3 tests) 72ms
+ ✓ src/app/api/schedules/[id]/route.test.ts (9 tests) 103ms
+ ✓ src/app/api/settings/llm/[id]/route.test.ts (4 tests) 78ms
+ ✓ src/app/api/board/[type]/route.test.ts (12 tests) 100ms
+ ✓ src/lib/utils.test.ts (17 tests) 18ms
+
+ Test Files  45 passed (45)
+      Tests  327 passed (327)
+   Start at  23:29:01
+   Duration  1.57s (transform 4.76s, setup 0ms, import 11.37s, tests 9.15s, environment 3ms)
+
+
+> team-task-manager@0.1.0 build
+> next build
+
+▲ Next.js 16.2.3 (Turbopack)
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Turbopack build encountered 1 warnings:
+./next.config.ts
+Encountered unexpected file in NFT list
+A file was traced that indicates that the whole project was traced unintentionally. Somewhere in the import trace below, there are:
+- filesystem operations (like path.join, path.resolve or fs.readFile), or
+- very dynamic requires (like require('./' + foo)).
+To resolve this, you can
+- remove them if possible, or
+- only use them in development, or
+- make sure they are statically scoped to some subfolder: path.join(process.cwd(), 'data', bar), or
+- add ignore comments: path.join(/*turbopackIgnore: true*/ process.cwd(), bar)
+
+Import trace:
+  App Route:
+    ./next.config.ts
+    ./src/lib/attachments/storage.ts
+    ./src/app/api/board/[type]/[id]/route.ts
+
+
+✓ Compiled successfully in 2.5s
+  Running TypeScript ...
+  Finished TypeScript in 2.3s ...
+  Collecting page data using 31 workers ...
+  Generating static pages using 31 workers (0/42) ...
+  Generating static pages using 31 workers (10/42) 
+  Generating static pages using 31 workers (20/42) 
+  Generating static pages using 31 workers (31/42) 
+✓ Generating static pages using 31 workers (42/42) in 203ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/activity-logs
+├ ƒ /api/attachments
+├ ƒ /api/attachments/[id]
+├ ƒ /api/auth/change-password
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/me
+├ ƒ /api/board/[type]
+├ ƒ /api/board/[type]/[id]
+├ ƒ /api/board/[type]/[id]/links
+├ ƒ /api/brd
+├ ƒ /api/brd/[id]
+├ ƒ /api/brd/bulk
+├ ƒ /api/codes
+├ ƒ /api/codes/[id]
+├ ƒ /api/dashboard/deadlines
+├ ƒ /api/dashboard/priority
+├ ƒ /api/dashboard/summary
+├ ƒ /api/dashboard/workload
+├ ƒ /api/lob
+├ ƒ /api/lob/[id]
+├ ƒ /api/members
+├ ƒ /api/members/[id]
+├ ƒ /api/members/[id]/reset-password
+├ ƒ /api/schedules
+├ ƒ /api/schedules/[id]
+├ ƒ /api/schedules/upcoming
+├ ƒ /api/seed
+├ ƒ /api/settings/llm
+├ ƒ /api/settings/llm/[id]
+├ ƒ /api/setup
+├ ƒ /api/setup/status
+├ ƒ /api/sow
+├ ƒ /api/sow/[id]
+├ ƒ /api/sow/bulk
+├ ƒ /api/tags
+├ ƒ /api/tasks
+├ ƒ /api/tasks/[id]
+├ ƒ /api/tasks/[id]/comments
+├ ƒ /api/tasks/[id]/links
+├ ƒ /api/tasks/reorder
+├ ƒ /brd
+├ ƒ /calendar
+├ ƒ /change-password
+├ ƒ /codes
+├ ƒ /glossary
+├ ƒ /lob
+├ ƒ /login
+├ ƒ /meeting-notes
+├ ƒ /members
+├ ƒ /settings
+├ ƒ /setup
+├ ƒ /sow
+└ ƒ /tasks
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
