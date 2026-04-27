@@ -1,9 +1,9 @@
 import { getDb, saveDb } from "@/db";
 import { withTransaction } from "@/db/helpers";
 import { withApiHandler } from "@/lib/api-handler";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const POST = withApiHandler(async () => {
+export const POST = withApiHandler(async (_req: NextRequest) => {
   const db = await getDb();
 
   // 기존 데이터가 있으면 스킵
@@ -44,10 +44,11 @@ export const POST = withApiHandler(async () => {
   ];
 
   tasks.forEach((t, i) => {
-    const completedAt = t.status === "done" ? `'${t.due}'` : "NULL";
-    db.run(`INSERT INTO tasks (title, description, status, priority, due_date, completed_at, created_by, created_at, updated_at)
-      VALUES ('${t.title}', '${t.desc}', '${t.status}', '${t.priority}', '${t.due}', ${completedAt}, ${t.by},
-      datetime('now', '-${12 - i} days'), datetime('now', '-${Math.max(0, 5 - i)} days'))`);
+    const completedAt = t.status === "done" ? t.due : null;
+    db.run(
+      "INSERT INTO tasks (title, description, status, priority, due_date, completed_at, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', ?), datetime('now', ?))",
+      [t.title, t.desc, t.status, t.priority, t.due, completedAt, t.by, `-${12 - i} days`, `-${Math.max(0, 5 - i)} days`]
+    );
   });
 
   // 담당자 배정 — 각 업무에 1~2명

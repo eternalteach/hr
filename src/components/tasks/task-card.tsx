@@ -30,8 +30,8 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
 
       {task.tags && task.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
-          {task.tags.map((tt: any) => (
-            <TagBadge key={tt.tag_id || tt.id} name={tt.name || tt.tag?.name || ""} color={tt.color || tt.tag?.color || "#6366f1"} />
+          {task.tags.map((tt) => (
+            <TagBadge key={tt.tag_id} name={tt.name || tt.tag?.name || ""} color={tt.color || tt.tag?.color || "#6366f1"} />
           ))}
         </div>
       )}
@@ -41,7 +41,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           {task.assignees?.slice(0, 3).map((a) => (
             <MemberAvatar
               key={a.member_id || a.id}
-              name={a.member?.name || (a as any).member_name || "?"}
+              name={a.member?.name || a.member_name || "?"}
               size="sm"
             />
           ))}

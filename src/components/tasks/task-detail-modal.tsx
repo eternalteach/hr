@@ -44,6 +44,7 @@ export function TaskDetailModal({ task, onClose, onUpdate }: TaskDetailModalProp
     if (task) {
       fetch(`/api/tasks/${task.id}/comments`).then(r => r.json()).then(setComments).catch(() => setComments([]));
       fetch(`/api/tasks/${task.id}/links`).then(r => r.json()).then(setLinkedPosts).catch(() => setLinkedPosts([]));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsEditing(false);
     }
   }, [task?.id]);

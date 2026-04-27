@@ -235,10 +235,141 @@ const msg = error.code ? t(`error.${error.code}`) : error.message;
 Why: 하드코딩된 한국어 문자열은 언어 전환 시 바뀌지 않는다.
 인프라를 통해 추가·변경이 한 곳에서 관리되어 누락이 없다.
 
+## 17. `withApiHandler` 콜백 서명 — 미사용 파라미터도 선언
+
+`withApiHandler`에 전달하는 콜백은 요청 객체를 실제로 쓰지 않더라도
+**반드시 `(_req: NextRequest)` 를 선언**한다.
+
+```ts
+// ✅
+export const GET = withApiHandler(async (_req: NextRequest) => {
+  return NextResponse.json(await fetchData());
+});
+
+// ❌ — 테스트에서 GET(req) 한 인자로 호출하면 TS2554 발생
+export const GET = withApiHandler(async () => {
+  return NextResponse.json(await fetchData());
+});
+```
+
+Why: 테스트 파일에서 `GET(get("/api/..."))` 처럼 1개 인수로 핸들러를 직접 호출한다.
+콜백이 0개 파라미터를 선언하면 TypeScript가 인수 개수 불일치(TS2554)로 에러를 낸다.
+
+## 18. `useEffect` 안의 `setState` — `react-hooks/set-state-in-effect`
+
+ESLint `react-hooks/set-state-in-effect` 규칙은 Effect 내부에서
+`setState`(또는 async 함수를 통한 간접 호출)를 금지한다.
+아래 세 패턴은 **의도적으로 허용**하며, 각 줄에 `eslint-disable-next-line` 주석을 단다.
+
+### 허용 패턴 1 — localStorage 초기화 (마운트 1회)
+
+```ts
+useEffect(() => {
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  setSettings(loadFromLocalStorage());
+}, []);
+```
+
+### 허용 패턴 2 — 데이터 fetch (useCallback으로 안정화된 함수)
+
+```ts
+const loadData = useCallback(async () => {
+  const data = await fetch(...).then(r => r.json());
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  setItems(data);
+}, []);
+
+useEffect(() => { loadData(); }, [loadData]);
+```
+
+> `loadData` 함수는 반드시 `useCallback`으로 감싸서 의존성 배열이 안정적이어야 한다.
+> 인라인 async 함수를 Effect 내부에서 정의·호출하면 매 렌더마다 재실행된다.
+
+### 허용 패턴 3 — URL 파라미터로 모달 딥링크 열기
+
+```ts
+useEffect(() => {
+  const id = searchParams.get("taskId");
+  if (id) {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedId(Number(id));
+  }
+}, [searchParams]);
+```
+
+Why: 이 패턴들은 규칙의 의도(무한 루프 방지)를 실제로 위반하지 않는다.
+주석 없이 disable 하면 의도가 불명확해지므로 반드시 한 줄짜리 주석을 붙인다.
+
+## 19. JOIN 결과 타입 — `as any` 금지, `types.ts` 확장
+
+SQL JOIN으로 반환되는 평탄화(flat) 컬럼이 기본 인터페이스에 없다면,
+`as any` 캐스트 대신 `src/lib/types.ts`의 인터페이스에 **optional 필드**로 추가한다.
+
+```ts
+// types.ts
+interface Task {
+  // ... 기존 필드
+  assignee_names?: string | null;  // JOIN 평탄화 필드
+}
+
+interface TaskAssignee {
+  member_name?: string;  // JOIN 평탄화 필드
+}
+```
+
+```tsx
+// 컴포넌트
+<span>{task.assignee_names}</span>       // ✅ — 타입 안전
+<span>{(task as any).assignee_names}</span>  // ❌ — 타입 검사 무력화
+```
+
+Why: `as any`는 TypeScript 오류를 숨길 뿐 런타임 안전성을 보장하지 않는다.
+인터페이스에 미리 선언하면 오탈자나 필드 삭제 시 컴파일 타임에 감지된다.
+
+## 20. recharts `Tooltip` formatter 타입
+
+recharts의 `Tooltip` `formatter` prop에서 세 번째 인자 `entry`의 `payload`는
+**옵셔널**이다. 직접 접근하면 TS2322가 발생하므로 인라인 타입과 옵셔널 체이닝을 쓴다.
+
+```tsx
+// ✅
+<Tooltip
+  formatter={(value: number | string, _: string | number, entry: { payload?: { priority?: string } }) => {
+    const p = entry.payload?.priority ?? "";
+    return [value, t(PRIORITY_KEYS[p] ?? p)];
+  }}
+/>
+
+// ❌ — entry.payload.priority 직접 접근 시 타입 에러
+```
+
+Why: recharts의 내부 `Payload<>` 제네릭에서 `payload` 속성은 `T | undefined`다.
+타입 단언 없이 안전하게 쓰려면 옵셔널 체이닝이 필수다.
+
+## 21. 시드 데이터도 `?` 파라미터 바인딩
+
+하드코딩된 상수라도 `db.run` / `db.exec`에 **템플릿 리터럴이나 문자열 연결 금지**.
+`datetime('now', ?)` 처럼 SQLite 함수 인자도 바인딩으로 넘긴다.
+
+```ts
+// ✅
+db.run(
+  "INSERT INTO tasks (title, status, due_date) VALUES (?, ?, datetime('now', ?))",
+  ["Task A", "todo", "-7 days"]
+);
+
+// ❌ — ESLint no-restricted-syntax 에러
+db.run(`INSERT INTO tasks (title, status, due_date) VALUES ('Task A', 'todo', datetime('now', '-7 days'))`);
+```
+
+Why: ESLint `no-restricted-syntax` 규칙은 `db.run` / `db.exec` 호출에
+템플릿 리터럴이 포함되면 무조건 에러를 낸다. 데이터 출처가 상수여도 예외가 없다.
+
 ## 15. 커밋 전 체크리스트
 
 - [ ] `npm run lint` 통과
 - [ ] `npm run test:run` 통과
-- [ ] 새 SQL은 `?` 바인딩 사용
-- [ ] 새 라우트는 `withApiHandler` 래핑
+- [ ] 새 SQL은 `?` 바인딩 사용 (시드 데이터 포함)
+- [ ] 새 라우트는 `withApiHandler` 래핑 + `(_req: NextRequest)` 서명
 - [ ] 2개 이상 쓰기는 `withTransaction`
+- [ ] JOIN 평탄화 필드는 `types.ts`에 optional로 선언, `as any` 금지

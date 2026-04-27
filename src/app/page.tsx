@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { WorkloadChart } from "@/components/dashboard/workload-chart";
 import { PriorityChart } from "@/components/dashboard/priority-chart";
@@ -17,29 +17,7 @@ export default function DashboardPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [seeded, setSeeded] = useState(false);
 
-  useEffect(() => {
-    async function init() {
-      try {
-        const res = await fetch("/api/members");
-        const members = await res.json();
-        if (!members.length) {
-          await fetch("/api/seed", { method: "POST" });
-          setSeeded(true);
-        }
-      } catch {
-        await fetch("/api/seed", { method: "POST" });
-        setSeeded(true);
-      }
-      loadData();
-    }
-    init();
-  }, []);
-
-  useEffect(() => {
-    if (seeded) loadData();
-  }, [seeded]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const [s, w, p, d, l] = await Promise.all([
       fetch("/api/dashboard/summary").then(r => r.json()),
       fetch("/api/dashboard/workload").then(r => r.json()),
@@ -52,7 +30,32 @@ export default function DashboardPage() {
     setPriority(p);
     setDeadlines(d);
     setLogs(l);
-  }
+  }, []);
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const res = await fetch("/api/members");
+        const members = await res.json();
+        if (!members.length) {
+          await fetch("/api/seed", { method: "POST" });
+          setSeeded(true);
+          return;
+        }
+      } catch {
+        await fetch("/api/seed", { method: "POST" });
+        setSeeded(true);
+        return;
+      }
+      loadData();
+    }
+    init();
+  }, [loadData]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (seeded) loadData();
+  }, [seeded, loadData]);
 
   return (
     <div className="p-6 space-y-6">

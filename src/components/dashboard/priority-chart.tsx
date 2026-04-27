@@ -35,7 +35,10 @@ export function PriorityChart({ data }: { data: PriorityData[] }) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: any, _: any, entry: any) => [value, t(PRIORITY_KEYS[entry.payload.priority] ?? entry.payload.priority)]}
+                formatter={(value: number | string, _: string | number, entry: { payload?: { priority?: string } }) => {
+                  const p = entry.payload?.priority ?? "";
+                  return [value, t(PRIORITY_KEYS[p] ?? p)];
+                }}
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}
               />
             </PieChart>

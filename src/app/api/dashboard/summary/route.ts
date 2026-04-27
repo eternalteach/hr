@@ -1,8 +1,8 @@
 import { getDb } from "@/db";
 import { withApiHandler } from "@/lib/api-handler";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const GET = withApiHandler(async () => {
+export const GET = withApiHandler(async (_req: NextRequest) => {
   const db = await getDb();
 
   const read = (sql: string) => (db.exec(sql)[0]?.values[0]?.[0] as number) ?? 0;

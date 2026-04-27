@@ -25,7 +25,8 @@
       "Bash(npx vitest *)",
       "Bash(bash .claude/hooks/auto-commit-push.sh)",
       "Read(~/.claude/**)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(npx eslint *)"
     ]
   },
   "hooks": {

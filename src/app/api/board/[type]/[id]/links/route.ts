@@ -91,7 +91,6 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   // 존재하고 삭제되지 않은 업무만 허용
   if (taskIds.length) {
     const placeholders = taskIds.map(() => "?").join(",");
-    // eslint-disable-next-line no-restricted-syntax
     const found = queryAll(
       db,
       `SELECT id FROM tasks WHERE id IN (${placeholders}) AND deleted_at IS NULL`,

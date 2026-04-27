@@ -1,9 +1,9 @@
 import { getDb } from "@/db";
 import { withApiHandler } from "@/lib/api-handler";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 /** 관리자 계정이 하나도 없으면 초기 설정이 필요한 상태 */
-export const GET = withApiHandler(async () => {
+export const GET = withApiHandler(async (_req: NextRequest) => {
   const db = await getDb();
   const result = db.exec(
     "SELECT COUNT(*) FROM members WHERE role = 'admin' AND password_hash IS NOT NULL"

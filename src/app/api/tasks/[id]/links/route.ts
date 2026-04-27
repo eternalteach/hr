@@ -47,7 +47,6 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   // 존재하는 게시글만 허용
   if (postIds.length) {
     const placeholders = postIds.map(() => "?").join(",");
-    // eslint-disable-next-line no-restricted-syntax
     const found = queryAll(db, `SELECT id FROM board_posts WHERE id IN (${placeholders})`, postIds);
     const foundIds = new Set(found.map(r => r.id as number));
     for (const pid of postIds) {

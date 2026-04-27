@@ -1,6 +1,6 @@
 "use client";
 
-import { DDayBadge, StatusBadge, MemberAvatar } from "@/components/shared/badges";
+import { DDayBadge, StatusBadge } from "@/components/shared/badges";
 import { formatRelativeTime } from "@/lib/utils";
 import { useSettings } from "@/lib/settings-context";
 import { useT } from "@/lib/i18n";
@@ -23,7 +23,7 @@ export function DeadlineList({ tasks }: { tasks: Task[] }) {
           <div key={task.id} className="flex items-center gap-3 py-1.5">
             {task.due_date && <DDayBadge dueDate={task.due_date} />}
             <span className="text-sm text-gray-900 flex-1 truncate">{task.title}</span>
-            <span className="text-xs text-gray-400 shrink-0">{(task as any).assignee_names || ""}</span>
+            <span className="text-xs text-gray-400 shrink-0">{task.assignee_names || ""}</span>
             <StatusBadge status={task.status} />
           </div>
         ))}
@@ -62,13 +62,13 @@ export function ActivityFeed({ logs }: { logs: ActivityLog[] }) {
               </div>
               <div className="flex-1 min-w-0 pb-3">
                 <p className="text-sm text-gray-700">
-                  <span className="font-medium">{(log as any).member_name}</span>
+                  <span className="font-medium">{log.member_name}</span>
                   {" "}
                   <span className="text-gray-500">{t(actionKey) || log.action}</span>
                 </p>
                 {log.task_id && (
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {(log as any).task_title}
+                    {log.task_title}
                     {detail && ` · ${detail}`}
                   </p>
                 )}

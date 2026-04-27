@@ -209,6 +209,6 @@ export function del(url: string): NextRequest {
   return new NextRequest(`http://localhost${url}`, { method: "DELETE" });
 }
 
-export function makeParams(obj: Record<string, string>): { params: Promise<Record<string, string>> } {
+export function makeParams<T extends Record<string, string>>(obj: T): { params: Promise<T> } {
   return { params: Promise.resolve(obj) };
 }

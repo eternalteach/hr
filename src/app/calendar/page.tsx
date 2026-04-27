@@ -37,6 +37,7 @@ export default function CalendarPage() {
     setSchedules(await res.json());
   }, [currentDate]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadSchedules(); }, [loadSchedules]);
 
   const monthDays = useMemo(() => {

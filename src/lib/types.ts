@@ -34,6 +34,8 @@ export interface Task {
   comment_count?: number;
   attachment_count?: number;
   position?: number;
+  /** API JOIN 응답에서 평탄화된 필드 */
+  assignee_names?: string | null;
   // BRD 조인 필드 (API 응답에서 함께 제공)
   brd_code?: string | null;
   brd_lob?: string | null;
@@ -48,6 +50,8 @@ export interface TaskAssignee {
   member_id: number;
   assigned_at: string;
   member?: Member;
+  /** API JOIN 응답에서 평탄화된 필드 */
+  member_name?: string;
 }
 
 export interface Tag {
@@ -60,6 +64,9 @@ export interface TaskTagJoin {
   task_id: number;
   tag_id: number;
   tag?: Tag;
+  /** API JOIN 응답에서 평탄화된 필드 */
+  name?: string;
+  color?: string;
 }
 
 export interface Comment {
@@ -92,6 +99,9 @@ export interface ActivityLog {
   created_at: string;
   member?: Member;
   task?: Task;
+  /** API JOIN 응답에서 평탄화된 필드 */
+  member_name?: string;
+  task_title?: string;
 }
 
 export interface Sow {

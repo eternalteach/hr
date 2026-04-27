@@ -1,9 +1,9 @@
 import { getDb } from "@/db";
 import { queryAll } from "@/db/helpers";
 import { withApiHandler } from "@/lib/api-handler";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const GET = withApiHandler(async () => {
+export const GET = withApiHandler(async (_req: NextRequest) => {
   const db = await getDb();
   const data = queryAll(db, `
     SELECT s.*, m.name as creator_name

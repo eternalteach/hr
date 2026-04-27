@@ -56,6 +56,7 @@ export function BoardPage({ config }: Props) {
     const id = Number(deepLinkId);
     if (!Number.isInteger(id) || id <= 0) return;
     const target = allRows.find(r => r.id === id);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (target) setViewTarget(target);
     router.replace(pathname);
   }, [deepLinkId, allRows, router, pathname]);

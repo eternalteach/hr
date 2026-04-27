@@ -45,7 +45,7 @@ export function TaskListView({ tasks, onTaskClick }: TaskListViewProps) {
                   {task.assignees?.slice(0, 2).map(a => (
                     <MemberAvatar
                       key={a.member_id || a.id}
-                      name={a.member?.name || (a as any).member_name || "?"}
+                      name={a.member?.name || a.member_name || "?"}
                       size="sm"
                     />
                   ))}

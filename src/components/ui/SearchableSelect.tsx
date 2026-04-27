@@ -62,6 +62,7 @@ export function SearchableSelect({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery("");
       // 드롭다운 렌더 후 검색창에 포커스
       const t = setTimeout(() => inputRef.current?.focus(), 40);

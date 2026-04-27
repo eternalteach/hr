@@ -54,6 +54,7 @@ export default function TasksPage() {
     return data;
   }, [filterLob, filterSow, filterBrd, filterTitle, filterStatus, filterPriority, filterAssignee]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   // 외부 페이지에서 /tasks?id=N 으로 진입하면 해당 업무 상세 모달을 자동으로 연다

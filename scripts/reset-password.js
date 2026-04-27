@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Usage: node scripts/reset-password.js <email> <new-password>
 // Resets a member's password directly in the SQLite DB (no server required).
 

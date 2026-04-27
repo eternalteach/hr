@@ -3,7 +3,7 @@ import { queryAll, queryOne, insertAndGetId } from "@/db/helpers";
 import { ApiError, withApiHandler } from "@/lib/api-handler";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET = withApiHandler(async () => {
+export const GET = withApiHandler(async (_req: NextRequest) => {
   const db = await getDb();
   return NextResponse.json(
     queryAll(db, "SELECT * FROM common_codes WHERE code_group = 'LOB' ORDER BY code ASC")
