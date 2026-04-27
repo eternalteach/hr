@@ -200,6 +200,7 @@ export interface LinkedTaskSummary {
   brd_lob: string | null;
   brd_title_local: string | null;
   brd_title_en: string | null;
+  assignees: { member_id: number; member_name: string }[];
 }
 
 export interface DashboardSummary {

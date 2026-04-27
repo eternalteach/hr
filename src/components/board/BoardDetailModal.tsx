@@ -9,6 +9,7 @@ import { useT, useLabel } from "@/lib/i18n";
 import { MarkdownView } from "@/components/shared/MarkdownView";
 import { AttachmentList } from "@/components/attachments/AttachmentList";
 import { LinkedItemsPicker } from "@/components/shared/LinkedItemsPicker";
+import { MemberAvatar } from "@/components/shared/badges";
 import { TASK_STATUSES } from "@/lib/constants";
 import type { Post, Lob, Task, LinkedTaskSummary } from "@/lib/types";
 import type { BoardConfig } from "@/lib/boards/config";
@@ -185,6 +186,20 @@ export function BoardDetailModal({ config, post, lobs, canEdit, onEdit, onDelete
                         <span className={cn("px-1.5 py-0.5 rounded-full text-[10px] font-medium shrink-0", statusCfg.color)}>
                           {lbl(statusCfg)}
                         </span>
+                      )}
+                      {tk.assignees?.length > 0 && (
+                        <div className="flex items-center gap-1 shrink-0 ml-auto flex-wrap justify-end">
+                          {tk.assignees.map(a => (
+                            <span
+                              key={a.member_id}
+                              className="inline-flex items-center gap-1 pl-0.5 pr-2 py-0.5 rounded-full bg-white border border-gray-200 text-xs text-gray-700"
+                              title={a.member_name}
+                            >
+                              <MemberAvatar name={a.member_name} size="sm" />
+                              <span className="truncate max-w-[6rem]">{a.member_name}</span>
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
                   );

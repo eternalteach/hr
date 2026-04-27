@@ -28,6 +28,27 @@ const linkedTasksSql = `
    ORDER BY t.position ASC, t.id ASC
 `;
 
+const assigneesSql = `
+  SELECT ta.task_id, m.id AS member_id, m.name AS member_name
+    FROM task_post_links l
+    JOIN task_assignees ta ON ta.task_id = l.task_id
+    JOIN members m ON m.id = ta.member_id
+   WHERE l.post_id = ?
+   ORDER BY ta.assigned_at ASC, ta.id ASC
+`;
+
+function withAssignees(tasks: Record<string, unknown>[], rows: Record<string, unknown>[]) {
+  const byTask: Record<number, { member_id: number; member_name: string }[]> = {};
+  rows.forEach(r => {
+    const tid = r.task_id as number;
+    (byTask[tid] ??= []).push({
+      member_id: r.member_id as number,
+      member_name: r.member_name as string,
+    });
+  });
+  return tasks.map(t => ({ ...t, assignees: byTask[t.id as number] ?? [] }));
+}
+
 export const GET = withApiHandler(async (_req: NextRequest, { params }: Params) => {
   const { type: rawType, id: rawId } = await params;
   const type = parseType(rawType);
@@ -42,7 +63,8 @@ export const GET = withApiHandler(async (_req: NextRequest, { params }: Params) 
   if (!post) throw new ApiError(404, "게시글을 찾을 수 없습니다", "POST_NOT_FOUND");
 
   const rows = queryAll(db, linkedTasksSql, [id]);
-  return NextResponse.json(rows);
+  const assignees = queryAll(db, assigneesSql, [id]);
+  return NextResponse.json(withAssignees(rows, assignees));
 });
 
 export const PUT = withApiHandler(async (request: NextRequest, { params }: Params) => {
@@ -91,5 +113,6 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: Param
   saveDb();
 
   const rows = queryAll(db, linkedTasksSql, [id]);
-  return NextResponse.json(rows);
+  const assignees = queryAll(db, assigneesSql, [id]);
+  return NextResponse.json(withAssignees(rows, assignees));
 });

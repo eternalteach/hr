@@ -32,6 +32,25 @@ describe("GET /api/board/[type]/[id]/links", () => {
     expect(byId[2]).toBe("done");
   });
 
+  it("각 업무의 담당자 이름·id가 함께 반환된다", async () => {
+    _db.run("INSERT INTO members (name, email, role) VALUES ('홍길동','hong@test.com','member'), ('김영희','kim@test.com','member')");
+    _db.run("INSERT INTO task_post_links (task_id, post_id) VALUES (1, 1), (2, 1)");
+    _db.run("INSERT INTO task_assignees (task_id, member_id) VALUES (1, 1), (1, 2), (2, 2)");
+    const res = await GET(get("/api/board/meeting-notes/1/links"), makeParams({ type: "meeting-notes", id: "1" }));
+    const body = await res.json();
+    const t1 = body.find((t: { id: number }) => t.id === 1);
+    const t2 = body.find((t: { id: number }) => t.id === 2);
+    expect(t1.assignees.map((a: { member_name: string }) => a.member_name).sort()).toEqual(["김영희","홍길동"]);
+    expect(t2.assignees).toEqual([{ member_id: 2, member_name: "김영희" }]);
+  });
+
+  it("담당자가 없는 업무는 빈 배열을 반환한다", async () => {
+    _db.run("INSERT INTO task_post_links (task_id, post_id) VALUES (1, 1)");
+    const res = await GET(get("/api/board/meeting-notes/1/links"), makeParams({ type: "meeting-notes", id: "1" }));
+    const body = await res.json();
+    expect(body[0].assignees).toEqual([]);
+  });
+
   it("삭제된 업무는 결과에서 제외된다", async () => {
     _db.run("INSERT INTO task_post_links (task_id, post_id) VALUES (1, 1), (2, 1)");
     _db.run("UPDATE tasks SET deleted_at = datetime('now') WHERE id = 1");
