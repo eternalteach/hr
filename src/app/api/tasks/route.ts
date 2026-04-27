@@ -55,7 +55,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 
   const taskTagsRows = queryAll(
     db,
-    "SELECT tt.task_id, t.* FROM task_tags tt JOIN tags t ON tt.tag_id = t.id"
+    "SELECT tt.task_id, tt.tag_id, t.name, t.color FROM task_tags tt JOIN tags t ON tt.tag_id = t.id"
   );
   const tagsByTaskId: Record<number, Array<Record<string, unknown>>> = {};
   taskTagsRows.forEach(t => {
